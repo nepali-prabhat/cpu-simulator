@@ -1,0 +1,26 @@
+* CPU Simulation
+  Some time back I designed a basic computer in a software called Logisim.
+  I want to recreate that software in the web and build a basic computer there.
+
+** Why the web?
+   1. The web is easily accessable by everyone. Thus, there will be less friction to showcase my work.
+   2. We can easily port a web application to native app using electron, tauri, etc, if needed.
+   3. I am already working on the web. 
+
+** Project goals
+   
+*** TODO Stories
+    - [ ] 
+    - [ ] Toolbar that contains gates
+    - [ ] Make AND, OR and NOT gates
+    - [ ] Select a gate and place it in the canvas
+    - [ ] 
+ 
+** Development process
+   Since I am the solo programmer in this project, I have to be resourceful.
+   I'll use the following technologies
+
+*** Technologies 
+    - Tailwindcss
+    - Radix ui
+    - jotai
