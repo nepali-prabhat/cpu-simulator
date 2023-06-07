@@ -6,7 +6,8 @@ type Point = { x: number; y: number };
 type NormalizedZoomValue = number & { _brand: "normalizedZoom" };
 
 const ZOOM_STEP = 0.1;
-const MIN_ZOOM = 0.1;
+const MIN_ZOOM = 0.4;
+const MAX_ZOOM = 15;
 
 // TODO: understand this code
 const getStateForZoom = (
@@ -67,8 +68,31 @@ const strokeGrid = (
     context.restore();
 };
 
+const dotsGrid = (
+    context: CanvasRenderingContext2D,
+    gridSize: number,
+    offsetX: number,
+    offsetY: number,
+    width: number,
+    height: number
+) => {
+    context.save();
+    context.fillStyle = "rgba(0,0,0,0.25)";
+    context.beginPath();
+    for (let x = offsetX; x < offsetX + width + gridSize * 2; x += gridSize) {
+        for (
+            let y = offsetY;
+            y < offsetY + height + gridSize * 2;
+            y += gridSize
+        ) {
+            context.fillRect(x - 0.5, y - 0.5, 1, 1);
+        }
+    }
+    context.restore();
+};
+
 export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
-    return Math.max(MIN_ZOOM, Math.min(zoom, 30)) as NormalizedZoomValue;
+    return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
 }
 
 function wheelHandler(
@@ -212,6 +236,7 @@ function Home() {
             lastViewportPosition.current = { x: clientX, y: clientY };
         };
         window.addEventListener("resize", _resizeHandler);
+        // window.
         document.addEventListener("mousemove", _mouseMoveHanlder);
         return () => {
             window.removeEventListener("resize", _resizeHandler);
@@ -235,7 +260,7 @@ function Home() {
             // apply zoom
             ctx.scale(zoom, zoom);
 
-            strokeGrid(
+            dotsGrid(
                 ctx,
                 gridSpace,
 
@@ -254,18 +279,42 @@ function Home() {
             ctx.save();
             ctx.translate(0 + scroll.x, 0 + scroll.y);
             ctx.strokeStyle = "#000";
-            ctx.strokeRect(0, 0, 100, 100);
 
-            ctx.strokeStyle = "#000";
-            ctx.strokeRect(60, 20, 20, 20);
+            ctx.strokeRect(0, 0, 60, 60);
             ctx.strokeRect(20, 20, 20, 20);
-            ctx.strokeRect(20, 55, 60, 20);
-
-            ctx.strokeStyle = "#000";
             ctx.strokeRect(0, 0, 2, 2);
-            ctx.strokeRect(scroll.x, scroll.y, 2, 2);
             ctx.restore();
 
+            ctx.save();
+            ctx.translate(0 + scroll.x, 0 + scroll.y);
+            ctx.rotate(3/2* Math.PI);
+            ctx.strokeStyle = "#000";
+
+            ctx.strokeRect(0, 0, 60, 60);
+            ctx.strokeRect(20, 20, 20, 20);
+            ctx.strokeRect(0, 0, 2, 2);
+            ctx.restore();
+
+            ctx.save();
+            ctx.translate(0 + scroll.x, 0 + scroll.y);
+            ctx.rotate(Math.PI);
+            ctx.strokeStyle = "#000";
+
+            ctx.strokeRect(0, 0, 60, 60);
+            ctx.strokeRect(20, 20, 20, 20);
+            ctx.strokeRect(0, 0, 2, 2);
+            ctx.restore();
+            ctx.save();
+            ctx.translate(0 + scroll.x, 0 + scroll.y);
+            ctx.rotate(.5 * Math.PI);
+            ctx.strokeStyle = "#000";
+
+            ctx.strokeRect(0, 0, 60, 60);
+            ctx.strokeRect(20, 20, 20, 20);
+            ctx.strokeRect(0, 0, 2, 2);
+            ctx.restore();
+
+            // ctx.strokeRect(scroll.x, scroll.y, 2, 2);
             ctx.restore();
         }
     }, [canvasProperties, gridSpace]);
