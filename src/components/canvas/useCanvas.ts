@@ -8,6 +8,7 @@ import {
 import { wheelHandler } from "./eventHandlers";
 import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
+import { getNormalizedZoom, getStateForZoom } from "./zoom";
 
 export function useCanvas({
     defaultGridSpace = 20,
@@ -105,7 +106,22 @@ export function useCanvas({
             const { clientX, clientY } = e;
             lastViewportPosition.current = { x: clientX, y: clientY };
         };
+        const _keydownHandler = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === "0") {
+                setZoom((_, c) =>
+                    getStateForZoom(
+                        {
+                            viewportX: c.width / 2,
+                            viewportY: c.height / 2,
+                            nextZoom: getNormalizedZoom(1),
+                        },
+                        c
+                    )
+                );
+            }
+        };
         window.addEventListener("resize", _resizeHandler);
+        window.addEventListener("keydown", _keydownHandler);
         document.addEventListener("mousemove", _mouseMoveHanlder);
         return () => {
             window.removeEventListener("resize", _resizeHandler);

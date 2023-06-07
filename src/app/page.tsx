@@ -22,7 +22,7 @@ function Home() {
                     screen for cpu simulation
                 </canvas>
             </section>
-            <section className="absolute bottom-4 left-4">
+            <section className="absolute bottom-1 left-1">
                 <div className="flex">
                     <button
                         onClick={(e) => {
@@ -58,7 +58,7 @@ function Home() {
                         }}
                         className="flex justify-center items-center px-2"
                     >
-                        {Math.ceil(canvasProperties.zoom * 100)} %
+                        {Math.floor(canvasProperties.zoom * 100)} %
                     </button>
                     <button
                         onClick={(e) => {

@@ -37,42 +37,6 @@ export function renderCanvas({
         height / zoom
     );
 
-    // Some test element in the canvas
-    /* context.save();
-    context.translate(0 + scroll.x, 0 + scroll.y);
-    context.strokeStyle = "#000";
-    context.strokeRect(0, 0, 60, 60);
-    context.strokeRect(20, 20, 20, 20);
-    context.strokeRect(0, 0, 2, 2);
-    context.restore();
-
-    context.save();
-    context.translate(0 + scroll.x, 0 + scroll.y);
-    context.rotate((3 / 2) * Math.PI);
-    context.strokeStyle = "#000";
-    context.strokeRect(0, 0, 60, 60);
-    context.strokeRect(20, 20, 20, 20);
-    context.strokeRect(0, 0, 2, 2);
-    context.restore();
-
-    context.save();
-    context.translate(0 + scroll.x, 0 + scroll.y);
-    context.rotate(Math.PI);
-    context.strokeStyle = "#000";
-    context.strokeRect(0, 0, 60, 60);
-    context.strokeRect(20, 20, 20, 20);
-    context.strokeRect(0, 0, 2, 2);
-    context.restore();
-
-    context.save();
-    context.translate(0 + scroll.x, 0 + scroll.y);
-    context.rotate(0.5 * Math.PI);
-    context.strokeStyle = "#000";
-    context.strokeRect(0, 0, 60, 60);
-    context.strokeRect(20, 20, 20, 20);
-    context.strokeRect(0, 0, 2, 2);
-    context.restore(); */
-
     renderElements({
         appState,
         context,
@@ -105,6 +69,7 @@ function renderElements({
                 context.strokeRect(0, 0, 20, 20);
                 context.strokeRect(40, 0, 20, 20);
                 context.strokeRect(0, 40, 20, 20);
+                context.fillText("AND", 0, -5);
                 context.strokeRect(40, 40, 20, 20);
                 break;
             }
@@ -114,6 +79,7 @@ function renderElements({
                 context.strokeRect(0, 0, 60, 60);
                 context.arc(29.5, 29.5, 20, 0, 2 * Math.PI);
                 context.stroke();
+                context.fillText("OR", 0, -5);
                 break;
             }
             case "not_gate": {
@@ -121,6 +87,7 @@ function renderElements({
                 context.strokeStyle = "#000";
                 context.strokeRect(0, 0, 60, 60);
                 context.strokeRect(20, 20, 20, 20);
+                context.fillText("NOT", 0, -5);
                 break;
             }
         }
