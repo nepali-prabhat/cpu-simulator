@@ -10,6 +10,7 @@ import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
 import { getNormalizedZoom, getStateForZoom } from "./zoom";
 
+const ids = [nanoid(), nanoid(), nanoid()];
 export function useCanvas({
     defaultGridSpace = 20,
 }: {
@@ -25,24 +26,31 @@ export function useCanvas({
     const [appState, setAppState] = useState<AppState>({
         elements: [
             {
-                uid: nanoid(),
+                uid: ids[0],
                 x: 20,
                 y: 20,
+                width: 60,
+                height: 60,
                 type: "and_gate",
             },
             {
-                uid: nanoid(),
+                uid: ids[1],
                 x: 20,
                 y: 100,
+                width: 60,
+                height: 60,
                 type: "or_gate",
             },
             {
-                uid: nanoid(),
+                uid: ids[2],
                 x: 100,
                 y: 100,
+                width: 60,
+                height: 60,
                 type: "not_gate",
             },
         ],
+        selectedElementIds: new Set<string>().add(ids[1]),
     });
 
     let canvasRef = useRef<HTMLCanvasElement>(null);

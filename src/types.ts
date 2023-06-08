@@ -11,8 +11,11 @@ export type Element = {
     uid: string;
     x: number;
     y: number;
+    width: number;
+    height: number;
     type: ElementType;
 };
 export type AppState = {
     elements: Element[];
+    selectedElementIds: Set<string>;
 };
