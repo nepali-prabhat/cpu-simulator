@@ -295,10 +295,7 @@ export function useCanvas({
                 // add new selected elements
                 for (let element of Object.values(appState.elements)) {
                     if (isBoxInsideAnotherBox(element, selectRect)) {
-                        console.log("box: ", element, selectRect);
                         additionalSelectedElements.push(element.uid);
-                    } else {
-                        console.log("no box: ", element, selectRect);
                     }
                 }
             }
