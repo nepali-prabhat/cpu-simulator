@@ -12,7 +12,7 @@ import { getNormalizedZoom, getStateForZoom } from "./zoom";
 
 const ids = [nanoid(), nanoid(), nanoid()];
 export function useCanvas({
-    defaultGridSpace = 20,
+    defaultGridSpace = 40,
 }: {
     defaultGridSpace?: number;
 }) {
@@ -27,30 +27,30 @@ export function useCanvas({
         elements: [
             {
                 uid: ids[0],
-                x: 20,
-                y: 20,
+                x: gridSpace,
+                y: gridSpace,
                 width: 60,
                 height: 60,
                 type: "and_gate",
             },
             {
                 uid: ids[1],
-                x: 20,
-                y: 100,
+                x: gridSpace - 100,
+                y: gridSpace / 2 + 100,
                 width: 60,
                 height: 60,
                 type: "or_gate",
             },
             {
                 uid: ids[2],
-                x: 100,
-                y: 100,
+                x: gridSpace / 2 + 100,
+                y: gridSpace / 2 + 100,
                 width: 60,
                 height: 60,
                 type: "not_gate",
             },
         ],
-        selectedElementIds: new Set<string>().add(ids[1]),
+        selectedElementIds: new Set<string>().add(ids[2]),
     });
 
     let canvasRef = useRef<HTMLCanvasElement>(null);
@@ -82,7 +82,6 @@ export function useCanvas({
             ...o(v.zoom, v),
         }));
     };
-
     // NOTE: canvas event handlers
     useEffect(() => {
         let canvas = canvasRef.current;
@@ -154,6 +153,39 @@ export function useCanvas({
         draw();
     }, [draw]);
 
+    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
+        const { clientX, clientY } = e;
+        const canvasX =
+            clientX / canvasProperties.zoom - canvasProperties.scroll.x;
+        const canvasY =
+            clientY / canvasProperties.zoom - canvasProperties.scroll.y;
+        console.log("canvas x, y", canvasX, canvasY);
+        // TODO: check if element is clicked
+        let selectedElementIds: Set<string>;
+        if (e.shiftKey) {
+            selectedElementIds = new Set(
+                Array.from(appState.selectedElementIds)
+            );
+        } else {
+            selectedElementIds = new Set();
+        }
+        for (let element of appState.elements) {
+            const { x, y, width, height } = element;
+            if (
+                canvasX >= x &&
+                canvasX <= x + width &&
+                canvasY >= y &&
+                canvasY <= y + height
+            ) {
+                selectedElementIds.add(element.uid);
+            }
+        }
+        setAppState({
+            ...appState,
+            selectedElementIds,
+        });
+    };
+
     const handleCanvasContextMenu: React.MouseEventHandler<
         HTMLCanvasElement
     > = (e) => {
@@ -166,5 +198,6 @@ export function useCanvas({
         canvasProperties,
         handleCanvasContextMenu,
         setZoom,
+        handleMouseMove,
     };
 }

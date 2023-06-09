@@ -1,5 +1,8 @@
-import { AppState, CanvasProperties } from "@/types";
-import { dotsGrid } from "./grid";
+import { AppState, CanvasProperties, Element, Point } from "@/types";
+import { dotsGrid, strokeGrid } from "./grid";
+import { SELECT_PADDING, SELECT_SIZE } from "@/constants";
+const size = SELECT_SIZE;
+const padding = SELECT_PADDING;
 
 export function renderCanvas({
     context,
@@ -15,7 +18,7 @@ export function renderCanvas({
     const { scroll, zoom, width, height } = canvasProperties;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.save();
-    // console.log("origin zoom: ", scroll, zoom);
+    console.log("origin zoom: ", scroll, zoom);
 
     // clear background
     context.save();
@@ -25,19 +28,39 @@ export function renderCanvas({
     // apply zoom
     context.scale(zoom, zoom);
 
-    dotsGrid(
-        context,
-        gridSpace,
+    false &&
+        dotsGrid(
+            context,
+            gridSpace,
 
-        -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.x % gridSpace),
-        -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
+            -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.x % gridSpace),
+            -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
 
-        // 0,0,
-        width / zoom,
-        height / zoom
-    );
+            // 0,0,
+            width / zoom,
+            height / zoom
+        );
+
+    true &&
+        strokeGrid(
+            context,
+            gridSpace,
+
+            -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.x % gridSpace),
+            -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
+
+            // 0,0,
+            width / zoom,
+            height / zoom
+        );
 
     renderElements({
+        appState,
+        context,
+        canvasProperties,
+    });
+
+    renderSelectArea({
         appState,
         context,
         canvasProperties,
@@ -57,7 +80,7 @@ function renderElements({
     context: CanvasRenderingContext2D;
 }) {
     const { scroll } = canvasProperties;
-    const { elements, selectedElementIds } = appState;
+    const { elements } = appState;
     for (let element of elements) {
         context.save();
         context.translate(element.x + scroll.x, element.y + scroll.y);
@@ -120,45 +143,122 @@ function renderElements({
         }
         context.restore();
     }
+}
+function renderSelectArea({
+    appState,
+    context,
+    canvasProperties,
+}: {
+    appState: AppState;
+    canvasProperties: CanvasProperties;
+    context: CanvasRenderingContext2D;
+}) {
+    // TODO: make this a constant
+    const { scroll } = canvasProperties;
+    const { elements, selectedElementIds } = appState;
     const selectedElements = elements.filter((e) =>
         selectedElementIds.has(e.uid)
     );
+
+    const multipleSelected = selectedElements.length > 1;
+    let bounds: { min: Point; max: Point } | undefined;
     for (let element of selectedElements) {
-        context.save();
-        context.translate(element.x + scroll.x, element.y + scroll.y);
-        const color = "hsl(207, 83%, 79%)";
-        context.fillStyle = color;
-        context.strokeStyle = color;
-        const padding = 2;
-        const size = 7;
-        context.fillRect(0 - size - padding, 0 - size - padding, size, size);
-        context.fillRect(
-            element.width + padding,
-            0 - padding - size,
-            size,
-            size
-        );
-        context.fillRect(
-            0 - size - padding,
-            element.height + padding,
-            size,
-            size
-        );
-        context.fillRect(
-            element.width + padding,
-            element.height + padding,
-            size,
-            size
-        );
+        if (multipleSelected) {
+            // create bounds based on all the selected elements
+            if (bounds === undefined) {
+                bounds = {
+                    min: { x: element.x, y: element.y },
+                    max: {
+                        x: element.x + element.width,
+                        y: element.y + element.height,
+                    },
+                };
+            } else {
+                bounds.min.x = Math.min(bounds.min.x, element.x);
+                bounds.min.y = Math.min(bounds.min.y, element.y);
 
-        context.strokeRect(
-            0 - size / 2 - padding,
-            0 - size / 2 - padding,
-            element.width + size  + padding * 2,
-            element.height + size  + padding * 2
-        );
-
-        context.restore();
+                bounds.max.x = Math.max(
+                    bounds.max.x,
+                    element.x + element.width
+                );
+                bounds.max.y = Math.max(
+                    bounds.max.y,
+                    element.y + element.height
+                );
+            }
+        }
+        // draw selection box in selected elements
+        renderBoundingBox(context, scroll, element, {
+            renderHandles: !multipleSelected,
+        });
     }
-    console.log("selected elements: ", selectedElements);
+    if (bounds) {
+        // TODO: add padding and size to the bound.
+        bounds.min.x -= padding;
+        bounds.min.y -= padding;
+        bounds.max.x += padding;
+        bounds.max.y += padding;
+
+        // TODO: draw bounds
+        renderBoundingBox(
+            context,
+            scroll,
+            {
+                x: bounds.min.x,
+                y: bounds.min.y,
+                width: bounds.max.x - bounds.min.x,
+                height: bounds.max.y - bounds.min.y,
+            },
+            {
+                renderHandles: true,
+                padding: 0,
+            }
+        );
+    }
+}
+
+export function renderBoundingBox(
+    context: CanvasRenderingContext2D,
+    scroll: { x: number; y: number },
+    rect: { x: number; y: number; width: number; height: number },
+    {
+        renderHandles = true,
+        padding = SELECT_PADDING,
+        size = SELECT_SIZE,
+    }: Partial<{
+        renderHandles: boolean;
+        padding: number;
+        size: number;
+    }> = {}
+) {
+    context.save();
+    context.translate(rect.x + scroll.x, rect.y + scroll.y);
+    const color = "hsl(207, 83%, 79%)";
+    context.fillStyle = color;
+    context.strokeStyle = color;
+    if (renderHandles) {
+        context.fillRect(0 - size - padding, 0 - size - padding, size, size);
+        context.fillRect(rect.width + padding, 0 - padding - size, size, size);
+        context.fillRect(0 - size - padding, rect.height + padding, size, size);
+        context.fillRect(
+            rect.width + padding,
+            rect.height + padding,
+            size,
+            size
+        );
+    }
+    context.strokeRect(
+        0 - size / 2 - padding,
+        0 - size / 2 - padding,
+        rect.width + size + padding * 2,
+        rect.height + size + padding * 2
+    );
+
+    context.restore();
+}
+function getViewportPoints(scroll: Point, p: Point) {
+    return {
+        x: p.x + scroll.x,
+        y: p.y + scroll.y,
+    };
 }

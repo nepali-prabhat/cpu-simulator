@@ -5,7 +5,7 @@ import { MAX_ZOOM, MIN_ZOOM } from "@/constants";
 import dynamic from "next/dynamic";
 
 function Home() {
-    const { canvasRef, canvasProperties, handleCanvasContextMenu, setZoom } =
+    const { handleMouseMove, canvasRef, canvasProperties, handleCanvasContextMenu, setZoom } =
         useCanvas({});
 
     return (
@@ -18,6 +18,7 @@ function Home() {
                     width={canvasProperties.width}
                     height={canvasProperties.height}
                     onContextMenu={handleCanvasContextMenu}
+                    onMouseMove={handleMouseMove}
                 >
                     screen for cpu simulation
                 </canvas>
