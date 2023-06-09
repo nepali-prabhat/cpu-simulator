@@ -1,14 +1,23 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+    Element,
     AppState,
     CanvasProperties,
-    NormalizedZoomValue,
     Point,
+    PointerState,
 } from "@/types";
 import { wheelHandler } from "./eventHandlers";
 import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
 import { getNormalizedZoom, getStateForZoom } from "./zoom";
+import {
+    filterElementsByIds,
+    getBoundingRect,
+    getCanvasPointFromViewport,
+    getElementsAt,
+    getSelectedElements,
+    isPointInsideBox,
+} from "./utils";
 
 const ids = [nanoid(), nanoid(), nanoid()];
 export function useCanvas({
@@ -16,15 +25,15 @@ export function useCanvas({
 }: {
     defaultGridSpace?: number;
 }) {
-    const [gridSpace, setGridSpace] = useState(defaultGridSpace);
+    const [gridSpace] = useState(defaultGridSpace);
     const [canvasProperties, setCanvasProperties] = useState<CanvasProperties>({
         width: window.innerWidth || 300,
         height: window.innerHeight || 150,
         scroll: { x: 0, y: 0 },
-        zoom: 1 as NormalizedZoomValue,
+        zoom: getNormalizedZoom(1.5),
     });
     const [appState, setAppState] = useState<AppState>({
-        elements: [
+        /* elements: [
             {
                 uid: ids[0],
                 x: gridSpace,
@@ -32,6 +41,8 @@ export function useCanvas({
                 width: 60,
                 height: 60,
                 type: "and_gate",
+                zIndex: 0,
+                nonce: 0,
             },
             {
                 uid: ids[1],
@@ -40,6 +51,8 @@ export function useCanvas({
                 width: 60,
                 height: 60,
                 type: "or_gate",
+                zIndex: 0,
+                nonce: 1,
             },
             {
                 uid: ids[2],
@@ -48,13 +61,48 @@ export function useCanvas({
                 width: 60,
                 height: 60,
                 type: "not_gate",
+                zIndex: 0,
+                nonce: 2,
             },
-        ],
-        selectedElementIds: new Set<string>().add(ids[2]),
+        ], */
+        elements: {
+            [ids[0]]: {
+                uid: ids[0],
+                x: gridSpace,
+                y: gridSpace,
+                width: 60,
+                height: 60,
+                type: "and_gate",
+                zIndex: 0,
+                nonce: 0,
+            },
+            [ids[1]]: {
+                uid: ids[1],
+                x: gridSpace - 100,
+                y: gridSpace / 2 + 100,
+                width: 60,
+                height: 60,
+                type: "or_gate",
+                zIndex: 0,
+                nonce: 1,
+            },
+            [ids[2]]: {
+                uid: ids[2],
+                x: gridSpace / 2 + 100,
+                y: gridSpace / 2 + 100,
+                width: 60,
+                height: 60,
+                type: "not_gate",
+                zIndex: 0,
+                nonce: 2,
+            },
+        },
+        selectedElementIds: new Set<string>(),
     });
 
-    let canvasRef = useRef<HTMLCanvasElement>(null);
-    let lastViewportPosition = useRef<Point>({ x: 0, y: 0 });
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const lastViewportPosition = useRef<Point>({ x: 0, y: 0 });
+    const pointerRef = useRef<PointerState | null>(null);
 
     const setScroll = (
         o: (
@@ -153,37 +201,163 @@ export function useCanvas({
         draw();
     }, [draw]);
 
-    const handleMouseMove: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
+    const handlePointerDown: React.MouseEventHandler<HTMLCanvasElement> = (
+        e
+    ) => {
         const { clientX, clientY } = e;
-        const canvasX =
-            clientX / canvasProperties.zoom - canvasProperties.scroll.x;
-        const canvasY =
-            clientY / canvasProperties.zoom - canvasProperties.scroll.y;
-        console.log("canvas x, y", canvasX, canvasY);
-        // TODO: check if element is clicked
-        let selectedElementIds: Set<string>;
-        if (e.shiftKey) {
-            selectedElementIds = new Set(
-                Array.from(appState.selectedElementIds)
-            );
-        } else {
-            selectedElementIds = new Set();
+        const viewportXY = { x: clientX, y: clientY };
+        const canvasXY = getCanvasPointFromViewport(
+            canvasProperties,
+            viewportXY
+        );
+        console.log(
+            "pointer down canvas x, y",
+            canvasXY.x,
+            canvasXY.y,
+            canvasProperties
+        );
+
+        const {
+            topLevelElement,
+            // elementIds: intersectedElementIds,
+            // elements: intersectedElements,
+        } = getElementsAt(
+            { x: canvasXY.x, y: canvasXY.y },
+            Object.values(appState.elements)
+        );
+        console.log("top level element: ", topLevelElement);
+
+        const existingSelectedElements = filterElementsByIds(
+            appState.selectedElementIds,
+            appState.elements
+        );
+
+        const selectBoundingBox = getBoundingRect(existingSelectedElements);
+
+        let preserveSelectBox = e.shiftKey;
+        if (selectBoundingBox) {
+            preserveSelectBox =
+                preserveSelectBox ||
+                isPointInsideBox(canvasXY, selectBoundingBox);
         }
-        for (let element of appState.elements) {
-            const { x, y, width, height } = element;
-            if (
-                canvasX >= x &&
-                canvasX <= x + width &&
-                canvasY >= y &&
-                canvasY <= y + height
-            ) {
-                selectedElementIds.add(element.uid);
-            }
-        }
+
+        const selectedElementIds = new Set<string>([
+            ...(topLevelElement ? [topLevelElement.uid] : []),
+            // ...(Array.from(intersectedElementIds)),
+            ...(preserveSelectBox
+                ? Array.from(appState.selectedElementIds)
+                : []),
+        ]);
+
+        // initial pointer state
+        pointerRef.current = {
+            moved: false,
+            selectedElementIds,
+            boundingBox: selectBoundingBox,
+            timeStamp: e.timeStamp,
+            lastPoint: canvasXY,
+            initial: {
+                viewportXY,
+                canvasXY,
+            },
+        };
+
         setAppState({
             ...appState,
             selectedElementIds,
         });
+    };
+
+    const handlePointerMove: React.MouseEventHandler<HTMLCanvasElement> = (
+        e
+    ) => {
+        const { clientX, clientY } = e;
+        const viewportXY = { x: clientX, y: clientY };
+        const canvasXY = getCanvasPointFromViewport(
+            canvasProperties,
+            viewportXY
+        );
+        if (pointerRef.current) {
+            pointerRef.current.moved = true;
+            const lastPoint = pointerRef.current.lastPoint;
+            const dp = {
+                x: canvasXY.x - lastPoint.x,
+                y: canvasXY.y - lastPoint.y,
+            };
+            const boundingBox = pointerRef.current.boundingBox;
+            // translate bounding box
+            let newBoundingBox = boundingBox
+                ? {
+                    ...boundingBox,
+                    x: boundingBox.x - dp.x,
+                    y: boundingBox.y - dp.y,
+                }
+                : undefined;
+            pointerRef.current.boundingBox = newBoundingBox;
+
+            const selectedElements = getSelectedElements(appState);
+            const updatedSelectedElements: AppState["elements"] = {};
+            for (let element of selectedElements) {
+                updatedSelectedElements[element.uid] = {
+                    ...element,
+                    x: element.x + dp.x,
+                    y: element.y + dp.y,
+                };
+            }
+
+            pointerRef.current = {
+                ...pointerRef.current,
+                moved: true,
+                boundingBox: newBoundingBox,
+                lastPoint: canvasXY,
+            };
+            setAppState((s) => ({
+                ...s,
+                elements: { ...s.elements, ...updatedSelectedElements },
+            }));
+        }
+    };
+    const handlePointerUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
+        console.log("pointer up: ", e);
+        const { clientX, clientY } = e;
+        const viewportXY = { x: clientX, y: clientY };
+        const canvasXY = getCanvasPointFromViewport(
+            canvasProperties,
+            viewportXY
+        );
+        console.log(
+            "pointer up canvas x, y",
+            canvasXY.x,
+            canvasXY.y,
+            canvasProperties
+        );
+
+        const {
+            topLevelElement,
+            // elementIds: intersectedElementIds,
+            // elements: intersectedElements,
+        } = getElementsAt(
+            { x: canvasXY.x, y: canvasXY.y },
+            Object.values(appState.elements)
+        );
+        console.log("top level element: ", topLevelElement);
+
+        if (pointerRef.current) {
+            let selectedElementIds = appState.selectedElementIds;
+            let preserveSelectBox = e.shiftKey || pointerRef.current.moved;
+            selectedElementIds = new Set<string>([
+                ...(topLevelElement ? [topLevelElement.uid] : []),
+                // ...(Array.from(intersectedElementIds)),
+                ...(preserveSelectBox
+                    ? Array.from(appState.selectedElementIds)
+                    : []),
+            ]);
+            pointerRef.current = null;
+            setAppState({
+                ...appState,
+                selectedElementIds,
+            });
+        }
     };
 
     const handleCanvasContextMenu: React.MouseEventHandler<
@@ -198,6 +372,8 @@ export function useCanvas({
         canvasProperties,
         handleCanvasContextMenu,
         setZoom,
-        handleMouseMove,
+        handlePointerDown,
+        handlePointerMove,
+        handlePointerUp,
     };
 }

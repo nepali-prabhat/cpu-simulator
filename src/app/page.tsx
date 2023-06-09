@@ -5,8 +5,15 @@ import { MAX_ZOOM, MIN_ZOOM } from "@/constants";
 import dynamic from "next/dynamic";
 
 function Home() {
-    const { handleMouseMove, canvasRef, canvasProperties, handleCanvasContextMenu, setZoom } =
-        useCanvas({});
+    const {
+        handlePointerDown,
+        handlePointerUp,
+        handlePointerMove,
+        canvasRef,
+        canvasProperties,
+        handleCanvasContextMenu,
+        setZoom,
+    } = useCanvas({});
 
     return (
         <main className={`relative w-screen h-screen overflow-hidden`}>
@@ -18,7 +25,11 @@ function Home() {
                     width={canvasProperties.width}
                     height={canvasProperties.height}
                     onContextMenu={handleCanvasContextMenu}
-                    onMouseMove={handleMouseMove}
+                    // onClick={handleClick}
+                    onPointerDown={handlePointerDown}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    // onPointerCancel={(e) => console.log("cancel: ", e)}
                 >
                     screen for cpu simulation
                 </canvas>
@@ -27,7 +38,7 @@ function Home() {
                 <div className="flex">
                     <button
                         onClick={(e) => {
-                            const zoom = e.shiftKey ? .5 : 0.1;
+                            const zoom = e.shiftKey ? 0.5 : 0.1;
                             setZoom((v) =>
                                 getStateForZoom(
                                     {
@@ -63,7 +74,7 @@ function Home() {
                     </button>
                     <button
                         onClick={(e) => {
-                            const zoom = e.shiftKey ? .5 : 0.1;
+                            const zoom = e.shiftKey ? 0.5 : 0.1;
                             setZoom((v) =>
                                 getStateForZoom(
                                     {
