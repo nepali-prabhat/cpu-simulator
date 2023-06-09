@@ -26,7 +26,7 @@ export function renderCanvas({
     // apply zoom
     context.scale(zoom, zoom);
 
-    false &&
+    true &&
         dotsGrid(
             context,
             gridSpace,
@@ -39,7 +39,7 @@ export function renderCanvas({
             height / zoom
         );
 
-    true &&
+    false &&
         strokeGrid(
             context,
             gridSpace,
@@ -88,25 +88,6 @@ function renderElements({
                 context.beginPath();
                 context.strokeStyle = "#000";
                 context.strokeRect(0, 0, element.width, element.height);
-                context.strokeRect(0, 0, element.width / 3, element.height / 3);
-                context.strokeRect(
-                    (element.width / 3) * 2,
-                    0,
-                    element.width / 3,
-                    element.height / 3
-                );
-                context.strokeRect(
-                    0,
-                    (element.width / 3) * 2,
-                    element.width / 3,
-                    element.height / 3
-                );
-                context.strokeRect(
-                    (element.width / 3) * 2,
-                    (element.width / 3) * 2,
-                    element.width / 3,
-                    element.height / 3
-                );
                 context.fillText("AND", 0, -5);
                 break;
             }

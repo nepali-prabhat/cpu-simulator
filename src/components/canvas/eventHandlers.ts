@@ -20,6 +20,7 @@ export function wheelHandler(
 ) {
     // need to throttle this
     e.preventDefault();
+    e.stopPropagation();
     const { deltaX, deltaY } = e;
     const rate = 1;
     let isZoom = e.ctrlKey || e.metaKey;

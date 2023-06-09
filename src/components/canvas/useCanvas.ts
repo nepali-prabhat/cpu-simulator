@@ -18,10 +18,11 @@ import {
     getSelectedElements,
     isPointInsideBox,
 } from "./utils";
+import { GRID_SPACE, INITIAL_ZOOM } from "@/constants";
 
 const ids = [nanoid(), nanoid(), nanoid()];
 export function useCanvas({
-    defaultGridSpace = 40,
+    defaultGridSpace = GRID_SPACE,
 }: {
     defaultGridSpace?: number;
 }) {
@@ -30,46 +31,14 @@ export function useCanvas({
         width: window.innerWidth || 300,
         height: window.innerHeight || 150,
         scroll: { x: 0, y: 0 },
-        zoom: getNormalizedZoom(1.5),
+        zoom: getNormalizedZoom(INITIAL_ZOOM),
     });
     const [appState, setAppState] = useState<AppState>({
-        /* elements: [
-            {
-                uid: ids[0],
-                x: gridSpace,
-                y: gridSpace,
-                width: 60,
-                height: 60,
-                type: "and_gate",
-                zIndex: 0,
-                nonce: 0,
-            },
-            {
-                uid: ids[1],
-                x: gridSpace - 100,
-                y: gridSpace / 2 + 100,
-                width: 60,
-                height: 60,
-                type: "or_gate",
-                zIndex: 0,
-                nonce: 1,
-            },
-            {
-                uid: ids[2],
-                x: gridSpace / 2 + 100,
-                y: gridSpace / 2 + 100,
-                width: 60,
-                height: 60,
-                type: "not_gate",
-                zIndex: 0,
-                nonce: 2,
-            },
-        ], */
         elements: {
             [ids[0]]: {
                 uid: ids[0],
-                x: gridSpace,
-                y: gridSpace,
+                x: gridSpace * 6,
+                y: gridSpace * 4,
                 width: 60,
                 height: 60,
                 type: "and_gate",
@@ -78,8 +47,8 @@ export function useCanvas({
             },
             [ids[1]]: {
                 uid: ids[1],
-                x: gridSpace - 100,
-                y: gridSpace / 2 + 100,
+                x: gridSpace + gridSpace * 10,
+                y: gridSpace + gridSpace * 5,
                 width: 60,
                 height: 60,
                 type: "or_gate",
@@ -88,8 +57,8 @@ export function useCanvas({
             },
             [ids[2]]: {
                 uid: ids[2],
-                x: gridSpace / 2 + 100,
-                y: gridSpace / 2 + 100,
+                x: gridSpace * 3,
+                y: gridSpace * 9,
                 width: 60,
                 height: 60,
                 type: "not_gate",
@@ -210,12 +179,12 @@ export function useCanvas({
             canvasProperties,
             viewportXY
         );
-        console.log(
-            "pointer down canvas x, y",
-            canvasXY.x,
-            canvasXY.y,
-            canvasProperties
-        );
+        // console.log(
+        //     "pointer down canvas x, y",
+        //     canvasXY.x,
+        //     canvasXY.y,
+        //     canvasProperties
+        // );
 
         const {
             topLevelElement,
@@ -225,7 +194,6 @@ export function useCanvas({
             { x: canvasXY.x, y: canvasXY.y },
             Object.values(appState.elements)
         );
-        console.log("top level element: ", topLevelElement);
 
         const existingSelectedElements = filterElementsByIds(
             appState.selectedElementIds,
@@ -235,14 +203,18 @@ export function useCanvas({
         const selectBoundingBox = getBoundingRect(existingSelectedElements);
 
         let preserveSelectBox = e.shiftKey;
+        let isClickedInsideSelectBox = isPointInsideBox(
+            canvasXY,
+            selectBoundingBox
+        );
         if (selectBoundingBox) {
-            preserveSelectBox =
-                preserveSelectBox ||
-                isPointInsideBox(canvasXY, selectBoundingBox);
+            preserveSelectBox = e.shiftKey || isClickedInsideSelectBox;
         }
 
         const selectedElementIds = new Set<string>([
-            ...(topLevelElement ? [topLevelElement.uid] : []),
+            ...(topLevelElement && !isClickedInsideSelectBox
+                ? [topLevelElement.uid]
+                : []),
             // ...(Array.from(intersectedElementIds)),
             ...(preserveSelectBox
                 ? Array.from(appState.selectedElementIds)
@@ -278,7 +250,6 @@ export function useCanvas({
             viewportXY
         );
         if (pointerRef.current) {
-            pointerRef.current.moved = true;
             const lastPoint = pointerRef.current.lastPoint;
             const dp = {
                 x: canvasXY.x - lastPoint.x,
@@ -293,7 +264,6 @@ export function useCanvas({
                     y: boundingBox.y - dp.y,
                 }
                 : undefined;
-            pointerRef.current.boundingBox = newBoundingBox;
 
             const selectedElements = getSelectedElements(appState);
             const updatedSelectedElements: AppState["elements"] = {};
@@ -318,40 +288,17 @@ export function useCanvas({
         }
     };
     const handlePointerUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
-        console.log("pointer up: ", e);
-        const { clientX, clientY } = e;
-        const viewportXY = { x: clientX, y: clientY };
-        const canvasXY = getCanvasPointFromViewport(
-            canvasProperties,
-            viewportXY
-        );
-        console.log(
-            "pointer up canvas x, y",
-            canvasXY.x,
-            canvasXY.y,
-            canvasProperties
-        );
-
-        const {
-            topLevelElement,
-            // elementIds: intersectedElementIds,
-            // elements: intersectedElements,
-        } = getElementsAt(
-            { x: canvasXY.x, y: canvasXY.y },
-            Object.values(appState.elements)
-        );
-        console.log("top level element: ", topLevelElement);
-
         if (pointerRef.current) {
             let selectedElementIds = appState.selectedElementIds;
-            let preserveSelectBox = e.shiftKey || pointerRef.current.moved;
-            selectedElementIds = new Set<string>([
-                ...(topLevelElement ? [topLevelElement.uid] : []),
-                // ...(Array.from(intersectedElementIds)),
-                ...(preserveSelectBox
-                    ? Array.from(appState.selectedElementIds)
-                    : []),
-            ]);
+
+            let preserveSelectBox =
+                e.shiftKey ||
+                pointerRef.current.moved ||
+                pointerRef.current.selectedElementIds.size === 1;
+            if (!preserveSelectBox) {
+                selectedElementIds = new Set<string>();
+            }
+
             pointerRef.current = null;
             setAppState({
                 ...appState,
