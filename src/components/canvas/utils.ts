@@ -89,14 +89,57 @@ export function getBoundingRect(elements: Element[]) {
     return;
 }
 
-export function isPointInsideBox(p: Point, e?: BoundingBox) {
-    if (e) {
+export function isPointInsideBox(point: Point, boundingBox?: BoundingBox) {
+    if (boundingBox) {
+        // if box has negative widths, recalculate box x, y coordinates
+        let box: BoundingBox = { ...boundingBox };
+        if (boundingBox.width < 0) {
+            box = { ...box, x: box.x + box.width, width: Math.abs(box.width) };
+        }
+        if (boundingBox.height < 0) {
+            box = {
+                ...box,
+                y: box.y + box.height,
+                height: Math.abs(box.height),
+            };
+        }
+
         return (
-            p.x >= e.x &&
-            p.x <= e.x + e.width &&
-            p.y >= e.y &&
-            p.y <= e.y + e.height
+            point.x >= box.x &&
+            point.x <= box.x + box.width &&
+            point.y >= box.y &&
+            point.y <= box.y + box.height
         );
+    }
+    return false;
+}
+
+export function isBoxInsideAnotherBox(
+    insideBox: BoundingBox,
+    outsideBox: BoundingBox
+) {
+    if (
+        isPointInsideBox({ x: insideBox.x, y: insideBox.y }, outsideBox) &&
+        isPointInsideBox(
+            { x: insideBox.x + insideBox.width, y: insideBox.y },
+            outsideBox
+        ) &&
+        isPointInsideBox(
+            {
+                x: insideBox.x + insideBox.width,
+                y: insideBox.y + insideBox.height,
+            },
+            outsideBox
+        ) &&
+        isPointInsideBox(
+            {
+                x: insideBox.x,
+                y: insideBox.y + insideBox.height,
+            },
+            outsideBox
+        )
+    ) {
+        return true;
     }
     return false;
 }

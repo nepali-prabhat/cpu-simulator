@@ -6,7 +6,7 @@ import {
     Point,
     PointerState,
 } from "@/types";
-import { wheelHandler } from "./eventHandlers";
+import { handleWheel } from "./eventHandlers";
 import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
 import { getNormalizedZoom, getStateForZoom } from "./zoom";
@@ -16,6 +16,7 @@ import {
     getCanvasPointFromViewport,
     getElementsAt,
     getSelectedElements,
+    isBoxInsideAnotherBox,
     isPointInsideBox,
 } from "./utils";
 import { GRID_SPACE, INITIAL_ZOOM } from "@/constants";
@@ -28,8 +29,8 @@ export function useCanvas({
 }) {
     const [gridSpace] = useState(defaultGridSpace);
     const [canvasProperties, setCanvasProperties] = useState<CanvasProperties>({
-        width: window.innerWidth || 300,
         height: window.innerHeight || 150,
+        width: window.innerWidth || 300,
         scroll: { x: 0, y: 0 },
         zoom: getNormalizedZoom(INITIAL_ZOOM),
     });
@@ -67,6 +68,12 @@ export function useCanvas({
             },
         },
         selectedElementIds: new Set<string>(),
+        // selectRect: {
+        //     x: gridSpace * 3,
+        //     y: gridSpace * 9,
+        //     width: -60,
+        //     height: -60,
+        // },
     });
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -99,21 +106,22 @@ export function useCanvas({
             ...o(v.zoom, v),
         }));
     };
+
     // NOTE: canvas event handlers
     useEffect(() => {
         let canvas = canvasRef.current;
 
-        const _wheelHandler = (e: WheelEvent) =>
-            wheelHandler(e, setScroll, setZoom, lastViewportPosition.current);
+        const _handleWheel = (e: WheelEvent) =>
+            handleWheel(e, setScroll, setZoom, lastViewportPosition.current);
 
         if (canvas) {
-            canvas.addEventListener("wheel", _wheelHandler, {
+            canvas.addEventListener("wheel", _handleWheel, {
                 passive: false,
             });
         }
 
         return () => {
-            canvas?.removeEventListener("wheel", _wheelHandler);
+            canvas?.removeEventListener("wheel", _handleWheel);
         };
     }, []);
 
@@ -186,11 +194,7 @@ export function useCanvas({
         //     canvasProperties
         // );
 
-        const {
-            topLevelElement,
-            // elementIds: intersectedElementIds,
-            // elements: intersectedElements,
-        } = getElementsAt(
+        const { topLevelElement } = getElementsAt(
             { x: canvasXY.x, y: canvasXY.y },
             Object.values(appState.elements)
         );
@@ -221,11 +225,16 @@ export function useCanvas({
                 : []),
         ]);
 
+        // If there is no top level element, render a select box
+        let selectRect: AppState["selectRect"] = undefined;
+        if (!topLevelElement && !isClickedInsideSelectBox) {
+            selectRect = { x: canvasXY.x, y: canvasXY.y, width: 0, height: 0 };
+        }
+
         // initial pointer state
         pointerRef.current = {
             moved: false,
             selectedElementIds,
-            boundingBox: selectBoundingBox,
             timeStamp: e.timeStamp,
             lastPoint: canvasXY,
             initial: {
@@ -237,6 +246,7 @@ export function useCanvas({
         setAppState({
             ...appState,
             selectedElementIds,
+            selectRect,
         });
     };
 
@@ -249,44 +259,68 @@ export function useCanvas({
             canvasProperties,
             viewportXY
         );
+
         if (pointerRef.current) {
             const lastPoint = pointerRef.current.lastPoint;
             const dp = {
                 x: canvasXY.x - lastPoint.x,
                 y: canvasXY.y - lastPoint.y,
             };
-            const boundingBox = pointerRef.current.boundingBox;
-            // translate bounding box
-            let newBoundingBox = boundingBox
-                ? {
-                    ...boundingBox,
-                    x: boundingBox.x - dp.x,
-                    y: boundingBox.y - dp.y,
-                }
-                : undefined;
 
-            const selectedElements = getSelectedElements(appState);
-            const updatedSelectedElements: AppState["elements"] = {};
-            for (let element of selectedElements) {
-                updatedSelectedElements[element.uid] = {
-                    ...element,
-                    x: element.x + dp.x,
-                    y: element.y + dp.y,
+            // If there is select Rect, change  its width and height
+            let selectRect = appState.selectRect;
+            if (selectRect) {
+                selectRect = {
+                    ...selectRect,
+                    width: canvasXY.x - selectRect.x,
+                    height: canvasXY.y - selectRect.y,
                 };
+            }
+
+            // get elements that fall inside the select Rect.
+
+            let updatedSelectedElements: AppState["elements"] = {};
+            const additionalSelectedElements: Element["uid"][] = [];
+            if (!selectRect) {
+                // move the elements
+                const selectedElements = getSelectedElements(appState);
+                for (let element of selectedElements) {
+                    updatedSelectedElements[element.uid] = {
+                        ...element,
+                        x: element.x + dp.x,
+                        y: element.y + dp.y,
+                    };
+                }
+            } else {
+                // add new selected elements
+                for (let element of Object.values(appState.elements)) {
+                    if (isBoxInsideAnotherBox(element, selectRect)) {
+                        console.log("box: ", element, selectRect);
+                        additionalSelectedElements.push(element.uid);
+                    } else {
+                        console.log("no box: ", element, selectRect);
+                    }
+                }
             }
 
             pointerRef.current = {
                 ...pointerRef.current,
                 moved: true,
-                boundingBox: newBoundingBox,
                 lastPoint: canvasXY,
             };
+
             setAppState((s) => ({
                 ...s,
                 elements: { ...s.elements, ...updatedSelectedElements },
+                selectedElementIds: new Set([
+                    ...Array.from(s.selectedElementIds),
+                    ...additionalSelectedElements,
+                ]),
+                selectRect,
             }));
         }
     };
+
     const handlePointerUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
         if (pointerRef.current) {
             let selectedElementIds = appState.selectedElementIds;
@@ -303,6 +337,7 @@ export function useCanvas({
             setAppState({
                 ...appState,
                 selectedElementIds,
+                selectRect: undefined,
             });
         }
     };

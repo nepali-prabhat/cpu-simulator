@@ -22,6 +22,7 @@ export type Element = BoundingBox & {
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
     selectedElementIds: Set<string>;
+    selectRect?: BoundingBox;
 };
 export type PointerState = {
     moved: boolean;

@@ -1,8 +1,15 @@
 import { ZOOM_STEP } from "@/constants";
 import { CanvasProperties, Point } from "@/types";
 import { getNormalizedZoom, getStateForZoom } from "./zoom";
+import {
+    filterElementsByIds,
+    getBoundingRect,
+    getCanvasPointFromViewport,
+    getElementsAt,
+    isPointInsideBox,
+} from "./utils";
 
-export function wheelHandler(
+export function handleWheel(
     e: WheelEvent,
     setScroll: (
         o: (

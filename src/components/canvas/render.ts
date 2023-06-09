@@ -58,7 +58,7 @@ export function renderCanvas({
         canvasProperties,
     });
 
-    renderSelectArea({
+    renderSelectBox({
         appState,
         context,
         canvasProperties,
@@ -123,7 +123,7 @@ function renderElements({
         context.restore();
     }
 }
-function renderSelectArea({
+function renderSelectBox({
     appState,
     context,
     canvasProperties,
@@ -134,7 +134,7 @@ function renderSelectArea({
 }) {
     // TODO: make this a constant
     const { scroll } = canvasProperties;
-    const { elements, selectedElementIds } = appState;
+    const { elements, selectedElementIds, selectRect } = appState;
 
     const existingSelectedElements: Element[] = [];
     appState.selectedElementIds.forEach((uid) => {
@@ -162,6 +162,15 @@ function renderSelectArea({
                 padding: 0,
             });
         }
+    }
+
+    // render select rect
+    if (selectRect) {
+        renderBoundingBox(context, scroll, selectRect, {
+            padding: 0,
+            size: 0,
+            renderHandles: false,
+        });
     }
 }
 
