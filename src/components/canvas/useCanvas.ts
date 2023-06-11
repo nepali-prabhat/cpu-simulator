@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { Element, AppState, Point, PointerState } from "@/types";
 import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
@@ -19,18 +19,18 @@ import {
     setViewportZoom,
     canvasDimensionAtom,
     getNormalizedZoom,
+    getZoomFromStore,
 } from "@/state/scene";
 
 const ids = [nanoid(), nanoid(), nanoid()];
 const gridSpace = GRID_SPACE;
 
 export function useCanvas() {
-    const [dimension, setDimension] = useAtom(canvasDimensionAtom);
-
     const canvasProperties = useAtomValue(sceneAtom);
 
     const setScroll = useSetAtom(scrollAtom);
     const setZoom = useSetAtom(setViewportZoom);
+    const setDimension = useSetAtom(canvasDimensionAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -69,17 +69,66 @@ export function useCanvas() {
             },
         },
         selectedElementIds: new Set<string>(),
-        // selectRect: {
-        //     x: gridSpace * 3,
-        //     y: gridSpace * 9,
-        //     width: -60,
-        //     height: -60,
-        // },
     });
 
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const lastViewportPosition = useRef<Point>({ x: 0, y: 0 });
     const pointerRef = useRef<PointerState | null>(null);
+
+    const handleWheel = useCallback(
+        (e: WheelEvent) => {
+            // need to throttle this
+            e.preventDefault();
+            e.stopPropagation();
+            const { deltaX, deltaY } = e;
+            const rate = 1;
+            let isZoom = e.ctrlKey || e.metaKey;
+            if (isZoom) {
+                const sign = Math.sign(deltaY);
+                const MAX_STEP = ZOOM_STEP * 100;
+                const absDelta = Math.abs(deltaY);
+                let delta = deltaY;
+                if (absDelta > MAX_STEP) {
+                    delta = MAX_STEP * sign;
+                }
+
+                setZoom((v) => {
+                    let newZoom = v - delta / 100;
+
+                    // logarithmically increase zoom steps the more zoomed-in we are (applies to >100% only)
+                    newZoom +=
+                        Math.log10(Math.max(1, v)) *
+                        -sign *
+                        // reduced amplification for small deltas (small movements on a trackpad)
+                        Math.min(1, absDelta / 20);
+                    return {
+                        zoom: newZoom,
+                        viewport: {
+                            x: lastViewportPosition.current.x,
+                            y: lastViewportPosition.current.y,
+                        },
+                    };
+                });
+            }
+
+            if (!isZoom) {
+                const lockX = e.shiftKey && !e.metaKey;
+                const zoom = getZoomFromStore();
+                if (lockX) {
+                    setScroll((v) => ({
+                        ...v,
+                        x: v.x - (deltaX * rate) / zoom,
+                    }));
+                } else {
+                    setScroll((v) => ({
+                        x: v.x - (deltaX * rate) / zoom,
+                        y: v.y - (deltaY * rate) / zoom,
+                    }));
+                }
+            }
+        },
+        [setScroll, setZoom]
+    );
 
     // NOTE: canvas event handlers
     useEffect(() => {
@@ -96,7 +145,7 @@ export function useCanvas() {
         return () => {
             canvas?.removeEventListener("wheel", _handleWheel);
         };
-    }, []);
+    }, [handleWheel]);
 
     // NOTE: window and document event handlers
     useEffect(() => {
@@ -149,57 +198,6 @@ export function useCanvas() {
     useEffect(() => {
         draw();
     }, [draw]);
-
-    const handleWheel = (e: WheelEvent) => {
-        // need to throttle this
-        e.preventDefault();
-        e.stopPropagation();
-        const { deltaX, deltaY } = e;
-        const rate = 1;
-        let isZoom = e.ctrlKey || e.metaKey;
-        if (isZoom) {
-            const sign = Math.sign(deltaY);
-            const MAX_STEP = ZOOM_STEP * 100;
-            const absDelta = Math.abs(deltaY);
-            let delta = deltaY;
-            if (absDelta > MAX_STEP) {
-                delta = MAX_STEP * sign;
-            }
-
-            setZoom((v) => {
-                let newZoom = v - delta / 100;
-
-                // logarithmically increase zoom steps the more zoomed-in we are (applies to >100% only)
-                newZoom +=
-                    Math.log10(Math.max(1, v)) *
-                    -sign *
-                    // reduced amplification for small deltas (small movements on a trackpad)
-                    Math.min(1, absDelta / 20);
-                return {
-                    zoom: newZoom,
-                    viewport: {
-                        x: lastViewportPosition.current.x,
-                        y: lastViewportPosition.current.y,
-                    },
-                };
-            });
-        }
-
-        if (!isZoom) {
-            const lockX = e.shiftKey && !e.metaKey;
-            if (lockX) {
-                setScroll((v) => ({
-                    ...v,
-                    x: v.x - (deltaX * rate) / zoom,
-                }));
-            } else {
-                setScroll((v) => ({
-                    x: v.x - (deltaX * rate) / zoom,
-                    y: v.y - (deltaY * rate) / zoom,
-                }));
-            }
-        }
-    };
 
     const handlePointerDown: React.MouseEventHandler<HTMLCanvasElement> = (
         e
@@ -301,7 +299,6 @@ export function useCanvas() {
             }
 
             // get elements that fall inside the select Rect.
-
             let updatedSelectedElements: AppState["elements"] = {};
             const additionalSelectedElements: Element["uid"][] = [];
             if (!selectRect) {
