@@ -197,6 +197,11 @@
   resolved "https://registry.yarnpkg.com/@rushstack/eslint-patch/-/eslint-patch-1.3.0.tgz#f5635b36fc0dad96ef1e542a302cd914230188c0"
   integrity sha512-IthPJsJR85GhOkp3Hvp8zFOPK5ynKn6STyHa/WZpioK7E1aYDiBzpqQPrngc14DszIUkIrdd3k9Iu0XSzlP/1w==
 
+"@swc-jotai/react-refresh@^0.0.8":
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/@swc-jotai/react-refresh/-/react-refresh-0.0.8.tgz#ff337d1cb50a2964a751fa4e580bc90b367fd5c5"
+  integrity sha512-fHMenTg1jeETEShCh/wlDxRpR6DZAXIuDuFIB9fZ4yf+JfrWzQkPIvPN3E0efSpOham9ucRspS0uI82PxBbCjg==
+
 "@swc/helpers@0.5.1":
   version "0.5.1"
   resolved "https://registry.yarnpkg.com/@swc/helpers/-/helpers-0.5.1.tgz#e9031491aa3f26bfcc974a67f48bd456c8a5357a"
@@ -1591,6 +1596,11 @@ jiti@^1.18.2:
   version "1.18.2"
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-1.18.2.tgz#80c3ef3d486ebf2450d9335122b32d121f2a83cd"
   integrity sha512-QAdOptna2NYiSSpv0O/BwoHBSmz4YhpzJHyi+fnMRTXFjp7B8i/YG5Z8IfusxB1ufjcD2Sre1F3R+nX3fvy7gg==
+
+jotai@^2.1.1:
+  version "2.1.1"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-2.1.1.tgz#7fc4edf16d7e20ff42952fbf2c36e8bd57510c07"
+  integrity sha512-LaaiuSaq+6XkwkrCtCkczyFVZOXe0dfjAFN4DVMsSZSRv/A/4xuLHnlpHMEDqvngjWYBotTIrnQ7OogMkUE6wA==
 
 "js-tokens@^3.0.0 || ^4.0.0":
   version "4.0.0"

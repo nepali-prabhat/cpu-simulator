@@ -1,6 +1,6 @@
 import { AppState, CanvasProperties, Element, Point } from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
-import { SELECT_PADDING, SELECT_SIZE } from "@/constants";
+import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 
 export function renderCanvas({
@@ -14,7 +14,8 @@ export function renderCanvas({
     gridSpace: number;
     appState: AppState;
 }) {
-    const { scroll, zoom, width, height } = canvasProperties;
+    const { scroll, zoom } = canvasProperties;
+    const { width, height } = canvasProperties.dimension;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.save();
 
@@ -26,7 +27,7 @@ export function renderCanvas({
     // apply zoom
     context.scale(zoom, zoom);
 
-    true &&
+    GRID_TYPE === "dots" &&
         dotsGrid(
             context,
             gridSpace,
@@ -39,7 +40,7 @@ export function renderCanvas({
             height / zoom
         );
 
-    false &&
+    GRID_TYPE === "lines" &&
         strokeGrid(
             context,
             gridSpace,

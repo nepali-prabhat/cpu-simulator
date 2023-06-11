@@ -6,9 +6,14 @@ export type BoundingBox = {
 };
 export type Point = { x: number; y: number };
 export type NormalizedZoomValue = number & { _brand: "normalizedZoom" };
-export type CanvasProperties = {
+
+export type CanvasDimension = {
     width: number;
     height: number;
+};
+
+export type CanvasProperties = {
+    dimension: CanvasDimension;
     scroll: Point;
     zoom: NormalizedZoomValue;
 };
@@ -35,3 +40,5 @@ export type PointerState = {
         canvasXY: Point;
     };
 };
+
+export type SetAtom<T> = (fn: (v: T) => Partial<T>) => void;

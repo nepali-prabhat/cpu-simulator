@@ -1,15 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-    Element,
-    AppState,
-    CanvasProperties,
-    Point,
-    PointerState,
-} from "@/types";
-import { handleWheel } from "./eventHandlers";
+import { useAtom, useAtomValue, useSetAtom } from "jotai";
+import { Element, AppState, Point, PointerState } from "@/types";
 import { renderCanvas } from "./render";
 import { nanoid } from "nanoid";
-import { getNormalizedZoom, getStateForZoom } from "./zoom";
 import {
     filterElementsByIds,
     getBoundingRect,
@@ -19,21 +12,29 @@ import {
     isBoxInsideAnotherBox,
     isPointInsideBox,
 } from "./utils";
-import { GRID_SPACE, INITIAL_ZOOM } from "@/constants";
+import { GRID_SPACE, ZOOM_STEP } from "@/constants";
+import {
+    sceneAtom,
+    scrollAtom,
+    setViewportZoom,
+    canvasDimensionAtom,
+    getNormalizedZoom,
+} from "@/state/scene";
 
 const ids = [nanoid(), nanoid(), nanoid()];
-export function useCanvas({
-    defaultGridSpace = GRID_SPACE,
-}: {
-    defaultGridSpace?: number;
-}) {
-    const [gridSpace] = useState(defaultGridSpace);
-    const [canvasProperties, setCanvasProperties] = useState<CanvasProperties>({
-        height: window.innerHeight || 150,
-        width: window.innerWidth || 300,
-        scroll: { x: 0, y: 0 },
-        zoom: getNormalizedZoom(INITIAL_ZOOM),
-    });
+const gridSpace = GRID_SPACE;
+
+export function useCanvas() {
+    const [dimension, setDimension] = useAtom(canvasDimensionAtom);
+
+    const canvasProperties = useAtomValue(sceneAtom);
+
+    const setScroll = useSetAtom(scrollAtom);
+    const setZoom = useSetAtom(setViewportZoom);
+
+    const scroll = canvasProperties.scroll;
+    const zoom = canvasProperties.zoom;
+
     const [appState, setAppState] = useState<AppState>({
         elements: {
             [ids[0]]: {
@@ -80,39 +81,11 @@ export function useCanvas({
     const lastViewportPosition = useRef<Point>({ x: 0, y: 0 });
     const pointerRef = useRef<PointerState | null>(null);
 
-    const setScroll = (
-        o: (
-            v: Point,
-            a: CanvasProperties
-        ) => Partial<CanvasProperties["scroll"]>
-    ) => {
-        setCanvasProperties((v) => ({
-            ...v,
-            scroll: {
-                ...v.scroll,
-                ...o(v.scroll, v),
-            },
-        }));
-    };
-
-    const setZoom = (
-        o: (
-            v: number,
-            a: CanvasProperties
-        ) => Partial<Pick<CanvasProperties, "zoom" | "scroll">>
-    ) => {
-        setCanvasProperties((v) => ({
-            ...v,
-            ...o(v.zoom, v),
-        }));
-    };
-
     // NOTE: canvas event handlers
     useEffect(() => {
         let canvas = canvasRef.current;
 
-        const _handleWheel = (e: WheelEvent) =>
-            handleWheel(e, setScroll, setZoom, lastViewportPosition.current);
+        const _handleWheel = (e: WheelEvent) => handleWheel(e);
 
         if (canvas) {
             canvas.addEventListener("wheel", _handleWheel, {
@@ -128,28 +101,27 @@ export function useCanvas({
     // NOTE: window and document event handlers
     useEffect(() => {
         const _resizeHandler = () => {
-            setCanvasProperties((v) => ({
-                ...v,
+            setDimension(() => ({
                 width: window.innerWidth,
                 height: window.innerHeight,
             }));
         };
+        _resizeHandler();
+        console.log("window and document event handlers");
+
         const _mouseMoveHanlder = (e: MouseEvent) => {
             const { clientX, clientY } = e;
             lastViewportPosition.current = { x: clientX, y: clientY };
         };
         const _keydownHandler = (e: KeyboardEvent) => {
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
-                setZoom((_, c) =>
-                    getStateForZoom(
-                        {
-                            viewportX: c.width / 2,
-                            viewportY: c.height / 2,
-                            nextZoom: getNormalizedZoom(1),
-                        },
-                        c
-                    )
-                );
+                setZoom((_, c) => ({
+                    viewport: {
+                        x: c.width / 2,
+                        y: c.height / 2,
+                    },
+                    zoom: getNormalizedZoom(1),
+                }));
             }
         };
         window.addEventListener("resize", _resizeHandler);
@@ -159,7 +131,7 @@ export function useCanvas({
             window.removeEventListener("resize", _resizeHandler);
             document.removeEventListener("mousemove", _mouseMoveHanlder);
         };
-    }, []);
+    }, [setDimension, setZoom]);
 
     const draw = useCallback(() => {
         const context = canvasRef.current?.getContext("2d");
@@ -171,12 +143,63 @@ export function useCanvas({
                 appState,
             });
         }
-    }, [appState, canvasProperties, gridSpace]);
+    }, [appState, canvasProperties]);
 
     // Sync canvas
     useEffect(() => {
         draw();
     }, [draw]);
+
+    const handleWheel = (e: WheelEvent) => {
+        // need to throttle this
+        e.preventDefault();
+        e.stopPropagation();
+        const { deltaX, deltaY } = e;
+        const rate = 1;
+        let isZoom = e.ctrlKey || e.metaKey;
+        if (isZoom) {
+            const sign = Math.sign(deltaY);
+            const MAX_STEP = ZOOM_STEP * 100;
+            const absDelta = Math.abs(deltaY);
+            let delta = deltaY;
+            if (absDelta > MAX_STEP) {
+                delta = MAX_STEP * sign;
+            }
+
+            setZoom((v) => {
+                let newZoom = v - delta / 100;
+
+                // logarithmically increase zoom steps the more zoomed-in we are (applies to >100% only)
+                newZoom +=
+                    Math.log10(Math.max(1, v)) *
+                    -sign *
+                    // reduced amplification for small deltas (small movements on a trackpad)
+                    Math.min(1, absDelta / 20);
+                return {
+                    zoom: newZoom,
+                    viewport: {
+                        x: lastViewportPosition.current.x,
+                        y: lastViewportPosition.current.y,
+                    },
+                };
+            });
+        }
+
+        if (!isZoom) {
+            const lockX = e.shiftKey && !e.metaKey;
+            if (lockX) {
+                setScroll((v) => ({
+                    ...v,
+                    x: v.x - (deltaX * rate) / zoom,
+                }));
+            } else {
+                setScroll((v) => ({
+                    x: v.x - (deltaX * rate) / zoom,
+                    y: v.y - (deltaY * rate) / zoom,
+                }));
+            }
+        }
+    };
 
     const handlePointerDown: React.MouseEventHandler<HTMLCanvasElement> = (
         e
@@ -184,7 +207,7 @@ export function useCanvas({
         const { clientX, clientY } = e;
         const viewportXY = { x: clientX, y: clientY };
         const canvasXY = getCanvasPointFromViewport(
-            canvasProperties,
+            { zoom, scroll },
             viewportXY
         );
         // console.log(
@@ -256,7 +279,7 @@ export function useCanvas({
         const { clientX, clientY } = e;
         const viewportXY = { x: clientX, y: clientY };
         const canvasXY = getCanvasPointFromViewport(
-            canvasProperties,
+            { zoom, scroll },
             viewportXY
         );
 

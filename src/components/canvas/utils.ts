@@ -2,8 +2,8 @@ import { SELECT_PADDING } from "@/constants";
 import {
     AppState,
     BoundingBox,
-    CanvasProperties,
     Element,
+    NormalizedZoomValue,
     Point,
 } from "@/types";
 
@@ -46,7 +46,7 @@ export function getElementsAt(coordinates: Point, elements: Element[]) {
     };
 }
 export function getCanvasPointFromViewport(
-    canvasProperties: CanvasProperties,
+    canvasProperties: { zoom: NormalizedZoomValue; scroll: Point },
     viewportPoint: Point
 ) {
     const canvasX =
