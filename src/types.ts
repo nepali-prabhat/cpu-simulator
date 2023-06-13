@@ -41,4 +41,11 @@ export type PointerState = {
     };
 };
 
-export type SetAtom<T> = (fn: (v: T) => Partial<T>) => void;
+export type MenuState = {
+    isMenuOpen: boolean;
+    isCircuitOpen: boolean;
+};
+export type Circuit = {
+    title: string;
+    description: string;
+};

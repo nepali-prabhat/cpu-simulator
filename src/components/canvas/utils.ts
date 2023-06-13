@@ -47,14 +47,22 @@ export function getElementsAt(coordinates: Point, elements: Element[]) {
 }
 export function getCanvasPointFromViewport(
     canvasProperties: { zoom: NormalizedZoomValue; scroll: Point },
-    viewportPoint: Point
+    viewportPoint: Point,
+    offset?: Partial<Point>
 ) {
+    const _offset = {
+        x: (offset || {}).x || 0,
+        y: (offset || {}).y || 0,
+    };
     const canvasX =
-        viewportPoint.x / canvasProperties.zoom - canvasProperties.scroll.x;
+        (viewportPoint.x - _offset.x) / canvasProperties.zoom -
+        canvasProperties.scroll.x;
     const canvasY =
-        viewportPoint.y / canvasProperties.zoom - canvasProperties.scroll.y;
+        (viewportPoint.y - _offset.y) / canvasProperties.zoom -
+        canvasProperties.scroll.y;
     return { x: canvasX, y: canvasY };
 }
+
 export function getBoundingRect(elements: Element[]) {
     let bounds: { min: Point; max: Point } | undefined;
     for (let element of elements) {

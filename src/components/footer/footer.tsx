@@ -8,6 +8,7 @@ export function Footer() {
     const zoom = useAtomValue(zoomValueAtom);
 
     return (
+                    <section className="absolute bottom-1 left-1">
         <div className="flex">
             <button
                 onClick={(e) => {
@@ -36,5 +37,6 @@ export function Footer() {
                 | +
             </button>
         </div>
+        </section>
     );
 }

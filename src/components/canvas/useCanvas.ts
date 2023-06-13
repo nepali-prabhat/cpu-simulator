@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import {
-    PrimitiveAtom,
-    getDefaultStore,
-    useAtom,
-    useAtomValue,
-    useSetAtom,
-} from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { Element, AppState, Point, PointerState } from "@/types";
 import { renderCanvas } from "./render";
 import {
@@ -35,7 +29,7 @@ import {
 
 const gridSpace = GRID_SPACE;
 
-export function useCanvas() {
+export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const canvasProperties = useAtomValue(sceneAtom);
     const appState = useAtomValue(appStateAtom);
 
@@ -185,7 +179,8 @@ export function useCanvas() {
         const viewportXY = { x: clientX, y: clientY };
         const canvasXY = getCanvasPointFromViewport(
             { zoom, scroll },
-            viewportXY
+            viewportXY,
+            offset
         );
 
         // console.log(
@@ -256,7 +251,8 @@ export function useCanvas() {
         const viewportXY = { x: clientX, y: clientY };
         const canvasXY = getCanvasPointFromViewport(
             { zoom, scroll },
-            viewportXY
+            viewportXY,
+            offset
         );
 
         if (pointerRef.current) {

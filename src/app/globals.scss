@@ -2,13 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-}
-
-@media (prefers-color-scheme: dark) {
-    :root {
-    }
-}
+// :root {
+// }
+//
+// @media (prefers-color-scheme: dark) {
+//     :root {
+//     }
+// }
 
 *,
 *::before,
@@ -16,5 +16,22 @@
     box-sizing: border-box;
 }
 
-canvas {
+* {
+    scrollbar-width: auto;
+    scrollbar-color: rgb(149, 152, 157) rgb(0, 0, 0);
+}
+
+/* Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+    width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: rgb(149, 152, 157);
+    border-radius: 6px;
+    border: 4px solid #ffffff;
 }

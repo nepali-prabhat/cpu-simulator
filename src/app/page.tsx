@@ -4,6 +4,8 @@ import Canvas from "@/components/canvas/canvas";
 import { Footer } from "@/components/footer/footer";
 import { useEffect, useState } from "react";
 import Providers from "./providers";
+import { Menu } from "@/components/menu/menu";
+import dynamic from "next/dynamic";
 
 const DebugAtoms = () => {
     useAtomsDebugValue();
@@ -28,20 +30,16 @@ function ClientOnly(props: React.PropsWithChildren) {
 
 function Home() {
     return (
-        <ClientOnly>
             <Providers>
                 <main className={`relative w-screen h-screen overflow-hidden`}>
                     <DebugAtoms />
-                    <section className="absolute bottom-1 left-1">
-                        <Canvas />
-                    </section>
-                    <section className="absolute bottom-1 left-1">
-                        <Footer />
-                    </section>
+                    <Canvas />
+                    <Menu />
+                    <Footer />
                 </main>
             </Providers>
-        </ClientOnly>
     );
 }
 
-export default Home;
+// export default Home;
+export default dynamic(() => Promise.resolve(Home), { ssr: false });

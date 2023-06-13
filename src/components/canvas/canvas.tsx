@@ -9,10 +9,13 @@ export function Canvas() {
         canvasRef,
         canvasProperties,
         handleCanvasContextMenu,
-    } = useCanvas();
+    } = useCanvas({
+        offset:{}
+        // { x: 2.5, y: -1 }
+    });
 
     return (
-        <section>
+        <section className="absolute bottom-1 left-1">
             <canvas
                 ref={canvasRef}
                 className={`bg-none`}
