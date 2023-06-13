@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
-import { useAtomValue, useSetAtom } from "jotai";
+import {
+    PrimitiveAtom,
+    getDefaultStore,
+    useAtom,
+    useAtomValue,
+    useSetAtom,
+} from "jotai";
 import { Element, AppState, Point, PointerState } from "@/types";
 import { renderCanvas } from "./render";
 import {
@@ -38,8 +44,8 @@ export function useCanvas() {
     const setDimension = useSetAtom(canvasDimensionAtom);
 
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
-    const setSelectRect = useSetAtom(selectRectAtom);
     const setElements = useSetAtom(elementsAtom);
+    const setSelectRect = useSetAtom(selectRectAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -165,7 +171,7 @@ export function useCanvas() {
                 appState,
             });
         }
-    }, [appState, canvasProperties]);
+    }, [canvasProperties, appState]);
 
     // Sync canvas
     useEffect(() => {
@@ -181,6 +187,7 @@ export function useCanvas() {
             { zoom, scroll },
             viewportXY
         );
+
         // console.log(
         //     "pointer down canvas x, y",
         //     canvasXY.x,
@@ -188,14 +195,17 @@ export function useCanvas() {
         //     canvasProperties
         // );
 
+        const elementsMap = appState.elements;
+        const selectedElementIds = appState.selectedElementIds;
+
         const { topLevelElement } = getElementsAt(
             { x: canvasXY.x, y: canvasXY.y },
-            Object.values(appState.elements)
+            Object.values(elementsMap)
         );
 
         const existingSelectedElements = filterElementsByIds(
-            appState.selectedElementIds,
-            appState.elements
+            selectedElementIds,
+            elementsMap
         );
 
         const selectBoundingBox = getBoundingRect(existingSelectedElements);
@@ -209,14 +219,12 @@ export function useCanvas() {
             preserveSelectBox = e.shiftKey || isClickedInsideSelectBox;
         }
 
-        const selectedElementIds = new Set<string>([
+        const newSelectedElementIds = new Set<string>([
             ...(topLevelElement && !isClickedInsideSelectBox
                 ? [topLevelElement.uid]
                 : []),
             // ...(Array.from(intersectedElementIds)),
-            ...(preserveSelectBox
-                ? Array.from(appState.selectedElementIds)
-                : []),
+            ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
         ]);
 
         // If there is no top level element, render a select box
@@ -228,7 +236,7 @@ export function useCanvas() {
         // initial pointer state
         pointerRef.current = {
             moved: false,
-            selectedElementIds,
+            selectedElementIds: newSelectedElementIds,
             timeStamp: e.timeStamp,
             lastPoint: canvasXY,
             initial: {
@@ -237,7 +245,7 @@ export function useCanvas() {
             },
         };
 
-        setSelectedElementIds(selectedElementIds);
+        setSelectedElementIds(newSelectedElementIds);
         setSelectRect(selectRect);
     };
 
@@ -258,6 +266,9 @@ export function useCanvas() {
                 y: canvasXY.y - lastPoint.y,
             };
 
+            const elementsMap = appState.elements;
+            const selectedElementIds = appState.selectedElementIds;
+
             // If there is select Rect, change  its width and height
             let selectRect = appState.selectRect;
             if (selectRect) {
@@ -273,7 +284,10 @@ export function useCanvas() {
             const additionalSelectedElements: Element["uid"][] = [];
             if (!selectRect) {
                 // move the elements
-                const selectedElements = getSelectedElements(appState);
+                const selectedElements = getSelectedElements({
+                    selectedElementIds,
+                    elements: elementsMap,
+                });
                 for (let element of selectedElements) {
                     updatedSelectedElements[element.uid] = {
                         ...element,
@@ -283,7 +297,7 @@ export function useCanvas() {
                 }
             } else {
                 // add new selected elements
-                for (let element of Object.values(appState.elements)) {
+                for (let element of Object.values(elementsMap)) {
                     if (isBoxInsideAnotherBox(element, selectRect)) {
                         additionalSelectedElements.push(element.uid);
                     }

@@ -1,4 +1,4 @@
-import { AppState, CanvasProperties, Element, Point } from "@/types";
+import { AppState, CanvasProperties, Element } from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
 import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";

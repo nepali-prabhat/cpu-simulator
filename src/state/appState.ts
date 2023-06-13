@@ -1,12 +1,12 @@
 import { GRID_SPACE } from "@/constants";
-import { AppState, BoundingBox, Element } from "@/types";
+import { Element, BoundingBox } from "@/types";
 import { atom } from "jotai";
 import { nanoid } from "nanoid";
 
 const gridSpace = GRID_SPACE;
 const ids = [nanoid(), nanoid(), nanoid()];
 
-export const elementsAtom = atom<AppState["elements"]>({
+export const elementsAtom = atom<{ [key: Element["uid"]]: Element }>({
     [ids[0]]: {
         uid: ids[0],
         x: gridSpace * 6,
@@ -38,13 +38,18 @@ export const elementsAtom = atom<AppState["elements"]>({
         nonce: 2,
     },
 });
-export const selectedElementIdsAtom = atom<Set<string>>(new Set<string>());
+export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
+    new Set<Element["uid"]>()
+);
 export const selectRectAtom = atom<BoundingBox | undefined>(undefined);
 
-export const appStateAtom = atom<AppState>((get) => {
+export const appStateAtom = atom((get) => {
+    const elements = get(elementsAtom);
+    const selectedElementIds = get(selectedElementIdsAtom);
+    const selectRect = get(selectRectAtom);
     return {
-        elements: get(elementsAtom),
-        selectedElementIds: get(selectedElementIdsAtom),
-        selectRect: get(selectRectAtom),
+        elements,
+        selectedElementIds,
+        selectRect,
     };
 });
