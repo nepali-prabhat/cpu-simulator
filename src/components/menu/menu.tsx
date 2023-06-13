@@ -2,7 +2,7 @@ import { circTitleAtom } from "@/state/ui";
 import { useAtom } from "jotai";
 
 import { CircuitMenu } from "./circuitMenu";
-import { TitleInput } from "./titleInput";
+import { CircuitTitleInput } from "./titleInput";
 
 export const Menu = () => {
     const [circuitTitle, setCircuitTitle] = useAtom(circTitleAtom);
@@ -26,7 +26,7 @@ export const Menu = () => {
                 </svg>
             </button>
             <div className="self-center mx-0.5 bg-gray-300 rounded w-[2px] h-[18px]"></div>
-            <TitleInput value={circuitTitle} onChange={(value) => {
+            <CircuitTitleInput value={circuitTitle} onChange={(value) => {
                 setCircuitTitle(value)
             }}/>
         <CircuitMenu />

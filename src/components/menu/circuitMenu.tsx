@@ -1,31 +1,145 @@
 import { useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { nanoid } from "nanoid";
-import { TitleInput } from "./titleInput";
+import { CircuitTitleInput } from "./titleInput";
+
+// React sortable
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent,
+} from "@dnd-kit/core";
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    useSortable,
+    verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import {
+    restrictToFirstScrollableAncestor,
+    restrictToVerticalAxis,
+    restrictToWindowEdges,
+} from "@dnd-kit/modifiers";
+
+import { CSS } from "@dnd-kit/utilities";
+import clsx from "clsx";
+
+const CircuitsSortableItem = (props: { uid: string; value: string }) => {
+    const {
+        listeners,
+        setActivatorNodeRef,
+        setNodeRef,
+        transform,
+        transition,
+        isDragging,
+    } = useSortable({ id: props.uid });
+
+    const style = {
+        transform: CSS.Transform.toString(transform),
+        transition,
+    };
+
+    return (
+        <li
+            key={"CIRCUIT_" + props.uid}
+            className={clsx(
+                "group px-1.5 py-1 flex items-center text-sm rounded data-[dragging=true]:z-10 data-[dragging=true]:bg-white data-[dragging=true]:shadow",
+                isDragging && "cursor-grabbing"
+            )}
+            ref={setNodeRef}
+            style={style}
+            data-dragging={isDragging ? "true" : "false"}
+        >
+            <button
+                className={clsx(
+                    "p-1 rounded  hover:bg-gray-100",
+                    "cursor-grab",
+                    "group-data-[dragging=true]:bg-gray-100 group-data-[dragging=true]:cursor-grabbing"
+                )}
+                ref={setActivatorNodeRef}
+                {...listeners}
+            >
+                <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="1em"
+                    height="1em"
+                    fill="none"
+                >
+                    <path
+                        fill="currentColor"
+                        fillRule="evenodd"
+                        d="M5.5 4.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Zm4 0a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25ZM10.625 7.5a1.125 1.125 0 1 1-2.25 0 1.125 1.125 0 0 1 2.25 0ZM5.5 8.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Zm5.125 2.875a1.125 1.125 0 1 1-2.25 0 1.125 1.125 0 0 1 2.25 0ZM5.5 12.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
+                        clipRule="evenodd"
+                    />
+                </svg>
+            </button>
+            <span onClick={(e) => e.stopPropagation()}>
+                <CircuitTitleInput
+                    value={props.value}
+                    onChange={console.log}
+                    isDragging={isDragging}
+                />
+            </span>
+            <span
+                className={clsx(
+                    "flex-grow width-auto hover:cursor-grab",
+                    "cursor-grab",
+                    "group-data-[dragging=true]:cursor-grabbing"
+                )}
+                {...listeners}
+            >
+                &nbsp;
+            </span>
+        </li>
+    );
+};
 
 export const CircuitMenu = () => {
     const [circuits, setCircuits] = useState([
         { value: "main", uid: nanoid() },
         { value: "ALU", uid: nanoid() },
         { value: "counter", uid: nanoid() },
-        { value: nanoid(128), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
-        { value: nanoid(), uid: nanoid() },
+        { value: nanoid(9), uid: nanoid() },
     ]);
 
+    const sensors = useSensors(
+        useSensor(PointerSensor),
+        useSensor(KeyboardSensor, {
+            coordinateGetter: sortableKeyboardCoordinates,
+        })
+    );
+
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+
+        if (over && active.id !== over.id) {
+            setCircuits((items) => {
+                let oldIndex: number | undefined;
+                let newIndex: number | undefined;
+                circuits.forEach((circuit, index) => {
+                    if (circuit.uid === active.id) {
+                        oldIndex = index;
+                    }
+                    if (circuit.uid === over.id) {
+                        newIndex = index;
+                    }
+                });
+
+                if (oldIndex !== undefined && newIndex !== undefined) {
+                    return arrayMove(items, oldIndex, newIndex);
+                }
+                return items;
+            });
+        }
+    }
+
     return (
-        <Popover.Root defaultOpen={true}>
+        <Popover.Root>
             <Popover.Trigger asChild>
                 <button
                     aria-label="Open circuits list"
@@ -50,13 +164,13 @@ export const CircuitMenu = () => {
             </Popover.Trigger>
             <Popover.Portal>
                 <Popover.Content
-                    className="p-4 mt-1 bg-white rounded-md shadow-md"
+                    className="p-4 mt-1 bg-white rounded-md shadow-md min-w-[200px]"
                     sideOffset={5}
                 >
-                    <div className="flex flex-col min-w-[200px]">
+                    <div className="flex flex-col">
                         <div className="px-2">
-                            <h1 className="flex gap-2 items-center text-base font-medium">
-                                <span>
+                            <h1 className="flex gap-3 items-center font-medium">
+                                <span className="ml-0.5">
                                     <svg
                                         xmlns="http://www.w3.org/2000/svg"
                                         viewBox="0 0 512 512"
@@ -70,43 +184,31 @@ export const CircuitMenu = () => {
                             </h1>
                         </div>
                         <hr className="my-2" />
-                        <ul className="flex flex-col gap-1 px-1 max-h-48 overflow-auto">
-                            {circuits.map((v) => (
-                                <li
-                                    key={"CIRCUIT_" + v.uid}
-                                    draggable={true}
-                                    data-id={v.uid}
-                                    className="flex items-center text-sm rounded"
-                                >
-                                    <button
-                                        onDrag={(e) => {
-                                            console.log("drag event: ", e);
-                                        }}
-                                        className="p-1 rounded hover:bg-gray-100 cursor-grab"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="1em"
-                                            height="1em"
-                                            fill="none"
-                                        >
-                                            <path
-                                                fill="currentColor"
-                                                fillRule="evenodd"
-                                                d="M5.5 4.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Zm4 0a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25ZM10.625 7.5a1.125 1.125 0 1 1-2.25 0 1.125 1.125 0 0 1 2.25 0ZM5.5 8.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Zm5.125 2.875a1.125 1.125 0 1 1-2.25 0 1.125 1.125 0 0 1 2.25 0ZM5.5 12.625a1.125 1.125 0 1 0 0-2.25 1.125 1.125 0 0 0 0 2.25Z"
-                                                clipRule="evenodd"
-                                            />
-                                        </svg>
-                                    </button>
-                                    <span>
-                                        <TitleInput
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                            modifiers={[
+                                restrictToVerticalAxis,
+                                restrictToWindowEdges,
+                                restrictToFirstScrollableAncestor,
+                            ]}
+                        >
+                            <SortableContext
+                                items={circuits.map((c) => c.uid)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                <ul className="flex overflow-auto overflow-x-hidden flex-col max-h-48">
+                                    {circuits.map((v) => (
+                                        <CircuitsSortableItem
+                                            key={v.uid}
+                                            uid={v.uid}
                                             value={v.value}
-                                            onChange={console.log}
                                         />
-                                    </span>
-                                </li>
-                            ))}
-                        </ul>
+                                    ))}
+                                </ul>
+                            </SortableContext>
+                        </DndContext>
                     </div>
                     <Popover.Close
                         aria-label="Close circuits list"

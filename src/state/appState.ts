@@ -1,5 +1,5 @@
 import { GRID_SPACE } from "@/constants";
-import { Element, BoundingBox } from "@/types";
+import { Element, BoundingBox, Circuit } from "@/types";
 import { atom } from "jotai";
 import { nanoid } from "nanoid";
 
@@ -53,3 +53,5 @@ export const appStateAtom = atom((get) => {
         selectRect,
     };
 });
+
+export const circuitsAtom = atom<Circuit[]>([]);

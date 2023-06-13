@@ -1,13 +1,16 @@
+import clsx from "clsx";
 import { useLayoutEffect, useRef } from "react";
 
 const inputpl = 2.5;
 const placeholder = "circuit name";
-export const TitleInput = ({
+export const CircuitTitleInput = ({
     value,
     onChange,
+    isDragging,
 }: {
     value: string;
     onChange: (v: string) => void;
+    isDragging?: boolean;
 }) => {
     const titleRef = useRef<HTMLInputElement>(null);
     const spanRef = useRef<HTMLInputElement>(null);
@@ -38,12 +41,17 @@ export const TitleInput = ({
         <>
             <input
                 ref={titleRef}
-                className={`rounded px-2.5 max-w-[200px] truncate bg-inherit text-sm focus:bg-neutral-100 hover:bg-neutral-100`}
+                className={clsx(
+                    `rounded px-2.5 max-w-[200px] truncate bg-inherit text-sm focus:bg-neutral-100`,
+                    !isDragging && "hover:bg-neutral-100",
+                    isDragging && "cursor-grabbing"
+                )}
                 placeholder={placeholder}
                 value={value}
                 onChange={handleTitleChange}
                 aria-label={"Name of the circuit"}
                 title={value}
+                disabled={isDragging}
             />
             <span
                 className={`absolute bg-gray-300 text-sm left-0 top-[-1000px]`}

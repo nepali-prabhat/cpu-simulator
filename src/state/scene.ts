@@ -1,5 +1,10 @@
 import { INITIAL_ZOOM, MAX_ZOOM, MIN_ZOOM } from "@/constants";
-import { CanvasDimension, NormalizedZoomValue, Point } from "@/types";
+import {
+    CanvasDimension,
+    NormalizedZoomValue,
+    Point,
+    SetViewportZoom,
+} from "@/types";
 import { atom, getDefaultStore } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
@@ -25,13 +30,6 @@ export const sceneAtom = atom((get) => {
         scroll: get(scrollAtom),
     };
 });
-
-export type SetViewportZoom =
-    | ((
-        zoom: number,
-        dimension: CanvasDimension
-    ) => number | { zoom: number; viewport: Point })
-    | number;
 
 export const setViewportZoom = atom(
     null,

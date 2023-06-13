@@ -49,3 +49,17 @@ export type Circuit = {
     title: string;
     description: string;
 };
+
+export type SetViewportZoom =
+    | ((
+        zoom: number,
+        dimension: CanvasDimension
+    ) => number | { zoom: number; viewport: Point })
+    | number;
+
+export type Circuit = {
+    uid: string;
+    title: string;
+    description: string;
+    // TODO: inputs and outputs
+}
