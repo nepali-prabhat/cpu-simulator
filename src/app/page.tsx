@@ -10,12 +10,11 @@ import dynamic from "next/dynamic";
 const DebugAtoms = () => {
     useAtomsDebugValue();
 
-    const disable = true;
+    const disable = false;
     const [show, setShow] = useState(false);
     useEffect(() => {
         setShow(true);
     }, []);
-
     return show && !disable ? <JotaiDevTools /> : null;
 };
 

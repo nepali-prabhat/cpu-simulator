@@ -45,10 +45,6 @@ export type MenuState = {
     isMenuOpen: boolean;
     isCircuitOpen: boolean;
 };
-export type Circuit = {
-    title: string;
-    description: string;
-};
 
 export type SetViewportZoom =
     | ((
@@ -60,6 +56,6 @@ export type SetViewportZoom =
 export type Circuit = {
     uid: string;
     title: string;
-    description: string;
+    description?: string;
     // TODO: inputs and outputs
-}
+};

@@ -35,3 +35,21 @@
     border-radius: 6px;
     border: 4px solid #ffffff;
 }
+
+.circuit-drag-handle[data-active="true"] .handle {
+    display: none;
+}
+
+.circuit-drag-handle[data-active="false"] .eye {
+    display: none;
+}
+
+.circuit-drag-item[data-dragging="true"] button .eye,
+.circuit-drag-handle[data-active="true"]:hover {
+    .handle {
+        display: block;
+    }
+    .eye {
+        display: none;
+    }
+}
