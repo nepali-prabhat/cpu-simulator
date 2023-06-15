@@ -1,8 +1,24 @@
-import { mergeRefs } from "@/utils";
-import clsx from "clsx";
 import { forwardRef, useLayoutEffect, useRef } from "react";
+import clsx from "clsx";
+import { useAtom } from "jotai";
+import { editableCircuitAtom } from "@/state/appState";
+import { mergeRefs } from "@/utils";
 
-const inputpl = 2.5;
+export const MenuInput = () => {
+    const [selectedCircuit, setSelectedCircuit] = useAtom(editableCircuitAtom);
+    return (
+        <CircuitTitleInput
+            value={selectedCircuit?.title || ""}
+            placeholder="main"
+            onChange={(value) => {
+                setSelectedCircuit({ title: value });
+            }}
+            maxWidth={250}
+        />
+    );
+};
+
+const INPUT_PX = 2.5;
 type PropType = {
     value: string;
     onChange: (v: string) => void;
@@ -12,7 +28,8 @@ type PropType = {
     maxWidth?: number | string;
     disableAutoResize?: boolean;
 };
-export const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
+
+const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
     (
         {
             value,
@@ -20,7 +37,7 @@ export const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
             placeholder = "Untitled",
             onSubmit,
             isDragging,
-            maxWidth = 200,
+            maxWidth = 150,
             disableAutoResize,
         }: PropType,
         ref
@@ -32,7 +49,7 @@ export const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
             if (!disableAutoResize) {
                 const spanWidth =
                     spanRef.current?.getBoundingClientRect().width || 0;
-                const width = spanWidth + inputpl * 4 * 2;
+                const width = spanWidth + INPUT_PX * 4 * 2;
                 const resolvedWidth = width;
                 titleRef.current?.setAttribute(
                     "style",

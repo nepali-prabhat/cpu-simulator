@@ -1,25 +1,9 @@
-import { useAtom } from "jotai";
-
-import { CircuitMenu } from "./circuitMenu";
-import { CircuitTitleInput } from "./titleInput";
-import { editableCircuitAtom } from "@/state/appState";
-
-const MenuInput = () => {
-    const [selectedCircuit, setSelectedCircuit] = useAtom(editableCircuitAtom);
-    return (
-        <CircuitTitleInput
-            value={selectedCircuit?.title || ""}
-            onChange={(value) => {
-                setSelectedCircuit({ title: value });
-            }}
-            maxWidth={250}
-        />
-    );
-};
+import { CircuitMenu } from "./circuitMenu/circuitMenu";
+import { MenuInput } from "./menuInput";
 
 export const Menu = () => {
     return (
-        <section className="flex absolute justify-center items-stretch py-2 px-2 m-1 bg-white rounded-br-lg top left border border-gray-300">
+        <section className="flex absolute justify-center items-stretch py-2 px-2 m-1 bg-white rounded-br-lg border border-gray-300 top left">
             <button className="p-2.5 rounded-lg hover:bg-gray-200 focus:bg-gray-200 outline-2">
                 <svg
                     width="15"
@@ -36,9 +20,7 @@ export const Menu = () => {
                     ></path>
                 </svg>
             </button>
-            <div className="self-center mx-0.5 bg-gray-300 rounded w-[2px] h-[18px]">
-                {" "}
-            </div>
+            <div className="self-center mx-0.5 bg-gray-300 rounded w-[2px] h-[18px]"></div>
             <MenuInput />
             <CircuitMenu />
         </section>

@@ -44,6 +44,7 @@
     display: none;
 }
 
+// .circuit-drag-handle[data-active="true"]:focus
 .circuit-drag-item[data-dragging="true"] button .eye,
 .circuit-drag-handle[data-active="true"]:hover {
     .handle {
