@@ -35,30 +35,27 @@ export const AddCircuit = () => {
             >
                 <button
                     onClick={handleAdd}
-                    className="p-1 font-semibold rounded hover:bg-gray-100 focus:bg-gray-100"
+                    className={clsx(
+                        "p-2 font-semibold rounded",
+                        "hover:bg-gray-100 focus:bg-gray-100"
+                    )}
                     title="Add circuit"
                 >
                     <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 15 15"
-                        fill="none"
                         xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                        height="1em"
                     >
-                        <path
-                            d="M8 2.75C8 2.47386 7.77614 2.25 7.5 2.25C7.22386 2.25 7 2.47386 7 2.75V7H2.75C2.47386 7 2.25 7.22386 2.25 7.5C2.25 7.77614 2.47386 8 2.75 8H7V12.25C7 12.5261 7.22386 12.75 7.5 12.75C7.77614 12.75 8 12.5261 8 12.25V8H12.25C12.5261 8 12.75 7.77614 12.75 7.5C12.75 7.22386 12.5261 7 12.25 7H8V2.75Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                        ></path>
+                        <path d="M432 256c0 13.25-10.75 24-24 24H248v160c0 13.25-10.75 24-24 24s-24-10.75-24-24V280H40c-13.25 0-24-10.75-24-24s10.75-24 24-24h160V72c0-13.25 10.75-24 24-24s24 10.75 24 24v160h160c13.25 0 24 10.75 24 24Z" />
                     </svg>
                 </button>
                 <input
                     ref={newCircuitTitleRef}
                     className={clsx(
-                        `grow rounded px-2.5 py-1 truncate bg-inherit text-sm focus:bg-neutral-100`
+                        `grow rounded px-2.5 py-1 truncate bg-inherit focus:bg-neutral-100`
                     )}
-                    placeholder={"Circuit Name"}
+                    placeholder={"Circuit name"}
                     value={newCircuitTitle}
                     style={{ maxWidth: 150 }}
                     onChange={(e) => setNewCircuitTitle(e.target.value)}
@@ -72,24 +69,19 @@ export const AddCircuit = () => {
                 />
                 <button
                     className={clsx(
-                        "p-1 rounded",
-                        "opacity-0 group-focus-within:opacity-100"
+                        "p-2 rounded",
+                        "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
+                        "hover:bg-gray-100 focus:bg-gray-100"
                     )}
                     onClick={handleAdd}
                 >
                     <svg
-                        width="15"
-                        height="15"
-                        viewBox="0 0 15 15"
-                        fill="none"
                         xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 512 512"
+                        width="1em"
+                        height="1em"
                     >
-                        <path
-                            d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                        ></path>
+                        <path d="m480.969 128.969-272 272A23.9 23.9 0 0 1 192 408a23.9 23.9 0 0 1-16.969-7.031l-144-144c-9.375-9.375-9.375-24.563 0-33.938s24.563-9.375 33.938 0L192 350.062 447.031 95.031c9.375-9.375 24.563-9.375 33.938 0s9.375 24.563 0 33.938Z" />
                     </svg>
                 </button>
             </li>

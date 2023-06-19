@@ -1,7 +1,11 @@
 import "./globals.scss";
-import { Inter } from "next/font/google";
+import { Recursive } from "next/font/google";
 
-const inter = Inter({ subsets: ["latin"] });
+const recursive = Recursive({
+    subsets: ["latin"],
+    display: "swap",
+    variable: "--font-recursive",
+});
 
 export const metadata = {
     title: "CPU simulator",
@@ -14,8 +18,8 @@ export default function RootLayout({
     children: React.ReactNode;
 }) {
     return (
-        <html lang="en">
-            <body className={inter.className}>{children}</body>
+        <html lang="en" className={`${recursive.variable}`} style={{fontSize: "14px"}}>
+            <body>{children}</body>
         </html>
     );
 }

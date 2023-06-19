@@ -38,7 +38,7 @@ const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
             onSubmit,
             isDragging,
             maxWidth = 150,
-            disableAutoResize,
+            disableAutoResize = false,
         }: PropType,
         ref
     ) => {
@@ -82,7 +82,7 @@ const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
                 <input
                     ref={mergeRefs([titleRef, ref])}
                     className={clsx(
-                        `rounded px-2.5 truncate bg-inherit text-sm focus:bg-neutral-100`,
+                        `rounded px-2.5 truncate bg-inherit text-md focus:bg-neutral-100`,
                         !isDragging && "hover:bg-neutral-100",
                         isDragging && "cursor-grabbing"
                     )}
@@ -97,7 +97,7 @@ const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
                 />
                 {!disableAutoResize && (
                     <span
-                        className={`absolute bg-gray-300 text-sm left-0 top-[-1000px]`}
+                        className={`absolute bg-gray-300 text-md left-0 top-[-1000px]`}
                         ref={spanRef}
                     >
                         {spanValue}

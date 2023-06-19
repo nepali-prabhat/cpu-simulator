@@ -27,29 +27,23 @@ export const CircuitMenu = () => {
             <Popover.Trigger asChild>
                 <button
                     aria-label="Open circuits list"
-                    className="group p-2.5 ml-0.5 rounded-lg hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100 outline-2"
+                    className="group p-2.5 rounded-lg hover:bg-gray-100 focus:bg-gray-100 data-[state=open]:bg-gray-100 outline-2"
                 >
                     <svg
-                        className="group-hover:translate-y-0.5 group-data-[state=open]:translate-y-0.5 transition duration-200 ease-in-out"
-                        width="15"
-                        height="15"
-                        viewBox="0 0 15 15"
-                        fill="none"
+                        className="group-hover:translate-y-0.5 group-data-[state=open]:translate-y-0.5 transition-transform duration-100 ease-in-out"
                         xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 448 512"
+                        width="1em"
+                        height="1em"
                     >
-                        <path
-                            d="M3.13523 6.15803C3.3241 5.95657 3.64052 5.94637 3.84197 6.13523L7.5 9.56464L11.158 6.13523C11.3595 5.94637 11.6759 5.95657 11.8648 6.15803C12.0536 6.35949 12.0434 6.67591 11.842 6.86477L7.84197 10.6148C7.64964 10.7951 7.35036 10.7951 7.15803 10.6148L3.15803 6.86477C2.95657 6.67591 2.94637 6.35949 3.13523 6.15803Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                        ></path>
+                        <path d="M435.658 228.913 251.656 404.907C243.922 412.313 233.953 416 224 416s-19.922-3.687-27.656-11.093L12.342 228.913c-15.953-15.28-16.516-40.592-1.25-56.56 15.281-15.999 40.594-16.499 56.563-1.25L224 320.66l156.345-149.557c15.969-15.281 41.282-14.718 56.563 1.25 15.266 15.968 14.703 41.28-1.25 56.56Z" />
                     </svg>
                 </button>
             </Popover.Trigger>
             <Popover.Portal>
                 <Popover.Content
                     className={clsx(
-                        "px-5 py-5 ml-2 mt-3 bg-white rounded-lg border border-gray-300"
+                        "shadow-md px-5 py-5 ml-2 mt-3 bg-white rounded-lg border border-gray-300"
                     )}
                 >
                     <CircuitMenuPopup />

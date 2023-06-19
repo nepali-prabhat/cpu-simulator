@@ -55,10 +55,14 @@ export const appStateAtom = atom((get) => {
     };
 });
 
-export const circuitsAtom = atom<PrimitiveAtom<Circuit>[]>([]);
-export const selectedCircuitIdAtom = atom<Circuit["uid"] | undefined>(
-    undefined
-);
+const tempId = nanoid();
+export const circuitsAtom = atom<PrimitiveAtom<Circuit>[]>([
+    atom({
+        uid: tempId,
+        title: "main",
+    }),
+]);
+export const selectedCircuitIdAtom = atom<Circuit["uid"] | undefined>(tempId);
 circuitsAtom.debugLabel = "circuitsAtom";
 selectedCircuitIdAtom.debugLabel = "selectedCircuitUidAtom";
 

@@ -61,7 +61,7 @@ export const CircuitsSortableItem = ({
             <button
                 className={clsx(
                     "circuit-drag-handle",
-                    "group/btn p-1 rounded focus:bg-gray-100 hover:bg-gray-100",
+                    "group/btn p-2 rounded focus:bg-gray-100 hover:bg-gray-100",
                     "cursor-grab",
                     "group-data-[dragging=true]:bg-gray-100 group-data-[dragging=true]:cursor-grabbing"
                 )}
@@ -78,6 +78,7 @@ export const CircuitsSortableItem = ({
                     xmlns="http://www.w3.org/2000/svg"
                     width="1em"
                     height="1em"
+                    viewBox="0 0 15 15"
                     fill="none"
                 >
                     <path
@@ -90,18 +91,20 @@ export const CircuitsSortableItem = ({
                 {!isDragging && (
                     <svg
                         className={clsx("eye")}
-                        width="16"
-                        height="16"
+                        width="1em"
+                        height="1em"
                         viewBox="0 0 15 15"
                         fill="none"
                         xmlns="http://www.w3.org/2000/svg"
                     >
-                        <path
-                            d="M7.5 9.125C8.39746 9.125 9.125 8.39746 9.125 7.5C9.125 6.60254 8.39746 5.875 7.5 5.875C6.60254 5.875 5.875 6.60254 5.875 7.5C5.875 8.39746 6.60254 9.125 7.5 9.125ZM7.5 10.125C8.94975 10.125 10.125 8.94975 10.125 7.5C10.125 6.05025 8.94975 4.875 7.5 4.875C6.05025 4.875 4.875 6.05025 4.875 7.5C4.875 8.94975 6.05025 10.125 7.5 10.125Z"
-                            fill="currentColor"
-                            fillRule="evenodd"
-                            clipRule="evenodd"
-                        ></path>
+                        <circle
+                            cx={7.5}
+                            cy={7.5}
+                            r={3}
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.25}
+                        />
                     </svg>
                 )}
             </button>
@@ -111,7 +114,7 @@ export const CircuitsSortableItem = ({
                         <input
                             ref={titleField}
                             className={clsx(
-                                `rounded px-2.5 py-1 truncate bg-inherit text-sm focus:bg-neutral-100`,
+                                `rounded px-2.5 py-1 truncate bg-inherit text-md focus:bg-neutral-100`,
                                 !isDragging && "hover:bg-neutral-100",
                                 isDragging && "cursor-grabbing",
                                 editEnabled && "bg-neutral-100"
@@ -131,6 +134,12 @@ export const CircuitsSortableItem = ({
                             aria-label={"Name of the circuit"}
                             title={circuit.title}
                             disabled={isDragging}
+                            onKeyDown={(e) => {
+                                if (e.key === "Escape") {
+                                    setEditEnabled(false);
+                                    e.stopPropagation();
+                                }
+                            }}
                             onKeyUp={(e) => {
                                 if (e.key === "Enter") {
                                     setEditEnabled(false);
@@ -139,7 +148,7 @@ export const CircuitsSortableItem = ({
                         />
                         <button
                             className={clsx(
-                                "p-1 rounded focus:bg-gray-100 group-hover:opacity-100",
+                                "p-2 rounded focus:bg-gray-100 group-hover:opacity-100",
                                 "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100 group-focus-within:opacity-100",
                                 "group-data-[dragging=true]:cursor-grabbing"
                             )}
@@ -148,18 +157,12 @@ export const CircuitsSortableItem = ({
                             }}
                         >
                             <svg
-                                width="15"
-                                height="15"
-                                viewBox="0 0 15 15"
-                                fill="none"
                                 xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 512 512"
+                                width="1em"
+                                height="1em"
                             >
-                                <path
-                                    d="M11.4669 3.72684C11.7558 3.91574 11.8369 4.30308 11.648 4.59198L7.39799 11.092C7.29783 11.2452 7.13556 11.3467 6.95402 11.3699C6.77247 11.3931 6.58989 11.3355 6.45446 11.2124L3.70446 8.71241C3.44905 8.48022 3.43023 8.08494 3.66242 7.82953C3.89461 7.57412 4.28989 7.55529 4.5453 7.78749L6.75292 9.79441L10.6018 3.90792C10.7907 3.61902 11.178 3.53795 11.4669 3.72684Z"
-                                    fill="currentColor"
-                                    fillRule="evenodd"
-                                    clipRule="evenodd"
-                                ></path>
+                                <path d="m480.969 128.969-272 272A23.9 23.9 0 0 1 192 408a23.9 23.9 0 0 1-16.969-7.031l-144-144c-9.375-9.375-9.375-24.563 0-33.938s24.563-9.375 33.938 0L192 350.062 447.031 95.031c9.375-9.375 24.563-9.375 33.938 0s9.375 24.563 0 33.938Z" />
                             </svg>
                         </button>
                     </>
@@ -167,11 +170,13 @@ export const CircuitsSortableItem = ({
                     <>
                         <button
                             className={clsx(
-                                `text-start rounded px-2.5 py-1 truncate bg-inherit text-sm`
+                                `text-start rounded px-2.5 py-1 truncate bg-inherit text-md`
                             )}
                             onClick={() => {
                                 handleSelect();
-                                // setIsMenuOpen(false);
+                            }}
+                            onDoubleClick={() => {
+                                setEditEnabled(true);
                             }}
                             style={{ width: 150 }}
                         >
@@ -179,7 +184,7 @@ export const CircuitsSortableItem = ({
                         </button>
                         <button
                             className={clsx(
-                                "p-1 rounded focus:bg-gray-100 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                                "p-2 rounded focus:bg-gray-100 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
                                 "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100",
                                 "group-data-[dragging=true]:cursor-grabbing"
                             )}
@@ -188,8 +193,8 @@ export const CircuitsSortableItem = ({
                             }}
                         >
                             <svg
-                                width="15"
-                                height="15"
+                                width="1em"
+                                height="1em"
                                 viewBox="0 0 15 15"
                                 fill="none"
                                 xmlns="http://www.w3.org/2000/svg"

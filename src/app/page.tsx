@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import Providers from "./providers";
 import { Menu } from "@/components/menu/menu";
 import dynamic from "next/dynamic";
+import { Palette } from "@/components/palette/palette";
 
 const DebugAtoms = () => {
     useAtomsDebugValue();
@@ -29,14 +30,15 @@ function ClientOnly(props: React.PropsWithChildren) {
 
 function Home() {
     return (
-            <Providers>
-                <main className={`relative w-screen h-screen overflow-hidden`}>
-                    <DebugAtoms />
-                    <Canvas />
-                    <Menu />
-                    <Footer />
-                </main>
-            </Providers>
+        <Providers>
+            <main className={`relative w-screen h-screen overflow-hidden`}>
+                <DebugAtoms />
+                <Canvas />
+                <Menu />
+                <Palette />
+                <Footer />
+            </main>
+        </Providers>
     );
 }
 
