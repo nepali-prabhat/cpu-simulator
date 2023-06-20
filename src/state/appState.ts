@@ -76,17 +76,11 @@ export const editableCircuitAtom = atom(
         const selectedCircuitAtom = circuits.find(
             (c) => get(c).uid === selectedCircuitId
         );
-        console.log(
-            "selectedCircuitAtom",
-            selectedCircuitAtom,
-            selectedCircuitId
-        );
         return selectedCircuitAtom ? get(selectedCircuitAtom) : undefined;
     },
     (get, set, _value: Partial<Circuit>) => {
         const selectedCircuitId = get(selectedCircuitIdAtom);
         const circuits = get(circuitsAtom);
-        console.log("set: ", selectedCircuitId, _value);
         if (selectedCircuitId) {
             const selectedCircuitAtom = circuits.find(
                 (c) => get(c).uid === selectedCircuitId

@@ -10,38 +10,34 @@ const width = paletteWidth;
 
 type TabPropType = {
     type: PaletteTab;
+    isActive: boolean;
     className?: React.HTMLAttributes<HTMLDivElement>["className"];
     style?: React.HTMLAttributes<HTMLDivElement>["style"];
-    isActive?: boolean;
 };
 const PaletteTabItem = forwardRef<HTMLDivElement, TabPropType>(
     (props: TabPropType, ref) => {
         const className = twMerge(
             "absolute top-0 z-10",
             "transition-all duration-100 ease-out",
-            // props.isActive ? "visible" : "invisible ",
             props.className
         );
+        const style = props.style;
         switch (props.type) {
             case "actions":
                 return (
-                    <div
-                        ref={ref}
-                        className={`${className}`}
-                        style={props.style}
-                    >
+                    <div ref={ref} className={`${className}`} style={style}>
                         <Actions />
                     </div>
                 );
             case "component":
                 return (
-                    <div ref={ref} className={className} style={props.style}>
+                    <div ref={ref} className={className} style={style}>
                         <PaletteComponents />
                     </div>
                 );
             case "circuit":
                 return (
-                    <div ref={ref} className={className} style={props.style}>
+                    <div ref={ref} className={className} style={style}>
                         <Circuits />
                     </div>
                 );
@@ -59,7 +55,6 @@ export const PaletteTabContent = (props: {
 
     useLayoutEffect(() => {
         const heights = refs.current?.map((v) => v?.clientHeight);
-        console.log("heights: ", heights);
         setHeights(heights);
     }, []);
     const activeIndex = tabs.indexOf(props.activeTab);
@@ -80,7 +75,8 @@ export const PaletteTabContent = (props: {
         <div
             className={twMerge(
                 "relative transition-all duration-100 ease-in-out",
-                true && "overflow-x-hidden"
+                true && "overflow-x-hidden",
+                props.activeTab !== "component" && "overflow-y-hidden"
             )}
             style={{
                 width: width,

@@ -19,7 +19,6 @@ export const PaletteSearch = memo(
                 window.removeEventListener("keydown", _keydownHandler);
             };
         }, []);
-        console.log("rendered search");
         return (
             <input
                 ref={ref}

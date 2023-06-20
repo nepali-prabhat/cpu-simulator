@@ -2,42 +2,74 @@ import { ActionsMenuIcon } from "@/resources/icons/ui/actionsMenuIcon";
 import { CircuitIcon } from "@/resources/icons/ui/circuit";
 import { ComponentIcon } from "@/resources/icons/ui/componentIcon";
 import { activePaletteTabAtom, partialActivePaletteTabAtom } from "@/state/ui";
+import { tabs } from "@/constants";
 import { PaletteTab } from "@/types";
 import clsx from "clsx";
-import { useAtom, useAtomValue } from "jotai";
+import { useAtomValue, useSetAtom } from "jotai";
 import { memo } from "react";
 
-const icons: { key: PaletteTab; component: JSX.ElementType }[] = [
-    { key: "actions", component: ActionsMenuIcon },
-    { key: "component", component: ComponentIcon },
-    { key: "circuit", component: CircuitIcon },
-];
+const PaletteTabItem = (props: { type: PaletteTab }) => {
+    const activeTab = useAtomValue(activePaletteTabAtom);
+    const partialActiveTab = useAtomValue(partialActivePaletteTabAtom);
+    switch (props.type) {
+        case "actions":
+            return (
+                <ActionsMenuIcon
+                    className={clsx(
+                        "transition-all duration-100 ease-linear",
+                        activeTab === props.type
+                            ? "scale-150 opactiy-50"
+                            : partialActiveTab === props.type
+                                ? "opacity-100 scale-125"
+                                : "group-hover:opacity-100 group-hover:scale-125"
+                    )}
+                />
+            );
+        case "component":
+            return (
+                <ComponentIcon
+                    className={clsx(
+                        "transition-all duration-100 ease-linear",
+                        activeTab === props.type
+                            ? "scale-150 opactiy-50"
+                            : partialActiveTab === props.type
+                                ? "opacity-100 scale-125"
+                                : "group-hover:opacity-100 group-hover:scale-125"
+                    )}
+                />
+            );
+        case "circuit": {
+            return (
+                <CircuitIcon
+                    className={clsx(
+                        "transition-all duration-100 ease-linear",
+                        activeTab === props.type
+                            ? "scale-150 opactiy-50"
+                            : partialActiveTab === props.type
+                                ? "opacity-100 scale-125"
+                                : "group-hover:opacity-100 group-hover:scale-125"
+                    )}
+                />
+            );
+        }
+    }
+};
 
 export const PaletteTabs = memo(
     () => {
-        const [activeTab, setActiveTab] = useAtom(activePaletteTabAtom);
-        const partialActiveTab = useAtomValue(partialActivePaletteTabAtom);
+        const setActiveTab = useSetAtom(activePaletteTabAtom);
         return (
             <>
-                {icons.map((i) => (
+                {tabs.map((key) => (
                     <button
-                        key={`PALETTE_TAB_${i.key}`}
+                        key={`PALETTE_TAB_${key}`}
                         className={clsx("p-2.5 rounded group")}
                         onClick={() => {
-                            setActiveTab(i.key);
+                            setActiveTab(key);
                         }}
-                        title={i.key}
+                        title={key}
                     >
-                        <i.component
-                            className={clsx(
-                                "group-hover:opacity-100 transition-all duration-100 ease-linear",
-                                activeTab === i.key
-                                    ? "scale-150 opactiy-100"
-                                    : partialActiveTab === i.key
-                                        ? "opacity-100 scale-125"
-                                        : "opacity-50 group-hover:scale-125"
-                            )}
-                        />
+                        <PaletteTabItem type={key} />
                     </button>
                 ))}
             </>

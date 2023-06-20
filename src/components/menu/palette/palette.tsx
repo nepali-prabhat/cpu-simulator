@@ -5,7 +5,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { activePaletteTabAtom, partialActivePaletteTabAtom } from "@/state/ui";
 import { useSwipeable } from "react-swipeable";
 import { paletteWidth, tabs } from "@/constants";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 export const Palette = () => {
     const [activeTab, setActiveTab] = useAtom(activePaletteTabAtom);
@@ -13,8 +13,8 @@ export const Palette = () => {
     const [scrollX, setScrollX] = useState(0);
     const activeIndex = tabs.indexOf(activeTab);
 
-    const handlers = useSwipeable({
-        onSwiping: (e) => {
+    const handleScroll = useCallback(
+        (e: { deltaX: number }) => {
             let resolvedDeltaX: number;
             if (activeIndex === 0) {
                 resolvedDeltaX = e.deltaX;
@@ -45,20 +45,27 @@ export const Palette = () => {
             const sign = resolvedDeltaX > 0 ? 1 : -1;
             setPartialActiveTab((v) => tabs[activeIndex - sign] || v);
         },
+        [activeIndex, setPartialActiveTab]
+    );
+
+    const { ...handlers } = useSwipeable({
+        onSwiping: handleScroll,
         onSwiped: () => {
             setScrollX(0);
-        },
-        onSwipedLeft: () => {
-            setActiveTab((v) => {
-                const activeTabIndex = tabs.indexOf(v);
-                return tabs[activeTabIndex + 1] || v;
-            });
-        },
-        onSwipedRight: () => {
-            setActiveTab((v) => {
-                const activeTabIndex = tabs.indexOf(v);
-                return tabs[activeTabIndex - 1] || v;
-            });
+            const limit = 0.2;
+            if (scrollX >= paletteWidth * limit) {
+                setActiveTab((v) => {
+                    const activeTabIndex = tabs.indexOf(v);
+                    return tabs[activeTabIndex - 1] || v;
+                });
+            }
+            if (scrollX <= -paletteWidth * limit) {
+                setActiveTab((v) => {
+                    const activeTabIndex = tabs.indexOf(v);
+                    return tabs[activeTabIndex + 1] || v;
+                });
+            }
+            setPartialActiveTab(undefined);
         },
         trackMouse: true,
         trackTouch: true,
@@ -68,10 +75,10 @@ export const Palette = () => {
     return (
         <section {...handlers} className={"flex gap-2 flex-col"}>
             <PaletteSearch />
-            <PaletteTabContent scrollX={scrollX} activeTab={activeTab} />
             <div className="self-center">
                 <PaletteTabs />
             </div>
+            <PaletteTabContent scrollX={scrollX} activeTab={activeTab} />
         </section>
     );
 };

@@ -129,7 +129,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }));
         };
         _resizeHandler();
-        console.log("window and document event handlers");
 
         const _mouseMoveHanlder = (e: MouseEvent) => {
             const { clientX, clientY } = e;
@@ -338,7 +337,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         HTMLCanvasElement
     > = (e) => {
         e.preventDefault();
-        console.log("context menu: ", e);
     };
 
     return {
