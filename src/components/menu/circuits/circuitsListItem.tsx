@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { PrimitiveAtom, useAtom } from "jotai";
+import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
@@ -7,12 +7,15 @@ import clsx from "clsx";
 import { selectedCircuitIdAtom } from "@/state/appState";
 import { Circuit } from "@/types";
 import { twMerge } from "tailwind-merge";
+import { getCircuitsElementId } from "@/constants";
+import { activePaletteTabAtom } from "@/state/ui";
 
 export const CircuitsSortableItem = ({
     circuitAtom,
 }: {
     circuitAtom: PrimitiveAtom<Circuit>;
 }) => {
+    const activeTab = useAtomValue(activePaletteTabAtom);
     const [circuit, setCircuit] = useAtom(circuitAtom);
     const [selectedCircuitId, setSelectedCircuitId] = useAtom(
         selectedCircuitIdAtom
@@ -29,6 +32,7 @@ export const CircuitsSortableItem = ({
     const [editEnabled, setEditEnabled] = useState(false);
 
     const titleField = useRef<HTMLInputElement>(null);
+    const listRef = useRef<HTMLElement | null>(null);
 
     const handleSelect = () => setSelectedCircuitId(circuit.uid);
 
@@ -38,16 +42,27 @@ export const CircuitsSortableItem = ({
         }
     }, [editEnabled]);
 
+    const isSelected = selectedCircuitId === circuit.uid;
+
+    useLayoutEffect(() => {
+        if (isSelected && activeTab === "circuit") {
+            listRef.current?.scrollIntoView({
+                behavior: "instant",
+                block:"center",
+            });
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
     const style = {
         transform: CSS.Transform.toString(transform),
         transition,
     };
 
-    const isSelected = selectedCircuitId === circuit.uid;
-
     return (
         <li
-            key={"CIRCUIT_" + circuitAtom.toString()}
+            key={"CIRCUIT_" + circuit.uid}
+            id={getCircuitsElementId(circuit.uid)}
             className={twMerge(
                 "circuit-drag-item",
                 "group px-1.5 py-1 flex gap-2 items-center rounded data-[dragging=true]:z-10",
@@ -55,7 +70,10 @@ export const CircuitsSortableItem = ({
                 "data-[dragging=true]:bg-gray-100",
                 isDragging && "cursor-grabbing"
             )}
-            ref={setNodeRef}
+            ref={(r) => {
+                setNodeRef(r);
+                listRef.current = r;
+            }}
             style={style}
             data-dragging={isDragging ? "true" : "false"}
         >
@@ -111,7 +129,6 @@ export const CircuitsSortableItem = ({
             </button>
             {editEnabled ? (
                 <>
-
                     <input
                         ref={titleField}
                         className={clsx(
@@ -210,6 +227,6 @@ export const CircuitsSortableItem = ({
                     </button>
                 </>
             )}
-        </li >
+        </li>
     );
 };

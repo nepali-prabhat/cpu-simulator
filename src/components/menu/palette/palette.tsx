@@ -3,6 +3,7 @@ import { PaletteTabContent } from "./paletteTabContent";
 import { useAtom } from "jotai";
 import { activePaletteTabAtom } from "@/state/ui";
 import { useState } from "react";
+import { PaletteSearch } from "./paletteSearch";
 
 export const Palette = () => {
     const [activeTab] = useAtom(activePaletteTabAtom);
@@ -13,6 +14,7 @@ export const Palette = () => {
             <div className="self-center">
                 <PaletteTabs />
             </div>
+            <PaletteSearch />
             <PaletteTabContent scrollX={scrollX} activeTab={activeTab} />
         </section>
     );

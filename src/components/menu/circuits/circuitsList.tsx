@@ -23,6 +23,7 @@ import {
 import { circuitsAtom } from "@/state/appState";
 import { useAtom } from "jotai";
 import { CircuitsSortableItem } from "./circuitsListItem";
+import { circuitsMenuListId } from "@/constants";
 
 export const CircuitsList = () => {
     const [circuits, setCircuits] = useAtom(circuitsAtom);
@@ -85,7 +86,10 @@ export const CircuitsList = () => {
     }
 
     return (
-        <ul className="flex overflow-auto overflow-x-hidden flex-col max-h-48">
+        <ul
+            id={circuitsMenuListId}
+            className="flex overflow-auto overflow-x-hidden flex-col max-h-48"
+        >
             <DndContext
                 sensors={sensors}
                 collisionDetection={closestCenter}

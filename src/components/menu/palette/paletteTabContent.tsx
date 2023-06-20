@@ -2,7 +2,7 @@ import { Circuits } from "../circuits/circuits";
 import { PaletteComponents } from "../components/components";
 import { Actions } from "../actions/actions";
 import { twMerge } from "tailwind-merge";
-import { forwardRef, useLayoutEffect } from "react";
+import { forwardRef, useLayoutEffect, useRef } from "react";
 import { PaletteTab } from "@/types";
 import { paletteWidth, scrollWidth, tabs } from "@/constants";
 import { useAtom, useAtomValue } from "jotai/react";
@@ -54,6 +54,7 @@ export const PaletteTabContent = (props: {
 }) => {
     const [heightMap, setHeightMap] = useAtom(paletteContentHeightsAtom);
     const paletteContentRefs = useAtomValue(paletteContentRefsAtom);
+    const ref = useRef<HTMLDivElement>(null);
 
     useLayoutEffect(() => {
         const map = new Map();
@@ -90,6 +91,7 @@ export const PaletteTabContent = (props: {
 
     return (
         <div
+            ref={ref}
             className={twMerge(
                 "relative transition-all duration-100 ease-in-out",
                 true && "overflow-x-hidden",

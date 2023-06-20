@@ -6,6 +6,7 @@ import { useAtom, useSetAtom } from "jotai";
 import { twMerge } from "tailwind-merge";
 import { flushSync } from "react-dom";
 import { updatePaletteHeightAtom } from "@/state/ui";
+import { circuitsMenuListId, getCircuitsElementId } from "@/constants";
 
 export const AddCircuit = () => {
     const [newCircuitTitle, setNewCircuitTitle] = useAtom(newCircuitTitleAtom);
@@ -29,6 +30,15 @@ export const AddCircuit = () => {
                 addCircuit({ uid, title: newCircuitTitle });
             });
             updatePaletteHeight();
+            const parentElement = document.getElementById(circuitsMenuListId);
+            if (
+                parentElement &&
+                parentElement.scrollHeight > parentElement.clientHeight
+            ) {
+                const childElementId = getCircuitsElementId(uid);
+                const childElement = document.getElementById(childElementId);
+                childElement?.scrollIntoView();
+            }
         }
     };
 

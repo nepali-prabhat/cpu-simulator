@@ -1,6 +1,5 @@
 export const Actions = () => {
     return <div>
-        <p>TODO: actions</p>
-        <button>hello</button>
+        <p>TODO: files and other options</p>
     </div>;
 };

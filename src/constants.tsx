@@ -16,3 +16,6 @@ export const paletteWidth = 230;
 export const tabs: PaletteTab[] = ["actions", "component", "circuit"];
 
 export const scrollWidth = 8;
+
+export const circuitsMenuListId = "circuits-menu-list-id";
+export const getCircuitsElementId = (uid: string) => `CIRCUIT_SORTABLE_${uid}`;
