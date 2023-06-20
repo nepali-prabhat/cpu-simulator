@@ -2,7 +2,6 @@ import { PaletteTabs } from "./paletteTabs";
 import { PaletteTabContent } from "./paletteTabContent";
 import { useAtom, useAtomValue } from "jotai";
 import { activePaletteTabAtom } from "@/state/ui";
-import { useState } from "react";
 import { paletteTitleMap } from "@/constants";
 
 const PaletteTitle = () => {

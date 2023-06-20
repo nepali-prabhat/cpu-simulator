@@ -2,7 +2,7 @@ import { Circuits } from "../circuits/circuits";
 import { PaletteComponents } from "../components/components";
 import { Actions } from "../actions/actions";
 import { twMerge } from "tailwind-merge";
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { forwardRef, useLayoutEffect, useRef } from "react";
 import { PaletteTab } from "@/types";
 import { paletteWidth, scrollWidth, tabs } from "@/constants";
 import { useAtom, useAtomValue } from "jotai/react";
@@ -100,7 +100,6 @@ export const PaletteTabContent = (props: { activeTab: PaletteTab }) => {
                         type={t}
                         ref={(ref) => {
                             paletteContentRefs.set(t, ref);
-                            /* refs.current[i] = ref;*/
                         }}
                     />
                 );
