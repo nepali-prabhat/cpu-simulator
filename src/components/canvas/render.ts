@@ -77,6 +77,7 @@ function renderElements({
     appState,
     context,
     canvasProperties,
+    rc,
 }: {
     appState: AppState;
     canvasProperties: CanvasProperties;
@@ -89,41 +90,38 @@ function renderElements({
     for (let element of Object.values(elements)) {
         context.save();
         context.translate(element.x + scroll.x, element.y + scroll.y);
+        const config = { seed: element.nonce + 1, roughness: 0.5 };
 
         switch (element.type) {
             case "and_gate": {
-                context.beginPath();
-                context.strokeStyle = "#000";
-                context.strokeRect(0, 0, element.width, element.height);
-                context.fillText("AND", 0, -5);
+                rc?.path(
+                    "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4ZM10 44a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
+                    config
+                );
+                rc?.path(
+                    "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
+                    config
+                );
                 break;
             }
             case "or_gate": {
-                context.beginPath();
-                context.strokeStyle = "#000";
-                context.strokeRect(0, 0, element.width, element.height);
-                context.arc(
-                    element.width / 2 - 0.5,
-                    element.height / 2 - 0.5,
-                    element.width / 3,
-                    0,
-                    2 * Math.PI
+                rc?.path(
+                    "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Zm0 24a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
+                    config
                 );
-                context.stroke();
-                context.fillText("OR", 0, -5);
+                rc?.path(
+                    "M18.545 53.159C21.691 48.892 25 42.03 25 32.132c0-10.102-3.446-17.113-6.637-21.422-.011-.015-.06-.091-.065-.274a1.477 1.477 0 0 1 .133-.628 1.027 1.027 0 0 1 .29-.4c3.549.296 7.703.78 10.806 1.535 7.86 1.915 19.239 7.755 22.345 20.832a1.56 1.56 0 0 1 0 .713C48.77 45.534 37.42 51.134 29.527 53.057c-3.038.74-7.084 1.218-10.587 1.516a1.136 1.136 0 0 1-.317-.44 1.624 1.624 0 0 1-.144-.68c.005-.2.057-.282.066-.294Z",
+                    config
+                );
                 break;
             }
             case "not_gate": {
-                context.beginPath();
-                context.strokeStyle = "#000";
-                context.strokeRect(0, 0, element.width, element.height);
-                context.strokeRect(
-                    element.width / 3,
-                    element.height / 3,
-                    element.width / 3,
-                    element.height / 3
+                rc?.path("M9 30a2 2 0 1 0 0 4v-4Zm0 4h10v-4H9v4Z", config);
+                rc?.path(
+                    "M44.898 33.664 20.11 50.19C18.78 51.076 17 50.123 17 48.526V15.474c0-1.597 1.78-2.55 3.11-1.664l24.788 16.526a2 2 0 0 1 0 3.328Z",
+                    config
                 );
-                context.fillText("NOT", 0, -5);
+                rc?.circle(53, 32, 4, config);
                 break;
             }
         }

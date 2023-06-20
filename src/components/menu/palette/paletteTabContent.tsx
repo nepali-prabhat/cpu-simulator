@@ -71,6 +71,7 @@ export const PaletteTabContent = (props: { activeTab: PaletteTab }) => {
 
     const activeIndex = tabs.indexOf(props.activeTab);
     let resolvedHeight = heightMap.get(props.activeTab);
+    console.log("height map: ", heightMap);
     const isComponentActive = props.activeTab === "component";
 
     return (

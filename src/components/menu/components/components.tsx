@@ -13,7 +13,7 @@ import { ComponentButton } from "./componentButton";
 
 export const PaletteComponents = () => {
     return (
-        <div className="grid content-start grid-cols-4 gap-2 pr-[4px] pt-[4px]">
+        <div className="grid content-start grid-cols-4 gap-2 pr-[4px] pt-[4px] max-h-96">
             <ComponentButton name="AND">
                 <AndGate />
             </ComponentButton>
