@@ -17,5 +17,11 @@ export const tabs: PaletteTab[] = ["actions", "component", "circuit"];
 
 export const scrollWidth = 8;
 
+// Used to scroll circuits list to the bottom once a circuit is added.
 export const circuitsMenuListId = "circuits-menu-list-id";
 export const getCircuitsElementId = (uid: string) => `CIRCUIT_SORTABLE_${uid}`;
+
+export const paletteTitleMap: Map<PaletteTab, string> = new Map()
+paletteTitleMap.set("actions", "Actions")
+paletteTitleMap.set("component", "Logic Components")
+paletteTitleMap.set("circuit", "Circuits")

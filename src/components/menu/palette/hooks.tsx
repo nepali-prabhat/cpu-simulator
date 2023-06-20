@@ -2,7 +2,14 @@ import { useAtom, useSetAtom } from "jotai";
 import { activePaletteTabAtom, partialActivePaletteTabAtom } from "@/state/ui";
 import { useSwipeable } from "react-swipeable";
 import { paletteWidth, tabs } from "@/constants";
-import { useCallback, useState } from "react";
+import {
+    MutableRefObject,
+    useCallback,
+    useLayoutEffect,
+    useState,
+} from "react";
+import { PaletteTab } from "@/types";
+import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 
 export function useScroll() {
     const [activeTab, setActiveTab] = useAtom(activePaletteTabAtom);
@@ -69,4 +76,36 @@ export function useScroll() {
     });
 
     return { handlers };
+}
+
+// TODO: orchestrate this with 
+export function useScrollCircuitIntoView({
+    activeTab,
+    isSelected,
+    listRef,
+}: {
+    activeTab: PaletteTab;
+    isSelected: boolean;
+    listRef: MutableRefObject<HTMLElement|null>;
+}) {
+    const lastActiveTab = usePreviousValue<string>(activeTab);
+    useLayoutEffect(() => {
+        let id: NodeJS.Timeout;
+        if (isSelected && activeTab === "circuit") {
+            const _fn = () => {
+                listRef.current?.scrollIntoView({
+                    behavior: "instant",
+                    block: "center",
+                });
+            };
+            if (!lastActiveTab) {
+                _fn();
+            } else if (lastActiveTab !== activeTab) {
+                id = setTimeout(_fn, 100);
+            }
+        }
+        return () => {
+            clearTimeout(id);
+        };
+    }, [activeTab, isSelected, lastActiveTab, listRef]);
 }

@@ -1,4 +1,4 @@
-import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
@@ -9,6 +9,7 @@ import { Circuit } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { getCircuitsElementId } from "@/constants";
 import { activePaletteTabAtom } from "@/state/ui";
+import { useScrollCircuitIntoView } from "../palette/hooks";
 
 export const CircuitsSortableItem = ({
     circuitAtom,
@@ -30,11 +31,11 @@ export const CircuitsSortableItem = ({
     } = useSortable({ id: circuitAtom.toString() });
 
     const [editEnabled, setEditEnabled] = useState(false);
-
     const titleField = useRef<HTMLInputElement>(null);
     const listRef = useRef<HTMLElement | null>(null);
 
-    const handleSelect = () => setSelectedCircuitId(circuit.uid);
+    const isSelected = selectedCircuitId === circuit.uid;
+    useScrollCircuitIntoView({ activeTab, isSelected, listRef });
 
     useEffect(() => {
         if (editEnabled) {
@@ -42,17 +43,7 @@ export const CircuitsSortableItem = ({
         }
     }, [editEnabled]);
 
-    const isSelected = selectedCircuitId === circuit.uid;
-
-    useLayoutEffect(() => {
-        if (isSelected && activeTab === "circuit") {
-            listRef.current?.scrollIntoView({
-                behavior: "instant",
-                block:"center",
-            });
-        }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    const handleSelect = () => setSelectedCircuitId(circuit.uid);
 
     const style = {
         transform: CSS.Transform.toString(transform),

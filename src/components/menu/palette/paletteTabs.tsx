@@ -7,6 +7,7 @@ import { PaletteTab } from "@/types";
 import clsx from "clsx";
 import { useAtomValue, useSetAtom } from "jotai";
 import { memo } from "react";
+import { twMerge } from "tailwind-merge";
 
 const PaletteTabItem = (props: { type: PaletteTab }) => {
     const activeTab = useAtomValue(activePaletteTabAtom);
@@ -15,8 +16,8 @@ const PaletteTabItem = (props: { type: PaletteTab }) => {
         case "actions":
             return (
                 <ActionsMenuIcon
-                    className={clsx(
-                        "transition-all duration-100 ease-linear",
+                    className={twMerge(
+                        "transition-all duration-100 ease-linear scale-75",
                         activeTab === props.type
                             ? "scale-150 opactiy-50"
                             : partialActiveTab === props.type
@@ -28,8 +29,8 @@ const PaletteTabItem = (props: { type: PaletteTab }) => {
         case "component":
             return (
                 <ComponentIcon
-                    className={clsx(
-                        "transition-all duration-100 ease-linear",
+                    className={twMerge(
+                        "transition-all duration-100 ease-linear scale-75",
                         activeTab === props.type
                             ? "scale-150 opactiy-50"
                             : partialActiveTab === props.type
@@ -41,8 +42,8 @@ const PaletteTabItem = (props: { type: PaletteTab }) => {
         case "circuit": {
             return (
                 <CircuitIcon
-                    className={clsx(
-                        "transition-all duration-100 ease-linear",
+                    className={twMerge(
+                        "transition-all duration-100 ease-linear scale-75",
                         activeTab === props.type
                             ? "scale-150 opactiy-50"
                             : partialActiveTab === props.type
