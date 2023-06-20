@@ -2,12 +2,13 @@ import { Circuits } from "../circuits/circuits";
 import { PaletteComponents } from "../components/components";
 import { Actions } from "../actions/actions";
 import { twMerge } from "tailwind-merge";
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { forwardRef, useLayoutEffect } from "react";
 import { PaletteTab } from "@/types";
-import { paletteWidth, tabs } from "@/constants";
+import { paletteWidth, scrollWidth, tabs } from "@/constants";
+import { useAtom, useAtomValue } from "jotai/react";
+import { paletteContentHeightsAtom, paletteContentRefsAtom } from "@/state/ui";
 
 const width = paletteWidth;
-
 type TabPropType = {
     type: PaletteTab;
     isActive: boolean;
@@ -18,7 +19,8 @@ const PaletteTabItem = forwardRef<HTMLDivElement, TabPropType>(
     (props: TabPropType, ref) => {
         const className = twMerge(
             "absolute top-0 z-10",
-            "transition-all duration-100 ease-out",
+            "transition-all duration-100 ease-in",
+            props.isActive ? "visible" : "invisible",
             props.className
         );
         const style = props.style;
@@ -50,25 +52,40 @@ export const PaletteTabContent = (props: {
     scrollX: number;
     activeTab: PaletteTab;
 }) => {
-    const [heights, setHeights] = useState<(number | undefined)[]>([]);
-    const refs = useRef<(HTMLDivElement | null)[]>([]);
+    const [heightMap, setHeightMap] = useAtom(paletteContentHeightsAtom);
+    const paletteContentRefs = useAtomValue(paletteContentRefsAtom);
 
     useLayoutEffect(() => {
-        const heights = refs.current?.map((v) => v?.clientHeight);
-        setHeights(heights);
-    }, []);
+        const map = new Map();
+        tabs.forEach((k) => {
+            const height =
+                (paletteContentRefs.get(k) &&
+                    paletteContentRefs.get(k)?.clientHeight) ||
+                0;
+            map.set(k, height);
+        });
+        setHeightMap(map);
+    }, [paletteContentRefs, setHeightMap]);
+
     const activeIndex = tabs.indexOf(props.activeTab);
 
-    let resolvedHeight = heights[activeIndex];
+    let resolvedHeight = heightMap.get(props.activeTab);
 
     if (props.scrollX !== 0) {
-        const startHeight = heights[activeIndex] || 0;
+        const startHeight = heightMap.get(props.activeTab) || 0;
         const sign = props.scrollX > 0 ? 1 : -1;
-        const finalHeight = heights[activeIndex - sign] || 0;
+        const nextTab = tabs[tabs.indexOf(props.activeTab) - sign];
+        const finalHeight = heightMap.get(nextTab) || 0;
         const currentScroll = sign * Math.min(Math.abs(props.scrollX), width);
         resolvedHeight =
             startHeight +
             sign * (currentScroll / width) * (finalHeight - startHeight);
+    }
+
+    let scrollPadding = 0;
+    const el = paletteContentRefs.get(props.activeTab);
+    if (el && el.clientHeight !== el.scrollHeight) {
+        scrollPadding = scrollWidth;
     }
 
     return (
@@ -88,13 +105,14 @@ export const PaletteTabContent = (props: {
                     key={`PALETTE_TAB_ITEM${t.toUpperCase()}`}
                     style={{
                         left: (i - activeIndex) * width + props.scrollX,
-                        width: width,
-                        paddingRight: 8,
+                        paddingRight: scrollPadding,
+                        width,
                     }}
                     isActive={activeIndex === i}
                     type={t}
                     ref={(ref) => {
-                        refs.current[i] = ref;
+                        paletteContentRefs.set(t, ref);
+                        /* refs.current[i] = ref;*/
                     }}
                 />
             ))}

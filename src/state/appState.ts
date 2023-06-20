@@ -1,8 +1,8 @@
 import { GRID_SPACE } from "@/constants";
-import { Element, BoundingBox, Circuit } from "@/types";
-import { PrimitiveAtom, atom, getDefaultStore } from "jotai";
-import { splitAtom } from "jotai/utils";
+import { Element, BoundingBox, Circuit, PaletteTab } from "@/types";
+import { PrimitiveAtom, atom } from "jotai";
 import { nanoid } from "nanoid";
+import { paletteContentHeightsAtom, paletteContentRefsAtom } from "./ui";
 
 const gridSpace = GRID_SPACE;
 const ids = [nanoid(), nanoid(), nanoid()];
@@ -136,6 +136,7 @@ export const addNewCircuitAtom = atom(
     null,
     (get, set, _value: Partial<Circuit>) => {
         const circuits = get(circuitsAtom);
+
         const uid = _value.uid || nanoid();
         const newCircuit: Circuit = {
             uid,
@@ -148,3 +149,4 @@ export const addNewCircuitAtom = atom(
         }
     }
 );
+

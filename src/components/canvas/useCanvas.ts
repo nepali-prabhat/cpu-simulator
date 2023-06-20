@@ -1,3 +1,4 @@
+import rough from "roughjs/bin/rough";
 import { useCallback, useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
 import { Element, AppState, Point, PointerState } from "@/types";
@@ -156,13 +157,16 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     }, [setDimension, setZoom]);
 
     const draw = useCallback(() => {
-        const context = canvasRef.current?.getContext("2d");
-        if (context) {
+        const canvas = canvasRef.current;
+        const context = canvas?.getContext("2d");
+        const rc = canvas ? rough.canvas(canvasRef.current) : null;
+        if (canvas && context) {
             renderCanvas({
                 context,
                 canvasProperties,
                 gridSpace,
                 appState,
+                rc,
             });
         }
     }, [canvasProperties, appState]);

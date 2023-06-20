@@ -4,11 +4,14 @@ import { useRef } from "react";
 import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/appState";
 import { useAtom, useSetAtom } from "jotai";
 import { twMerge } from "tailwind-merge";
+import { flushSync } from "react-dom";
+import { updatePaletteHeightAtom } from "@/state/ui";
 
 export const AddCircuit = () => {
     const [newCircuitTitle, setNewCircuitTitle] = useAtom(newCircuitTitleAtom);
     const newCircuitTitleRef = useRef<HTMLInputElement>(null);
     const addCircuit = useSetAtom(addNewCircuitAtom);
+    const updatePaletteHeight = useSetAtom(updatePaletteHeightAtom);
 
     const focusTitleInput = () => {
         if (newCircuitTitleRef.current) {
@@ -21,8 +24,11 @@ export const AddCircuit = () => {
             focusTitleInput();
         } else {
             const uid = nanoid();
-            addCircuit({ uid, title: newCircuitTitle });
             setNewCircuitTitle("");
+            flushSync(() => {
+                addCircuit({ uid, title: newCircuitTitle });
+            });
+            updatePaletteHeight();
         }
     };
 
@@ -57,7 +63,6 @@ export const AddCircuit = () => {
                     )}
                     placeholder={"Circuit name"}
                     value={newCircuitTitle}
-                    style={{ maxWidth: 150 }}
                     onChange={(e) => setNewCircuitTitle(e.target.value)}
                     aria-label={"Name of the circuit"}
                     title={newCircuitTitle}

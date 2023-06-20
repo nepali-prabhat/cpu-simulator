@@ -2,17 +2,20 @@ import { AppState, CanvasProperties, Element } from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
 import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
+import { RoughCanvas } from "roughjs/bin/canvas";
 
 export function renderCanvas({
     context,
     canvasProperties,
     gridSpace,
     appState,
+    rc,
 }: {
     context: CanvasRenderingContext2D;
     canvasProperties: CanvasProperties;
     gridSpace: number;
     appState: AppState;
+    rc: RoughCanvas | null;
 }) {
     const { scroll, zoom } = canvasProperties;
     const { width, height } = canvasProperties.dimension;
@@ -57,6 +60,7 @@ export function renderCanvas({
         appState,
         context,
         canvasProperties,
+        rc,
     });
 
     renderSelectBox({
@@ -77,9 +81,11 @@ function renderElements({
     appState: AppState;
     canvasProperties: CanvasProperties;
     context: CanvasRenderingContext2D;
+    rc: RoughCanvas | null;
 }) {
     const { scroll } = canvasProperties;
     const { elements } = appState;
+
     for (let element of Object.values(elements)) {
         context.save();
         context.translate(element.x + scroll.x, element.y + scroll.y);

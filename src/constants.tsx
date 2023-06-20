@@ -14,3 +14,5 @@ export const GRID_TYPE: "dots" | "lines" = "dots";
 
 export const paletteWidth = 230;
 export const tabs: PaletteTab[] = ["actions", "component", "circuit"];
+
+export const scrollWidth = 8;

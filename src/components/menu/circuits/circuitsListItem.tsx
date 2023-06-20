@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from "react";
-import { PrimitiveAtom, useAtom, useSetAtom } from "jotai";
+import { PrimitiveAtom, useAtom } from "jotai";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
 
 import { selectedCircuitIdAtom } from "@/state/appState";
 import { Circuit } from "@/types";
+import { twMerge } from "tailwind-merge";
 
 export const CircuitsSortableItem = ({
     circuitAtom,
@@ -47,9 +48,9 @@ export const CircuitsSortableItem = ({
     return (
         <li
             key={"CIRCUIT_" + circuitAtom.toString()}
-            className={clsx(
+            className={twMerge(
                 "circuit-drag-item",
-                "group px-1.5 py-1 flex gap-2 items-center rounded data-[dragging=true]:z-10 data-[dragging=true]:bg-white",
+                "group px-1.5 py-1 flex gap-2 items-center rounded data-[dragging=true]:z-10",
 
                 "data-[dragging=true]:bg-gray-100",
                 isDragging && "cursor-grabbing"
@@ -108,109 +109,107 @@ export const CircuitsSortableItem = ({
                     </svg>
                 )}
             </button>
-            <span className="flex gap-2 grow">
-                {editEnabled ? (
-                    <>
-                        <input
-                            ref={titleField}
-                            className={clsx(
-                                `rounded px-2.5 py-1 truncate bg-inherit text-md focus:bg-neutral-100`,
-                                !isDragging && "hover:bg-neutral-100",
-                                isDragging && "cursor-grabbing",
-                                editEnabled && "bg-neutral-100"
-                            )}
-                            placeholder={"Circuit Name"}
-                            value={circuit.title}
-                            style={{ maxWidth: 150 }}
-                            onChange={(e) => {
-                                if (editEnabled) {
-                                    const v = e.target.value;
-                                    setCircuit((c) => ({
-                                        ...c,
-                                        title: v,
-                                    }));
-                                }
-                            }}
-                            aria-label={"Name of the circuit"}
-                            title={circuit.title}
-                            disabled={isDragging}
-                            onKeyDown={(e) => {
-                                if (e.key === "Escape") {
-                                    setEditEnabled(false);
-                                    e.stopPropagation();
-                                }
-                            }}
-                            onKeyUp={(e) => {
-                                if (e.key === "Enter") {
-                                    setEditEnabled(false);
-                                }
-                            }}
-                        />
-                        <button
-                            className={clsx(
-                                "p-2 rounded focus:bg-gray-100 group-hover:opacity-100",
-                                "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100 group-focus-within:opacity-100",
-                                "group-data-[dragging=true]:cursor-grabbing"
-                            )}
-                            onClick={() => {
+            {editEnabled ? (
+                <>
+
+                    <input
+                        ref={titleField}
+                        className={clsx(
+                            `grow rounded px-2.5 py-1 truncate bg-inherit text-md focus:bg-neutral-100`,
+                            !isDragging && "hover:bg-neutral-100",
+                            isDragging && "cursor-grabbing",
+                            editEnabled && "bg-neutral-100"
+                        )}
+                        placeholder={"Circuit Name"}
+                        value={circuit.title}
+                        onChange={(e) => {
+                            if (editEnabled) {
+                                const v = e.target.value;
+                                setCircuit((c) => ({
+                                    ...c,
+                                    title: v,
+                                }));
+                            }
+                        }}
+                        aria-label={"Name of the circuit"}
+                        title={circuit.title}
+                        disabled={isDragging}
+                        onKeyDown={(e) => {
+                            if (e.key === "Escape") {
                                 setEditEnabled(false);
-                            }}
+                                e.stopPropagation();
+                            }
+                        }}
+                        onKeyUp={(e) => {
+                            if (e.key === "Enter") {
+                                setEditEnabled(false);
+                            }
+                        }}
+                    />
+                    <button
+                        className={clsx(
+                            "p-2 rounded focus:bg-gray-100 group-hover:opacity-100",
+                            "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100 group-focus-within:opacity-100",
+                            "group-data-[dragging=true]:cursor-grabbing"
+                        )}
+                        onClick={() => {
+                            setEditEnabled(false);
+                        }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 512 512"
+                            width="1em"
+                            height="1em"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 512 512"
-                                width="1em"
-                                height="1em"
-                            >
-                                <path d="m480.969 128.969-272 272A23.9 23.9 0 0 1 192 408a23.9 23.9 0 0 1-16.969-7.031l-144-144c-9.375-9.375-9.375-24.563 0-33.938s24.563-9.375 33.938 0L192 350.062 447.031 95.031c9.375-9.375 24.563-9.375 33.938 0s9.375 24.563 0 33.938Z" />
-                            </svg>
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <button
-                            className={clsx(
-                                `text-start rounded px-2.5 py-1 truncate bg-inherit text-md`
-                            )}
-                            onClick={() => {
-                                handleSelect();
-                            }}
-                            onDoubleClick={() => {
-                                setEditEnabled(true);
-                            }}
-                            style={{ width: 150 }}
-                            title={circuit.title}
+                            <path d="m480.969 128.969-272 272A23.9 23.9 0 0 1 192 408a23.9 23.9 0 0 1-16.969-7.031l-144-144c-9.375-9.375-9.375-24.563 0-33.938s24.563-9.375 33.938 0L192 350.062 447.031 95.031c9.375-9.375 24.563-9.375 33.938 0s9.375 24.563 0 33.938Z" />
+                        </svg>
+                    </button>
+                </>
+            ) : (
+                <>
+                    <button
+                        className={clsx(
+                            `grow text-start rounded px-2.5 py-1 truncate bg-inherit text-md`
+                        )}
+                        onClick={() => {
+                            handleSelect();
+                        }}
+                        onDoubleClick={() => {
+                            setEditEnabled(true);
+                        }}
+                        style={{ width: 150 }}
+                        title={circuit.title}
+                    >
+                        {circuit.title}
+                    </button>
+                    <button
+                        className={clsx(
+                            "p-2 rounded focus:bg-gray-100 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
+                            "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100",
+                            "group-data-[dragging=true]:cursor-grabbing"
+                        )}
+                        onClick={() => {
+                            setEditEnabled(true);
+                        }}
+                    >
+                        <svg
+                            width="1em"
+                            height="1em"
+                            viewBox="0 0 15 15"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
                         >
-                            {circuit.title}
-                        </button>
-                        <button
-                            className={clsx(
-                                "p-2 rounded focus:bg-gray-100 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100",
-                                "cursor-pointer group-data-[dragging=false]:hover:bg-gray-100",
-                                "group-data-[dragging=true]:cursor-grabbing"
-                            )}
-                            onClick={() => {
-                                setEditEnabled(true);
-                            }}
-                        >
-                            <svg
-                                width="1em"
-                                height="1em"
-                                viewBox="0 0 15 15"
-                                fill="none"
-                                xmlns="http://www.w3.org/2000/svg"
-                            >
-                                <path
-                                    d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.3317 11.3754 6.42166 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42166 9.28547L11.5 2.20711L12.7929 3.5L5.71455 10.5784L4.21924 11.2192L3.78081 10.7808L4.42166 9.28547Z"
-                                    fill="currentColor"
-                                    fillRule="evenodd"
-                                    clipRule="evenodd"
-                                ></path>
-                            </svg>
-                        </button>
-                    </>
-                )}
-            </span>
-        </li>
+                            <path
+                                d="M11.8536 1.14645C11.6583 0.951184 11.3417 0.951184 11.1465 1.14645L3.71455 8.57836C3.62459 8.66832 3.55263 8.77461 3.50251 8.89155L2.04044 12.303C1.9599 12.491 2.00189 12.709 2.14646 12.8536C2.29103 12.9981 2.50905 13.0401 2.69697 12.9596L6.10847 11.4975C6.2254 11.4474 6.3317 11.3754 6.42166 11.2855L13.8536 3.85355C14.0488 3.65829 14.0488 3.34171 13.8536 3.14645L11.8536 1.14645ZM4.42166 9.28547L11.5 2.20711L12.7929 3.5L5.71455 10.5784L4.21924 11.2192L3.78081 10.7808L4.42166 9.28547Z"
+                                fill="currentColor"
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                            ></path>
+                        </svg>
+                    </button>
+                </>
+            )}
+        </li >
     );
 };
