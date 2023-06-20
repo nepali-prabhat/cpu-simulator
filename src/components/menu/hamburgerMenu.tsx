@@ -23,7 +23,7 @@ export const HamburgerMenu = () => {
             <Popover.Portal>
                 <Popover.Content
                     className={
-                        "z-10 p-3.5 ml-[300px] mt-3 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
+                        "z-10 p-3.5 ml-1 mt-3 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
                     }
                 >
                     <Palette />

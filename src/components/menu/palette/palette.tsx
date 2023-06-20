@@ -1,109 +1,77 @@
 import { PaletteTabs } from "./paletteTabs";
 import { PaletteSearch } from "./paletteSearch";
 import { PaletteTabContent } from "./paletteTabContent";
-import { useAtom } from "jotai";
-import { activePaletteTabAtom } from "@/state/ui";
-import { useCallback, useEffect, useRef } from "react";
-import { tabs } from "@/constants";
+import { useAtom, useSetAtom } from "jotai";
+import { activePaletteTabAtom, partialActivePaletteTabAtom } from "@/state/ui";
+import { useSwipeable } from "react-swipeable";
+import { paletteWidth, tabs } from "@/constants";
+import { useState } from "react";
 
 export const Palette = () => {
     const [activeTab, setActiveTab] = useAtom(activePaletteTabAtom);
-    const ref = useRef<HTMLDivElement>(null);
-    const scrollRef = useRef<
-        | {
-            lastScrollX: number;
-            lastTimeoutId?: NodeJS.Timeout;
-        }
-        | undefined
-    >(undefined);
-    const lockedRef = useRef<{
-        locked: boolean;
-        timeoutId?: NodeJS.Timeout;
-    }>({ locked: false });
+    const setPartialActiveTab = useSetAtom(partialActivePaletteTabAtom);
+    const [scrollX, setScrollX] = useState(0);
+    const activeIndex = tabs.indexOf(activeTab);
 
-    const handleWheel = useCallback(
-        (e: WheelEvent) => {
-            e.preventDefault();
-            e.stopPropagation();
-            clearTimeout(scrollRef.current?.lastTimeoutId);
-            const current = scrollRef.current;
-            const timeoutId = setTimeout(() => {
-                // TODO: check the direction and change activeTab
-                console.log("scrollref timeout: ", scrollRef.current);
-                if (!lockedRef.current.locked) {
-                    const scrollX = scrollRef.current?.lastScrollX || 0;
-                    if (Math.abs(scrollX) > 0) {
-                        const direction = scrollX > 0 ? "left" : "right";
-                        setActiveTab((v) => {
-                            const currentIndex = tabs.indexOf(v);
-                            let nextIndex =
-                                direction === "left"
-                                    ? currentIndex - 1
-                                    : currentIndex + 1;
-
-                            /* nextIndex = Math.min(
-                            tabs.length - 1,
-                            Math.max(nextIndex, 0)
-                        ); */
-                            return tabs[nextIndex] || v;
-                        });
-                    }
-                    lockedRef.current.locked = true;
-                    lockedRef.current.timeoutId = setTimeout(() => {
-                        lockedRef.current.locked = false;
-                    }, 500);
-                    scrollRef.current = undefined;
-                }
-            }, 10);
-            let resolvedDeltaX = 0;
-            if (e.shiftKey) {
-                resolvedDeltaX = e.deltaY;
-                e.preventDefault();
-            }
-            if (!e.deltaY) {
+    const handlers = useSwipeable({
+        onSwiping: (e) => {
+            let resolvedDeltaX: number;
+            if (activeIndex === 0) {
                 resolvedDeltaX = e.deltaX;
+                if (resolvedDeltaX > 30) {
+                    resolvedDeltaX = 30;
+                }
+                if (resolvedDeltaX < -paletteWidth) {
+                    resolvedDeltaX = -paletteWidth;
+                }
+            } else if (activeIndex === tabs.length - 1) {
+                resolvedDeltaX = e.deltaX;
+                if (resolvedDeltaX < -30) {
+                    resolvedDeltaX = -30;
+                }
+                if (resolvedDeltaX > paletteWidth) {
+                    resolvedDeltaX = paletteWidth;
+                }
+            } else {
+                resolvedDeltaX = e.deltaX;
+                if (resolvedDeltaX > paletteWidth) {
+                    resolvedDeltaX = paletteWidth;
+                }
+                if (resolvedDeltaX < -paletteWidth) {
+                    resolvedDeltaX = -paletteWidth;
+                }
             }
-            const rate = 0.01;
-            const scrollX = (current?.lastScrollX || 0) + rate * resolvedDeltaX;
-            scrollRef.current = {
-                lastScrollX: scrollX,
-                lastTimeoutId: timeoutId,
-            };
-            /* console.log(
-                "scrollref: ",
-                scrollRef.current,
-                e.deltaX,
-                scrollX,
-                resolvedDeltaX
-            ); */
+            setScrollX(resolvedDeltaX);
+            const sign = resolvedDeltaX > 0 ? 1 : -1;
+            setPartialActiveTab((v) => tabs[activeIndex - sign] || v);
         },
-        [setActiveTab]
-    );
-    useEffect(() => {
-        const _handleWheel = (e: WheelEvent) => {
-            handleWheel(e);
-        };
-        let element = ref.current;
-        element?.addEventListener("wheel", _handleWheel, { passive: false });
-        return () => {
-            element?.removeEventListener("wheel", _handleWheel);
-        };
-    }, [handleWheel]);
-
-    useEffect(() => {
-        return () => {
-            // eslint-disable-next-line react-hooks/exhaustive-deps
-            clearTimeout(scrollRef.current?.lastTimeoutId);
-        };
-    }, []);
+        onSwiped: () => {
+            setScrollX(0);
+        },
+        onSwipedLeft: () => {
+            setActiveTab((v) => {
+                const activeTabIndex = tabs.indexOf(v);
+                return tabs[activeTabIndex + 1] || v;
+            });
+        },
+        onSwipedRight: () => {
+            setActiveTab((v) => {
+                const activeTabIndex = tabs.indexOf(v);
+                return tabs[activeTabIndex - 1] || v;
+            });
+        },
+        trackMouse: true,
+        trackTouch: true,
+        preventScrollOnSwipe: true,
+    });
 
     return (
-        <section ref={ref} className={"flex gap-2 flex-col"}>
+        <section {...handlers} className={"flex gap-2 flex-col"}>
+            <PaletteSearch />
+            <PaletteTabContent scrollX={scrollX} activeTab={activeTab} />
             <div className="self-center">
                 <PaletteTabs />
             </div>
-            <PaletteSearch />
-            <PaletteTabContent scrollX={scrollX} activeTab={activeTab} />
         </section>
     );
 };

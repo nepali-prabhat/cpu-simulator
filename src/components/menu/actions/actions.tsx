@@ -1,3 +1,6 @@
 export const Actions = () => {
-    return <div>TODO: actions</div>;
+    return <div>
+        <p>TODO: actions</p>
+        <button>hello</button>
+    </div>;
 };

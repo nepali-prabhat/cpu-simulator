@@ -19,7 +19,7 @@ const PaletteTabItem = forwardRef<HTMLDivElement, TabPropType>(
         const className = twMerge(
             "absolute top-0 z-10",
             "transition-all duration-100 ease-out",
-            // props.isActive ? "visible" : "invisible",
+            // props.isActive ? "visible" : "invisible ",
             props.className
         );
         switch (props.type) {
@@ -27,7 +27,7 @@ const PaletteTabItem = forwardRef<HTMLDivElement, TabPropType>(
                 return (
                     <div
                         ref={ref}
-                        className={`${className} `}
+                        className={`${className}`}
                         style={props.style}
                     >
                         <Actions />
@@ -59,9 +59,22 @@ export const PaletteTabContent = (props: {
 
     useLayoutEffect(() => {
         const heights = refs.current?.map((v) => v?.clientHeight);
+        console.log("heights: ", heights);
         setHeights(heights);
     }, []);
     const activeIndex = tabs.indexOf(props.activeTab);
+
+    let resolvedHeight = heights[activeIndex];
+
+    if (props.scrollX !== 0) {
+        const startHeight = heights[activeIndex] || 0;
+        const sign = props.scrollX > 0 ? 1 : -1;
+        const finalHeight = heights[activeIndex - sign] || 0;
+        const currentScroll = sign * Math.min(Math.abs(props.scrollX), width);
+        resolvedHeight =
+            startHeight +
+            sign * (currentScroll / width) * (finalHeight - startHeight);
+    }
 
     return (
         <div
@@ -71,14 +84,14 @@ export const PaletteTabContent = (props: {
             )}
             style={{
                 width: width,
-                height: heights[activeIndex]
+                height: resolvedHeight,
             }}
         >
             {tabs.map((t, i) => (
                 <PaletteTabItem
                     key={`PALETTE_TAB_ITEM${t.toUpperCase()}`}
                     style={{
-                        left: (i - activeIndex) * width,
+                        left: (i - activeIndex) * width + props.scrollX,
                         width: width,
                         paddingRight: 8,
                     }}
