@@ -1,9 +1,9 @@
 import { nanoid } from "nanoid";
 import { useRef } from "react";
 
-import clsx from "clsx";
 import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/appState";
 import { useAtom, useSetAtom } from "jotai";
+import { twMerge } from "tailwind-merge";
 
 export const AddCircuit = () => {
     const [newCircuitTitle, setNewCircuitTitle] = useAtom(newCircuitTitleAtom);
@@ -29,13 +29,13 @@ export const AddCircuit = () => {
     return (
         <>
             <li
-                className={clsx(
+                className={twMerge(
                     "px-1.5 py-1 flex gap-2 items-center rounded group"
                 )}
             >
                 <button
                     onClick={handleAdd}
-                    className={clsx(
+                    className={twMerge(
                         "p-2 font-semibold rounded",
                         "hover:bg-gray-100 focus:bg-gray-100"
                     )}
@@ -52,8 +52,8 @@ export const AddCircuit = () => {
                 </button>
                 <input
                     ref={newCircuitTitleRef}
-                    className={clsx(
-                        `grow rounded px-2.5 py-1 truncate bg-inherit focus:bg-neutral-100`
+                    className={twMerge(
+                        `grow rounded px-2.5 py-1 truncate bg-inherit hover:bg-neutral-100 focus:bg-neutral-100`
                     )}
                     placeholder={"Circuit name"}
                     value={newCircuitTitle}
@@ -68,10 +68,11 @@ export const AddCircuit = () => {
                     }}
                 />
                 <button
-                    className={clsx(
+                    className={twMerge(
                         "p-2 rounded",
-                        "opacity-0 group-focus-within:opacity-100 group-hover:opacity-100",
-                        "hover:bg-gray-100 focus:bg-gray-100"
+                        "opacity-0",
+                        "focus:bg-gray-100 group-focus-within:opacity-100 hover:bg-gray-100 ",
+                        newCircuitTitle && "group-hover:opacity-100 "
                     )}
                     onClick={handleAdd}
                 >

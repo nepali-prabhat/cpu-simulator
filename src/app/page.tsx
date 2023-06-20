@@ -6,7 +6,6 @@ import { useEffect, useState } from "react";
 import Providers from "./providers";
 import { Menu } from "@/components/menu/menu";
 import dynamic from "next/dynamic";
-import { Palette } from "@/components/palette/palette";
 
 const DebugAtoms = () => {
     useAtomsDebugValue();
@@ -35,7 +34,6 @@ function Home() {
                 <DebugAtoms />
                 <Canvas />
                 <Menu />
-                <Palette />
                 <Footer />
             </main>
         </Providers>

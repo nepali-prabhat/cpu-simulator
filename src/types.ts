@@ -41,9 +41,12 @@ export type PointerState = {
     };
 };
 
+export type PaletteTab = "actions" | "component" | "circuit";
+
 export type MenuState = {
     isMenuOpen: boolean;
     isCircuitOpen: boolean;
+    activeTab: PaletteTab;
 };
 
 export type SetViewportZoom =

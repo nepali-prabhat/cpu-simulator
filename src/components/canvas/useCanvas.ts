@@ -151,6 +151,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         document.addEventListener("mousemove", _mouseMoveHanlder);
         return () => {
             window.removeEventListener("resize", _resizeHandler);
+            window.removeEventListener("keydown", _keydownHandler);
             document.removeEventListener("mousemove", _mouseMoveHanlder);
         };
     }, [setDimension, setZoom]);

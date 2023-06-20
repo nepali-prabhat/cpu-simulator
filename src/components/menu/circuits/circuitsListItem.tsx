@@ -179,6 +179,7 @@ export const CircuitsSortableItem = ({
                                 setEditEnabled(true);
                             }}
                             style={{ width: 150 }}
+                            title={circuit.title}
                         >
                             {circuit.title}
                         </button>
