@@ -14,7 +14,7 @@ export const GRID_SPACE = 16;
 export const GRID_TYPE: "dots" | "lines" = "dots";
 
 // Used in palette
-export const paletteWidth = 230;
+export const paletteWidth = 200;
 export const tabs: PaletteTab[] = ["actions", "component", "circuit"];
 export const scrollWidth = 8;
 // Ids used to scroll circuits list to the bottom once a circuit is added.

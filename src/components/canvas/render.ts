@@ -111,7 +111,6 @@ function renderSelectBox({
     canvasProperties: CanvasProperties;
     context: CanvasRenderingContext2D;
 }) {
-    // TODO: make this a constant
     const { scroll } = canvasProperties;
     const { elements, selectedElementIds, selectRect } = appState;
 

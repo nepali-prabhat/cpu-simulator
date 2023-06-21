@@ -5,14 +5,12 @@ import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/appState";
 import { useAtom, useSetAtom } from "jotai";
 import { twMerge } from "tailwind-merge";
 import { flushSync } from "react-dom";
-import { updatePaletteHeightAtom } from "@/state/ui";
 import { circuitsMenuListId, getCircuitsElementId } from "@/constants";
 
 export const AddCircuit = () => {
     const [newCircuitTitle, setNewCircuitTitle] = useAtom(newCircuitTitleAtom);
     const newCircuitTitleRef = useRef<HTMLInputElement>(null);
     const addCircuit = useSetAtom(addNewCircuitAtom);
-    const updatePaletteHeight = useSetAtom(updatePaletteHeightAtom);
 
     const focusTitleInput = () => {
         if (newCircuitTitleRef.current) {
@@ -29,7 +27,6 @@ export const AddCircuit = () => {
             flushSync(() => {
                 addCircuit({ uid, title: newCircuitTitle });
             });
-            updatePaletteHeight();
             const parentElement = document.getElementById(circuitsMenuListId);
             if (
                 parentElement &&
