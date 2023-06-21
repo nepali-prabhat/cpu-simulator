@@ -49,7 +49,6 @@ export const PaletteTabContent = (props: { activeTab: PaletteTab }) => {
             ref={ref}
             className={clsx("overflow-x-hidden")}
             style={{
-                transitionProperty: "height, width",
                 width: width,
             }}
         >

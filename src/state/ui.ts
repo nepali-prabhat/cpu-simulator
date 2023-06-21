@@ -1,5 +1,5 @@
 import { MenuState } from "@/types";
-import { atom } from "jotai";
+import { atom, getDefaultStore } from "jotai";
 
 export const isMenuOpenAtom = atom<MenuState["isMenuOpen"]>(false);
 export const isCircuitOpenAtom = atom<MenuState["isCircuitOpen"]>(false);
@@ -10,3 +10,11 @@ export const partialActivePaletteTabAtom = atom<
 >(undefined);
 export const paletteSearchAtom = atom<string>("");
 
+export const backgroundColorAtom = atom<{ bg: string; fg: string }>({
+    bg: "#f3f0ff",
+    fg: "#b197fc",
+});
+
+export const getUIStore = () => {
+    return getDefaultStore();
+};

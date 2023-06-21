@@ -5,6 +5,7 @@ import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { elementsConfig } from "@/elementsConfig";
 import { renderGate } from "./gatesRenderer";
+import { backgroundColorAtom, getUIStore } from "@/state/ui";
 
 export function renderCanvas({
     context,
@@ -21,12 +22,15 @@ export function renderCanvas({
 }) {
     const { scroll, zoom } = canvasProperties;
     const { width, height } = canvasProperties.dimension;
+    const bgColor = getUIStore().get(backgroundColorAtom).bg;
     context.setTransform(1, 0, 0, 1, 0, 0);
     context.save();
 
     // clear background
     context.save();
     context.clearRect(0, 0, width, height);
+    context.fillStyle = bgColor;
+    context.fillRect(0, 0, width, height);
     context.restore();
 
     // apply zoom

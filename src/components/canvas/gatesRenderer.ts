@@ -1,3 +1,4 @@
+import { backgroundColorAtom, getUIStore } from "@/state/ui";
 import { Element } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
@@ -15,14 +16,38 @@ export const renderAndGate: GatesRenderer = ({
     rc,
     option: { config, configWithFill },
 }) => {
-    rc?.path(
+    /* rc?.path(
         "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4ZM10 44a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
         config
+    ); */
+    const bgColor = getUIStore().get(backgroundColorAtom);
+    rc?.path(
+        "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
+        { ...config, fill: bgColor.bg, fillStyle: "solid" }
     );
     rc?.path(
         "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
-        configWithFill
+        { ...configWithFill }
     );
+    const add = 14;
+    const start = -9;
+    const n = 6;
+    rc?.line(22, -18, 22, 64 + 18, {
+        ...config,
+        roughness: 1,
+    });
+    for (let i = 0; i < n; i++) {
+        rc?.rectangle(8, start + i * add, 14, 4, {
+            ...config,
+            fill: bgColor.bg,
+            roughness: 1,
+        });
+    }
+    rc?.rectangle(56, 30, 14, 4, {
+        ...config,
+        fill: bgColor.bg,
+        roughness: 1,
+    });
 };
 
 export const renderOrGate: GatesRenderer = ({
@@ -102,7 +127,7 @@ export const renderXorGate: GatesRenderer = ({
     );
     rc?.path(
         "M13 12c2.933 3.437 6.869 9.945 6.869 20.121 0 10.1-3.877 16.493-6.803 19.879",
-        config
+        { ...config, fill: "none" }
     );
 };
 
@@ -116,7 +141,7 @@ export const renderXnorGate: GatesRenderer = ({
     );
     rc?.path(
         "M7 12c2.933 3.437 6.869 9.945 6.869 20.121 0 10.1-3.877 16.493-6.803 19.879",
-        config
+        { ...config, fill: "none" }
     );
     rc?.circle(56, 32, 6, config);
 };
@@ -157,6 +182,10 @@ export const renderDecoder: GatesRenderer = ({
 }) => {
     rc?.path(
         "M16 13.772c0-2.793 2.79-4.726 5.404-3.745l24 9A4 4 0 0 1 48 22.772v18.456a4 4 0 0 1-2.596 3.745l-24 9c-2.614.98-5.404-.952-5.404-3.745V13.772Z",
+        { ...config, fill: "white", fillStyle: "solid" }
+    );
+    rc?.path(
+        "M16 13.772c0-2.793 2.79-4.726 5.404-3.745l24 9A4 4 0 0 1 48 22.772v18.456a4 4 0 0 1-2.596 3.745l-24 9c-2.614.98-5.404-.952-5.404-3.745V13.772Z",
         configWithFill
     );
     rc?.path(
@@ -184,14 +213,17 @@ export function renderGate({
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    const config = {
+    const config: Options = {
         seed: element.nonce + 1,
         roughness: 0.2,
+        fill: "white",
+        fillStyle: "solid",
     };
     const fill = "metal";
-    const configWithFill = {
+    const configWithFill: Options = {
         ...config,
         fill,
+        fillStyle: "hachure",
         hachureGap: 4,
     };
     const option = {
