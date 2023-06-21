@@ -18,7 +18,6 @@ import {
     scrollAtom,
     setViewportZoom,
     canvasDimensionAtom,
-    getNormalizedZoom,
     getZoomFromStore,
 } from "@/state/scene";
 import {
@@ -27,6 +26,7 @@ import {
     selectRectAtom,
     selectedElementIdsAtom,
 } from "@/state/appState";
+import { getNormalizedZoom } from "@/utils";
 
 const gridSpace = GRID_SPACE;
 

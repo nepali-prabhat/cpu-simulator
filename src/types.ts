@@ -17,7 +17,24 @@ export type CanvasProperties = {
     scroll: Point;
     zoom: NormalizedZoomValue;
 };
-export type ElementType = "not_gate" | "and_gate" | "or_gate";
+export type ElementConfig = {
+    height:number;
+    width:number;
+    displayName: string;
+}
+export type ElementType =
+    | "not_gate"
+    | "and_gate"
+    | "or_gate"
+    | "nand_gate"
+    | "nor_gate"
+    | "buffer"
+    | "xor_gate"
+    | "xnor_gate"
+    | "mux"
+    | "dmux"
+    | "decoder"
+    | "DQ_flip_flop";
 export type Element = BoundingBox & {
     uid: string;
     type: ElementType;

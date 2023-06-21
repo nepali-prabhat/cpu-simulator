@@ -50,42 +50,6 @@ export const PaletteComponents = () => {
             <ComponentButton name="DQ Flip flop">
                 <Memory />
             </ComponentButton>
-            <ComponentButton name="AND">
-                <AndGate />
-            </ComponentButton>
-            <ComponentButton name="OR">
-                <OrGate />
-            </ComponentButton>
-            <ComponentButton name="NOT">
-                <NotGate />
-            </ComponentButton>
-            <ComponentButton name="NAND">
-                <NAndGate />
-            </ComponentButton>
-            <ComponentButton name="NOR">
-                <NorGate />
-            </ComponentButton>
-            <ComponentButton name="BUFFER">
-                <Buffer />
-            </ComponentButton>
-            <ComponentButton name="XOR">
-                <XorGate />
-            </ComponentButton>
-            <ComponentButton name="XNOR">
-                <XnorGate />
-            </ComponentButton>
-            <ComponentButton name="MUX">
-                <Reduce2To1Gate />
-            </ComponentButton>
-            <ComponentButton name="DMUX">
-                <Multiply1To2Gate />
-            </ComponentButton>
-            <ComponentButton name="DECODER">
-                <Multiply1To2Gate />
-            </ComponentButton>
-            <ComponentButton name="DQ Flip flop">
-                <Memory />
-            </ComponentButton>
         </div>
     );
 };

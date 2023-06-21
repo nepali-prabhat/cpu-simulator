@@ -1,8 +1,10 @@
-import { AppState, CanvasProperties, Element } from "@/types";
+import { AppState, BoundingBox, CanvasProperties, Element } from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
 import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
+import { elementsConfig } from "@/elementsConfig";
+import { renderGate } from "./gatesRenderer";
 
 export function renderCanvas({
     context,
@@ -90,41 +92,13 @@ function renderElements({
     for (let element of Object.values(elements)) {
         context.save();
         context.translate(element.x + scroll.x, element.y + scroll.y);
-        const config = { seed: element.nonce + 1, roughness: 0.5 };
-
-        switch (element.type) {
-            case "and_gate": {
-                rc?.path(
-                    "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4ZM10 44a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
-                    config
-                );
-                rc?.path(
-                    "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
-                    config
-                );
-                break;
-            }
-            case "or_gate": {
-                rc?.path(
-                    "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Zm0 24a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
-                    config
-                );
-                rc?.path(
-                    "M18.545 53.159C21.691 48.892 25 42.03 25 32.132c0-10.102-3.446-17.113-6.637-21.422-.011-.015-.06-.091-.065-.274a1.477 1.477 0 0 1 .133-.628 1.027 1.027 0 0 1 .29-.4c3.549.296 7.703.78 10.806 1.535 7.86 1.915 19.239 7.755 22.345 20.832a1.56 1.56 0 0 1 0 .713C48.77 45.534 37.42 51.134 29.527 53.057c-3.038.74-7.084 1.218-10.587 1.516a1.136 1.136 0 0 1-.317-.44 1.624 1.624 0 0 1-.144-.68c.005-.2.057-.282.066-.294Z",
-                    config
-                );
-                break;
-            }
-            case "not_gate": {
-                rc?.path("M9 30a2 2 0 1 0 0 4v-4Zm0 4h10v-4H9v4Z", config);
-                rc?.path(
-                    "M44.898 33.664 20.11 50.19C18.78 51.076 17 50.123 17 48.526V15.474c0-1.597 1.78-2.55 3.11-1.664l24.788 16.526a2 2 0 0 1 0 3.328Z",
-                    config
-                );
-                rc?.circle(53, 32, 4, config);
-                break;
-            }
-        }
+        context.scale(
+            element.width /
+            (elementsConfig.get(element.type)?.width || element.width),
+            element.height /
+            (elementsConfig.get(element.type)?.height || element.height)
+        );
+        renderGate({ element, rc, context });
         context.restore();
     }
 }
@@ -171,18 +145,40 @@ function renderSelectBox({
 
     // render select rect
     if (selectRect) {
-        renderBoundingBox(context, scroll, selectRect, {
-            padding: 0,
-            size: 0,
-            renderHandles: false,
-        });
+        renderSelectRect(context, scroll, selectRect);
     }
 }
 
-export function renderBoundingBox(
+function renderSelectRect(
     context: CanvasRenderingContext2D,
     scroll: { x: number; y: number },
-    rect: { x: number; y: number; width: number; height: number },
+    rect: BoundingBox
+) {
+    const lineWidth = 1;
+    context.save();
+    context.translate(rect.x + scroll.x, rect.y + scroll.y);
+    context.fillStyle = "rgba(115, 193, 252,0.1)";
+    context.strokeStyle = "rgba(115, 193, 252,1)";
+    context.lineWidth = lineWidth;
+    context.fillRect(
+        0,
+        0 + lineWidth,
+        rect.width - lineWidth,
+        rect.height - lineWidth
+    );
+    context.strokeRect(
+        0,
+        0 + lineWidth,
+        rect.width - lineWidth,
+        rect.height - lineWidth
+    );
+    context.restore();
+}
+
+function renderBoundingBox(
+    context: CanvasRenderingContext2D,
+    scroll: { x: number; y: number },
+    rect: BoundingBox,
     {
         renderHandles = true,
         padding = SELECT_PADDING,
@@ -193,27 +189,44 @@ export function renderBoundingBox(
         size: number;
     }> = {}
 ) {
+    const lineWidth = 1;
     context.save();
     context.translate(rect.x + scroll.x, rect.y + scroll.y);
     const color = "hsl(207, 83%, 79%)";
     context.fillStyle = color;
     context.strokeStyle = color;
+    context.lineWidth = lineWidth;
     if (renderHandles) {
-        context.fillRect(0 - size - padding, 0 - size - padding, size, size);
-        context.fillRect(rect.width + padding, 0 - padding - size, size, size);
-        context.fillRect(0 - size - padding, rect.height + padding, size, size);
         context.fillRect(
-            rect.width + padding,
-            rect.height + padding,
+            0 - size / 2 - padding,
+            0 - size / 2 - padding,
+            size,
+            size
+        );
+        context.fillRect(
+            rect.width + padding - size / 2,
+            0 - padding - size / 2,
+            size,
+            size
+        );
+        context.fillRect(
+            0 - size / 2 - padding,
+            rect.height + padding - size / 2,
+            size,
+            size
+        );
+        context.fillRect(
+            rect.width + padding - size / 2,
+            rect.height + padding - size / 2,
             size,
             size
         );
     }
     context.strokeRect(
-        0 - size / 2 - padding,
-        0 - size / 2 - padding,
-        rect.width + size + padding * 2,
-        rect.height + size + padding * 2
+        0 - padding,
+        0 - padding,
+        rect.width + padding * 2,
+        rect.height + padding * 2
     );
 
     context.restore();

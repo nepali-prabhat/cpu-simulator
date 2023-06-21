@@ -1,10 +1,6 @@
-import { INITIAL_ZOOM, MAX_ZOOM, MIN_ZOOM } from "@/constants";
-import {
-    CanvasDimension,
-    NormalizedZoomValue,
-    Point,
-    SetViewportZoom,
-} from "@/types";
+import { INITIAL_ZOOM } from "@/constants";
+import { CanvasDimension, Point, SetViewportZoom } from "@/types";
+import { getNormalizedZoom } from "@/utils";
 import { atom, getDefaultStore } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
@@ -67,9 +63,3 @@ export const setViewportZoom = atom(
         set(zoomAtom, nextZoom);
     }
 );
-
-// Utility functions for scene
-
-export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
-    return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
-}
