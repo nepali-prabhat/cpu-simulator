@@ -66,7 +66,7 @@ export const AddCircuit = () => {
                 <input
                     ref={newCircuitTitleRef}
                     className={twMerge(
-                        `grow rounded px-2.5 py-1 truncate bg-inherit hover:bg-neutral-100 focus:bg-neutral-100`
+                        `grow rounded px-2.5 py-1 truncate bg-inherit hover:bg-gray-100 focus:bg-gray-100`
                     )}
                     placeholder={"Circuit name"}
                     value={newCircuitTitle}

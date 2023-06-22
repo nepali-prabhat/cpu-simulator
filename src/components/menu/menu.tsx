@@ -30,6 +30,7 @@ function useObservePaletteHeight() {
 
 export const Menu = () => {
     const { palettePortalRef, menuRef, top } = useObservePaletteHeight();
+
     return (
         <>
             <section
@@ -40,12 +41,7 @@ export const Menu = () => {
                 <HamburgerMenu ref={palettePortalRef} />
                 <MenuInput />
             </section>
-            <section
-                style={{ top: top }}
-                className="absolute p-3.5 m-1 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
-            >
-                <ElementConfig />
-            </section>
+            <ElementConfig top={top} />
         </>
     );
 };

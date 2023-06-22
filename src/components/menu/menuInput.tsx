@@ -82,8 +82,8 @@ const CircuitTitleInput = forwardRef<HTMLInputElement, PropType>(
                 <input
                     ref={mergeRefs([titleRef, ref])}
                     className={clsx(
-                        `rounded px-2.5 truncate bg-inherit text-md focus:bg-neutral-100`,
-                        !isDragging && "hover:bg-neutral-100",
+                        `rounded px-2.5 truncate bg-inherit text-md focus:bg-gray-100`,
+                        !isDragging && "hover:bg-gray-100",
                         isDragging && "cursor-grabbing"
                     )}
                     placeholder={placeholder}

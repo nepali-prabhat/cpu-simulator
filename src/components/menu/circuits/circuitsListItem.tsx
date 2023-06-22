@@ -119,10 +119,10 @@ export const CircuitsSortableItem = ({
                     <input
                         ref={titleField}
                         className={clsx(
-                            `grow rounded px-2.5 py-1 truncate bg-inherit text-md focus:bg-neutral-100`,
-                            !isDragging && "hover:bg-neutral-100",
+                            `grow rounded px-2.5 py-1 truncate bg-inherit text-md focus:bg-gray-100`,
+                            !isDragging && "hover:bg-gray-100",
                             isDragging && "cursor-grabbing",
-                            editEnabled && "bg-neutral-100"
+                            editEnabled && "bg-gray-100"
                         )}
                         placeholder={"Circuit Name"}
                         value={circuit.title}

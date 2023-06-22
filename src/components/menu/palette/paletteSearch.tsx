@@ -23,7 +23,7 @@ export const PaletteSearch = memo(
             <input
                 ref={ref}
                 className={twMerge(
-                    `rounded px-2.5 py-1 truncate bg-inherit text-md bg-neutral-100`
+                    `rounded px-2.5 py-1 truncate bg-inherit text-md bg-gray-100`
                 )}
                 value={searchValue}
                 onChange={(e) => setSearchValue(e.target.value)}

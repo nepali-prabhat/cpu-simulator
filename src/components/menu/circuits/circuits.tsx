@@ -7,7 +7,7 @@ export const Circuits = memo(
         return (
             <div>
                 <CircuitsList />
-                <hr className="mt-1 mb-1" />
+                {/* <hr className="mt-1 mb-1" /> */}
                 <AddCircuit />
             </div>
         );
