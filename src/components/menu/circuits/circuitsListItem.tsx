@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
+import { PrimitiveAtom, useAtom } from "jotai";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import clsx from "clsx";
@@ -8,15 +8,12 @@ import { selectedCircuitIdAtom } from "@/state/appState";
 import { Circuit } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { getCircuitsElementId } from "@/constants";
-import { activePaletteTabAtom } from "@/state/ui";
-import { useScrollCircuitIntoView } from "../palette/hooks";
 
 export const CircuitsSortableItem = ({
     circuitAtom,
 }: {
     circuitAtom: PrimitiveAtom<Circuit>;
 }) => {
-    const activeTab = useAtomValue(activePaletteTabAtom);
     const [circuit, setCircuit] = useAtom(circuitAtom);
     const [selectedCircuitId, setSelectedCircuitId] = useAtom(
         selectedCircuitIdAtom
@@ -35,7 +32,6 @@ export const CircuitsSortableItem = ({
     const listRef = useRef<HTMLElement | null>(null);
 
     const isSelected = selectedCircuitId === circuit.uid;
-    useScrollCircuitIntoView({ activeTab, isSelected, listRef });
 
     useEffect(() => {
         if (editEnabled) {

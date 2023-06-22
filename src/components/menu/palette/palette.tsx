@@ -2,7 +2,7 @@ import { PaletteTabs } from "./paletteTabs";
 import { PaletteTabContent } from "./paletteTabContent";
 import { useAtom, useAtomValue } from "jotai";
 import { activePaletteTabAtom } from "@/state/ui";
-import { paletteTitleMap } from "@/constants";
+import { paletteTitleMap, paletteWidth } from "@/constants";
 
 const PaletteTitle = () => {
     const activeTab = useAtomValue(activePaletteTabAtom);
@@ -17,7 +17,10 @@ export const Palette = () => {
     const [activeTab] = useAtom(activePaletteTabAtom);
 
     return (
-        <section className={"flex gap-2 flex-col"}>
+        <section
+            className={"flex gap-2 flex-col"}
+            style={{ width: paletteWidth }}
+        >
             <div className="self-center">
                 <PaletteTabs />
             </div>

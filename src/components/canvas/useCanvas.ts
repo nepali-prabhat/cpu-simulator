@@ -158,7 +158,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             window.removeEventListener("keydown", _keydownHandler);
             document.removeEventListener("mousemove", _mouseMoveHanlder);
         };
-    }, [setDimension, setZoom]);
+    }, [setActiveElementType, setDimension, setZoom]);
 
     const draw = useCallback(() => {
         const canvas = canvasRef.current;

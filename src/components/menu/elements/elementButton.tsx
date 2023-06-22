@@ -1,4 +1,4 @@
-import { HTMLAttributes, memo, useLayoutEffect, useRef, useState } from "react";
+import { HTMLAttributes, memo } from "react";
 import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { useAtom } from "jotai";
@@ -9,17 +9,12 @@ export type ComponentButtonProp = {
     name: string;
     className?: HTMLAttributes<HTMLButtonElement>["className"];
 };
+const width = 42;
 export const ElementTypeButton = memo(
     (props: ComponentButtonProp & React.PropsWithChildren) => {
         const [activeElement, setActiveElement] = useAtom(
             activeElementTypeAtom
         );
-        const ref = useRef<HTMLDivElement>(null);
-        const [width, setWidth] = useState<number | undefined>();
-        useLayoutEffect(() => {
-            const rect = ref.current?.getBoundingClientRect();
-            setWidth(rect?.width);
-        }, [props.name]);
 
         // TODO: handleonClick
         const handleClick = () => {
@@ -32,8 +27,7 @@ export const ElementTypeButton = memo(
                     "group px-1 flex flex-col rounded-md justify-center items-center"
                 )}
             >
-                <div
-                    ref={ref}
+                <button
                     onClick={handleClick}
                     className={twMerge(
                         "py-3 px-3 text-2xl rounded-md ring-1 ring-gray-200",
@@ -44,19 +38,17 @@ export const ElementTypeButton = memo(
                     )}
                 >
                     {props.children}
-                </div>
-                {width && (
-                    <span
-                        onClick={handleClick}
-                        className={twMerge(
-                            `text-sm mt-1 rounded-md select-none text-center truncate p-0.5`
-                        )}
-                        style={{ width: width }}
-                        title={props.name}
-                    >
-                        {props.name}
-                    </span>
-                )}
+                </button>
+                <span
+                    onClick={handleClick}
+                    className={twMerge(
+                        `text-sm mt-1 rounded-md select-none text-center truncate p-0.5`
+                    )}
+                    style={{ width: width }}
+                    title={props.name}
+                >
+                    {props.name}
+                </span>
             </button>
         );
     },
