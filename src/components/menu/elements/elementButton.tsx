@@ -14,7 +14,7 @@ export const ElementTypeButton = memo(
         const [activeElement, setActiveElement] = useAtom(
             activeElementTypeAtom
         );
-        const ref = useRef<HTMLButtonElement>(null);
+        const ref = useRef<HTMLDivElement>(null);
         const [width, setWidth] = useState<number | undefined>();
         useLayoutEffect(() => {
             const rect = ref.current?.getBoundingClientRect();
@@ -27,30 +27,36 @@ export const ElementTypeButton = memo(
         };
 
         return (
-            <div className="flex flex-col gap-1 justify-center items-center">
-                <button
+            <button
+                className={twMerge(
+                    "px-1 flex flex-col rounded-md justify-center items-center"
+                )}
+            >
+                <div
                     ref={ref}
                     onClick={handleClick}
                     className={twMerge(
-                        "py-3 px-3 text-2xl rounded-md border border-gray-300",
-                        "hover:ring-1",
+                        "py-3 px-3 text-2xl rounded-md ring-1 ring-gray-200",
+                        "hover:ring-2 hover:ring-blue-200",
                         props.className,
-                        activeElement === props.type &&
-                        `ring-2`
+                        activeElement === props.type && `ring-2 ring-blue-400`
                     )}
                 >
                     {props.children}
-                </button>
+                </div>
                 {width && (
                     <span
-                        className={`text-sm text-center truncate`}
+                        onClick={handleClick}
+                        className={twMerge(
+                            `text-sm mt-1 rounded-md select-none text-center truncate p-0.5`
+                        )}
                         style={{ width: width }}
                         title={props.name}
                     >
                         {props.name}
                     </span>
                 )}
-            </div>
+            </button>
         );
     },
     () => {
