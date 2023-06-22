@@ -29,7 +29,7 @@ export const ElementTypeButton = memo(
         return (
             <button
                 className={twMerge(
-                    "px-1 flex flex-col rounded-md justify-center items-center"
+                    "group px-1 flex flex-col rounded-md justify-center items-center"
                 )}
             >
                 <div
@@ -37,9 +37,10 @@ export const ElementTypeButton = memo(
                     onClick={handleClick}
                     className={twMerge(
                         "py-3 px-3 text-2xl rounded-md ring-1 ring-gray-200",
-                        "hover:ring-2 hover:ring-blue-200",
                         props.className,
-                        activeElement === props.type && `ring-2 ring-blue-400`
+                        activeElement === props.type
+                            ? `ring-2 ring-blue-400`
+                            : "group-hover:ring-2 group-hover:ring-blue-200"
                     )}
                 >
                     {props.children}
