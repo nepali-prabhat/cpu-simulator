@@ -10,7 +10,6 @@ export const CircuitIcon = (
             viewBox="0 0 64 64"
             {...props}
         >
-            <path fill="#fff" d="M0 0h64v64H0z" />
             <rect
                 width={15}
                 height={15}

@@ -21,16 +21,6 @@ const ids = [
 ];
 
 export const elementsAtom = atom<{ [key: Element["uid"]]: Element }>({
-    [ids[0]]: {
-        uid: ids[0],
-        x: 0,
-        y: 0,
-        width: 64,
-        height: 64,
-        type: "and_gate",
-        zIndex: 0,
-        nonce: 0,
-    },
     [ids[1]]: {
         uid: ids[1],
         x: 64,
@@ -140,6 +130,16 @@ export const elementsAtom = atom<{ [key: Element["uid"]]: Element }>({
         type: "DQ_flip_flop",
         zIndex: 0,
         nonce: 23,
+    },
+    [ids[0]]: {
+        uid: ids[0],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 64,
+        type: "and_gate",
+        zIndex: 0,
+        nonce: 0,
     },
 });
 export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
@@ -252,3 +252,4 @@ export const addNewCircuitAtom = atom(
         }
     }
 );
+

@@ -1,5 +1,5 @@
-import { backgroundColorAtom, getUIStore } from "@/state/ui";
 import { Element } from "@/types";
+import { getUIStore } from "@/utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
 
@@ -20,11 +20,6 @@ export const renderAndGate: GatesRenderer = ({
         "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4ZM10 44a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
         config
     ); */
-    const bgColor = getUIStore().get(backgroundColorAtom);
-    rc?.path(
-        "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
-        { ...config, fill: bgColor.bg, fillStyle: "solid" }
-    );
     rc?.path(
         "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
         { ...configWithFill }
@@ -39,13 +34,11 @@ export const renderAndGate: GatesRenderer = ({
     for (let i = 0; i < n; i++) {
         rc?.rectangle(8, start + i * add, 14, 4, {
             ...config,
-            fill: bgColor.bg,
             roughness: 1,
         });
     }
     rc?.rectangle(56, 30, 14, 4, {
         ...config,
-        fill: bgColor.bg,
         roughness: 1,
     });
 };

@@ -16,12 +16,13 @@ export type CanvasProperties = {
     dimension: CanvasDimension;
     scroll: Point;
     zoom: NormalizedZoomValue;
+    bgColor: string | undefined;
 };
 export type ElementConfig = {
-    height:number;
-    width:number;
+    height: number;
+    width: number;
     displayName: string;
-}
+};
 export type ElementType =
     | "not_gate"
     | "and_gate"

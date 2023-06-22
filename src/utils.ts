@@ -1,5 +1,6 @@
+import { getDefaultStore } from "jotai";
 import { MAX_ZOOM, MIN_ZOOM } from "./constants";
-import { ElementConfig, ElementType, NormalizedZoomValue, PaletteTab } from "./types";
+import { NormalizedZoomValue } from "./types";
 
 export function mergeRefs<T = any>(
     refs: Array<React.MutableRefObject<T> | React.LegacyRef<T>>
@@ -19,3 +20,7 @@ export function mergeRefs<T = any>(
 export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
     return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
 }
+
+export const getUIStore = () => {
+    return getDefaultStore();
+};

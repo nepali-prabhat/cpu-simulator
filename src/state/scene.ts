@@ -1,5 +1,10 @@
 import { INITIAL_ZOOM } from "@/constants";
-import { CanvasDimension, Point, SetViewportZoom } from "@/types";
+import {
+    CanvasDimension,
+    CanvasProperties,
+    Point,
+    SetViewportZoom,
+} from "@/types";
 import { getNormalizedZoom } from "@/utils";
 import { atom, getDefaultStore } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -18,14 +23,6 @@ const zoomAtom = atomWithStorage("canvas_zoom", INITIAL_ZOOM);
 export const zoomValueAtom = atom((get) => get(zoomAtom));
 
 export const getZoomFromStore = () => getDefaultStore().get(zoomAtom);
-
-export const sceneAtom = atom((get) => {
-    return {
-        dimension: get(canvasDimensionAtom),
-        zoom: get(zoomAtom),
-        scroll: get(scrollAtom),
-    };
-});
 
 export const setViewportZoom = atom(
     null,
@@ -63,3 +60,17 @@ export const setViewportZoom = atom(
         set(zoomAtom, nextZoom);
     }
 );
+
+export const bgColorAtom = atomWithStorage<string | undefined>(
+    "bg_color",
+    undefined
+);
+
+export const sceneAtom = atom<CanvasProperties>((get) => {
+    return {
+        dimension: get(canvasDimensionAtom),
+        zoom: get(zoomAtom),
+        scroll: get(scrollAtom),
+        bgColor: get(bgColorAtom),
+    };
+});
