@@ -35,7 +35,8 @@ export type ElementType =
     | "mux"
     | "dmux"
     | "decoder"
-    | "DQ_flip_flop";
+    | "DQ_flip_flop"
+    | "JK_flip_flop";
 export type Element = BoundingBox & {
     uid: string;
     type: ElementType;
@@ -59,7 +60,7 @@ export type PointerState = {
     };
 };
 
-export type PaletteTab = "actions" | "component" | "circuit";
+export type PaletteTab = "actions" | "elements" | "circuit";
 
 export type MenuState = {
     isMenuOpen: boolean;

@@ -20,7 +20,7 @@ const PaletteTabItem = (props: { type: PaletteTab }) => {
     switch (props.type) {
         case "actions":
             return <ActionsMenuIcon className={className} />;
-        case "component":
+        case "elements":
             return <ComponentIcon className={className} />;
         case "circuit": {
             return <CircuitIcon className={className} />;

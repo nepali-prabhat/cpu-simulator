@@ -1,9 +1,7 @@
-import { GRID_SPACE } from "@/constants";
-import { Element, BoundingBox, Circuit } from "@/types";
+import { Element, BoundingBox, Circuit, ElementType } from "@/types";
 import { PrimitiveAtom, atom } from "jotai";
 import { nanoid } from "nanoid";
 
-const gridSpace = GRID_SPACE;
 const ids = [
     nanoid(),
     nanoid(),
@@ -21,6 +19,16 @@ const ids = [
 ];
 
 export const elementsAtom = atom<{ [key: Element["uid"]]: Element }>({
+    [ids[0]]: {
+        uid: ids[0],
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 64,
+        type: "and_gate",
+        zIndex: 0,
+        nonce: 0,
+    },
     [ids[1]]: {
         uid: ids[1],
         x: 64,
@@ -131,32 +139,11 @@ export const elementsAtom = atom<{ [key: Element["uid"]]: Element }>({
         zIndex: 0,
         nonce: 23,
     },
-    [ids[0]]: {
-        uid: ids[0],
-        x: 0,
-        y: 0,
-        width: 64,
-        height: 64,
-        type: "and_gate",
-        zIndex: 0,
-        nonce: 0,
-    },
 });
 export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
     new Set<Element["uid"]>()
 );
 export const selectRectAtom = atom<BoundingBox | undefined>(undefined);
-
-export const appStateAtom = atom((get) => {
-    const elements = get(elementsAtom);
-    const selectedElementIds = get(selectedElementIdsAtom);
-    const selectRect = get(selectRectAtom);
-    return {
-        elements,
-        selectedElementIds,
-        selectRect,
-    };
-});
 
 const tempId = nanoid();
 export const circuitsAtom = atom<PrimitiveAtom<Circuit>[]>([
@@ -253,3 +240,13 @@ export const addNewCircuitAtom = atom(
     }
 );
 
+export const activeElementTypeAtom = atom<ElementType | undefined>(undefined);
+
+export const appStateAtom = atom((get) => {
+    return {
+        elements: get(elementsAtom),
+        selectedElementIds: get(selectedElementIdsAtom),
+        selectRect: get(selectRectAtom),
+        activeElementType: get(activeElementTypeAtom),
+    };
+});

@@ -1,5 +1,5 @@
 import { useAtom, useSetAtom } from "jotai";
-import { activePaletteTabAtom, partialActivePaletteTabAtom } from "@/state/ui";
+import { activePaletteTabAtom } from "@/state/ui";
 import { useSwipeable } from "react-swipeable";
 import { paletteWidth, tabs } from "@/constants";
 import {
@@ -13,7 +13,6 @@ import { usePreviousValue } from "@/utils/hooks/usePreviousValue";
 
 export function useScroll() {
     const [activeTab, setActiveTab] = useAtom(activePaletteTabAtom);
-    const setPartialActiveTab = useSetAtom(partialActivePaletteTabAtom);
     const [scrollX, setScrollX] = useState(0);
     const activeIndex = tabs.indexOf(activeTab);
     const handleScroll = useCallback(
@@ -45,10 +44,8 @@ export function useScroll() {
                 }
             }
             setScrollX(resolvedDeltaX);
-            const sign = resolvedDeltaX > 0 ? 1 : -1;
-            setPartialActiveTab((v) => tabs[activeIndex - sign] || v);
         },
-        [activeIndex, setPartialActiveTab]
+        [activeIndex]
     );
 
     const handlers = useSwipeable({
@@ -68,7 +65,6 @@ export function useScroll() {
                     return tabs[activeTabIndex + 1] || v;
                 });
             }
-            setPartialActiveTab(undefined);
         },
         trackMouse: true,
         trackTouch: true,
@@ -78,7 +74,7 @@ export function useScroll() {
     return { handlers };
 }
 
-// TODO: orchestrate this with 
+// TODO: orchestrate this with
 export function useScrollCircuitIntoView({
     activeTab,
     isSelected,
@@ -86,7 +82,7 @@ export function useScrollCircuitIntoView({
 }: {
     activeTab: PaletteTab;
     isSelected: boolean;
-    listRef: MutableRefObject<HTMLElement|null>;
+    listRef: MutableRefObject<HTMLElement | null>;
 }) {
     const lastActiveTab = usePreviousValue<string>(activeTab);
     useLayoutEffect(() => {

@@ -5,8 +5,14 @@ import { Palette } from "./palette/palette";
 
 export const HamburgerMenu = () => {
     const [isMenuOpen, setIsMenuOpen] = useAtom(isMenuOpenAtom);
+    const isPinned = true;
+    const handleOpenChange = (v: boolean) => {
+        if (!isPinned) {
+            setIsMenuOpen(v);
+        }
+    };
     return (
-        <Popover.Root open={isMenuOpen}>
+        <Popover.Root open={isMenuOpen} onOpenChange={handleOpenChange}>
             <Popover.Trigger asChild onClick={() => setIsMenuOpen(!isMenuOpen)}>
                 <button className="p-2.5 rounded-lg hover:bg-gray-200 focus:bg-gray-100 outline-2">
                     <svg
@@ -23,7 +29,7 @@ export const HamburgerMenu = () => {
             <Popover.Portal>
                 <Popover.Content
                     className={
-                        "z-10 p-3.5 ml-1 mt-3 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
+                        "z-10 bg-white p-3.5 ml-1 mt-3 rounded-tr-lg rounded-br-lg border border-gray-300"
                     }
                 >
                     <Palette />

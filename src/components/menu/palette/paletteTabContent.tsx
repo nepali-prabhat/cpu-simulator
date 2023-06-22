@@ -1,5 +1,5 @@
 import { Circuits } from "../circuits/circuits";
-import { PaletteComponents } from "../components/components";
+import { PaletteElements } from "../elements/elements";
 import { Actions } from "../actions/actions";
 import { twMerge } from "tailwind-merge";
 import { forwardRef, useRef } from "react";
@@ -24,10 +24,10 @@ const PaletteTabItem = forwardRef<HTMLDivElement, TabPropType>(
                         <Actions />
                     </div>
                 );
-            case "component":
+            case "elements":
                 return (
                     <div ref={ref} className={className} style={style}>
-                        <PaletteComponents />
+                        <PaletteElements />
                     </div>
                 );
             case "circuit":

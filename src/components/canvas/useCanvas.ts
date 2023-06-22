@@ -21,6 +21,7 @@ import {
     getZoomFromStore,
 } from "@/state/scene";
 import {
+    activeElementTypeAtom,
     appStateAtom,
     elementsAtom,
     selectRectAtom,
@@ -38,6 +39,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setZoom = useSetAtom(setViewportZoom);
     const setDimension = useSetAtom(canvasDimensionAtom);
 
+    const setActiveElementType = useSetAtom(activeElementTypeAtom);
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
@@ -144,6 +146,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     },
                     zoom: getNormalizedZoom(1),
                 }));
+            } else if (e.key === "Escape") {
+                setActiveElementType(undefined);
             }
         };
         window.addEventListener("resize", _resizeHandler);

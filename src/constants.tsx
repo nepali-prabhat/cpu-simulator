@@ -15,7 +15,7 @@ export const GRID_TYPE: "dots" | "lines" = "dots";
 
 // Used in palette
 export const paletteWidth = 200;
-export const tabs: PaletteTab[] = ["actions", "component", "circuit"];
+export const tabs: PaletteTab[] = ["actions", "elements", "circuit"];
 export const scrollWidth = 8;
 // Ids used to scroll circuits list to the bottom once a circuit is added.
 export const circuitsMenuListId = "circuits-menu-list-id";
@@ -23,5 +23,5 @@ export const getCircuitsElementId = (uid: string) => `CIRCUIT_SORTABLE_${uid}`;
 
 export const paletteTitleMap: Map<PaletteTab, string> = new Map();
 paletteTitleMap.set("actions", "Actions");
-paletteTitleMap.set("component", "Logic Components");
+paletteTitleMap.set("elements", "Logic Components");
 paletteTitleMap.set("circuit", "Circuits");

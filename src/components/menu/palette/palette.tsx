@@ -21,7 +21,7 @@ export const Palette = () => {
             <div className="self-center">
                 <PaletteTabs />
             </div>
-            {/* <PaletteTitle /> */}
+            <PaletteTitle />
             <PaletteTabContent activeTab={activeTab} />
         </section>
     );
