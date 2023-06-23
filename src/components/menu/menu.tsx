@@ -12,6 +12,7 @@ function useObservePaletteHeight() {
         let observer: ResizeObserver | undefined;
         if (palettePortalRef.current && menuRef.current) {
             observer = new ResizeObserver((elements) => {
+                // BUG: renders in the wrong position. Maybe directly access dom node here?
                 setTop(
                     elements[0]?.target.getBoundingClientRect().bottom ||
                     menuRef.current?.getBoundingClientRect().bottom ||

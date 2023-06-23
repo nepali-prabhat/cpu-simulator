@@ -1,6 +1,7 @@
 import { ELEMENTS_COLOR_PALETTE } from "@/colors";
 import { ElementConfig, ElementType } from "@/types";
 import { PrimitiveAtom, atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 
 export const elementsConfigAtomsMap: Map<
     ElementType,
@@ -16,7 +17,7 @@ const uiValues = {
 };
 elementsConfigAtomsMap.set(
     "and_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("and_gate_defaults", {
         type: "and_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -25,7 +26,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "or_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("or_gate_defaults", {
         type: "or_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -34,7 +35,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "not_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("not_gate_defaults", {
         type: "not_gate",
         dataBits: 1,
         ...uiValues,
@@ -43,7 +44,7 @@ elementsConfigAtomsMap.set(
 
 elementsConfigAtomsMap.set(
     "buffer",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("buffer_defaults", {
         type: "buffer",
         inputsCount: 1,
         dataBits: 1,
@@ -52,7 +53,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "nand_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("nand_gate_defaults", {
         type: "nand_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -61,7 +62,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "nor_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("nor_gate_defaults", {
         type: "nor_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -70,7 +71,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "xor_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("xor_gate_defaults", {
         type: "xor_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -79,7 +80,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "xnor_gate",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("xnor_gate_defaults", {
         type: "xnor_gate",
         inputsCount: 2,
         dataBits: 1,
@@ -88,7 +89,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "mux",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("mux_defaults", {
         type: "mux",
         selectBits: 1,
         dataBits: 1,
@@ -97,7 +98,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "dmux",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("dmux_defaults", {
         type: "dmux",
         selectBits: 1,
         dataBits: 1,
@@ -106,7 +107,7 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "decoder",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("decoder_defaults", {
         type: "decoder",
         selectBits: 1,
         ...uiValues,
@@ -114,14 +115,14 @@ elementsConfigAtomsMap.set(
 );
 elementsConfigAtomsMap.set(
     "DQ_flip_flop",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("DQ_Flip_Flop_defaults", {
         type: "DQ_flip_flop",
         ...uiValues,
     })
 );
 elementsConfigAtomsMap.set(
     "JK_flip_flop",
-    atom<ElementConfig>({
+    atomWithStorage<ElementConfig>("JK_Flip_Flop_defaults", {
         type: "JK_flip_flop",
         ...uiValues,
     })

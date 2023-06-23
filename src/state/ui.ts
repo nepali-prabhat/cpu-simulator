@@ -1,9 +1,14 @@
 import { MenuState, PaletteTab } from "@/types";
 import { atom } from "jotai";
-import { activeElementTypeAtom } from "./appState";
+import { atomWithStorage } from "jotai/utils";
 
-export const isMenuOpenAtom = atom<MenuState["isMenuOpen"]>(true);
-export const isCircuitOpenAtom = atom<MenuState["isCircuitOpen"]>(false);
+export const isMenuOpenAtom = atomWithStorage<MenuState["isMenuOpen"]>(
+    "menu_open",
+    true
+);
 
-export const activePaletteTabAtom = atom<PaletteTab>("elements");
+export const activePaletteTabAtom = atomWithStorage<PaletteTab>(
+    "active_menu_tab",
+    "elements"
+);
 export const paletteSearchAtom = atom<string>("");
