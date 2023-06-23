@@ -22,7 +22,7 @@ export const ElementTypeButton = memo(
         };
 
         return (
-            <button
+            <div
                 className={twMerge(
                     "group px-1 flex flex-col rounded-md justify-center items-center"
                 )}
@@ -39,17 +39,17 @@ export const ElementTypeButton = memo(
                 >
                     {props.children}
                 </button>
-                <span
+                <button
                     onClick={handleClick}
                     className={twMerge(
-                        `text-sm mt-1 rounded-md select-none text-center truncate p-0.5`
+                        `text-sm pt-2 rounded-md select-none text-center truncate px-0.5`
                     )}
                     style={{ width: width }}
                     title={props.name}
                 >
                     {props.name}
-                </span>
-            </button>
+                </button>
+            </div>
         );
     },
     () => {

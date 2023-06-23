@@ -23,7 +23,7 @@ import {
 import { circuitsAtom } from "@/state/appState";
 import { useAtom } from "jotai";
 import { CircuitsSortableItem } from "./circuitsListItem";
-import { circuitsMenuListId } from "@/constants";
+import { circuitsMenuListId } from "@/constants/constants";
 
 export const CircuitsList = () => {
     const [circuits, setCircuits] = useAtom(circuitsAtom);

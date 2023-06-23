@@ -12,7 +12,7 @@ import {
     isBoxInsideAnotherBox,
     isPointInsideBox,
 } from "./utils";
-import { GRID_SPACE, ZOOM_STEP } from "@/constants";
+import { GRID_SPACE, ZOOM_STEP } from "@/constants/constants";
 import {
     sceneAtom,
     scrollAtom,

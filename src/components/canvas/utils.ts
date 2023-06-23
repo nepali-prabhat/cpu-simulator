@@ -1,4 +1,4 @@
-import { SELECT_PADDING } from "@/constants";
+import { SELECT_PADDING } from "@/constants/constants";
 import {
     AppState,
     BoundingBox,

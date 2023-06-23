@@ -2,7 +2,7 @@ import { ActionsMenuIcon } from "@/resources/icons/ui/actionsMenuIcon";
 import { CircuitIcon } from "@/resources/icons/ui/circuit";
 import { ComponentIcon } from "@/resources/icons/ui/componentIcon";
 import { activePaletteTabAtom } from "@/state/ui";
-import { tabs } from "@/constants";
+import { tabs } from "@/constants/constants";
 import { PaletteTab } from "@/types";
 import clsx from "clsx";
 import { useAtomValue, useSetAtom } from "jotai";

@@ -2,12 +2,12 @@ import { PaletteTabs } from "./paletteTabs";
 import { PaletteTabContent } from "./paletteTabContent";
 import { useAtom, useAtomValue } from "jotai";
 import { activePaletteTabAtom } from "@/state/ui";
-import { paletteTitleMap, paletteWidth } from "@/constants";
+import { paletteTitleMap, paletteWidth } from "@/constants/constants";
 
 const PaletteTitle = () => {
     const activeTab = useAtomValue(activePaletteTabAtom);
     return (
-        <h1 className="text-lg font-bold text-center">
+        <h1 className="text-xl font-bold text-center">
             {paletteTitleMap.get(activeTab)}
         </h1>
     );

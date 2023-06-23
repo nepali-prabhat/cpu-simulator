@@ -1,9 +1,9 @@
 import { AppState, BoundingBox, CanvasProperties, Element } from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
-import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants";
+import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { elementsConfig } from "@/elementsConfig";
+import { elementsInfo } from "@/constants/elementsInfo";
 import { renderGate } from "./renderGates";
 
 export function renderCanvas({
@@ -96,9 +96,9 @@ function renderElements({
         context.translate(element.x + scroll.x, element.y + scroll.y);
         context.scale(
             element.width /
-            (elementsConfig.get(element.type)?.width || element.width),
+            (elementsInfo.get(element.type)?.width || element.width),
             element.height /
-            (elementsConfig.get(element.type)?.height || element.height)
+            (elementsInfo.get(element.type)?.height || element.height)
         );
         renderGate({ element, rc, context });
         context.restore();

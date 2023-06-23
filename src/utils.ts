@@ -1,5 +1,5 @@
 import { getDefaultStore } from "jotai";
-import { MAX_ZOOM, MIN_ZOOM } from "./constants";
+import { MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
 import { NormalizedZoomValue } from "./types";
 
 export function mergeRefs<T = any>(

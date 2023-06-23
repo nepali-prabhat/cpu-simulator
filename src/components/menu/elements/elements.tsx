@@ -10,8 +10,9 @@ import { Reduce2To1Gate } from "@/resources/icons/logic/reduce2To1";
 import { XnorGate } from "@/resources/icons/logic/xnorGate";
 import { XorGate } from "@/resources/icons/logic/xorGate";
 import { ElementTypeButton, ComponentButtonProp } from "./elementButton";
+import { ElementType } from "@/types";
 
-const elements: {
+export const elements: {
     hide?: boolean;
     props: ComponentButtonProp;
     icon: React.FC;
@@ -122,10 +123,13 @@ const elements: {
             icon: Memory,
         },
     ];
+export const elementsIconMap = Object.fromEntries(
+    elements.map((e) => [e.props.type, e])
+);
 
 export const PaletteElements = () => {
     return (
-        <div className="grid grid-cols-4 gap-2 content-start max-h-96 px-[4px] py-[4px]">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-3 content-start max-h-96 px-[4px] py-[4px]">
             {elements.map(
                 (v, i) =>
                     !v.hide && (

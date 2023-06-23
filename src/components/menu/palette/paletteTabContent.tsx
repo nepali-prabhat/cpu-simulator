@@ -3,7 +3,7 @@ import { PaletteElements } from "../elements/elements";
 import { Actions } from "../actions/actions";
 import { forwardRef, useRef } from "react";
 import { PaletteTab } from "@/types";
-import { paletteWidth } from "@/constants";
+import { paletteWidth } from "@/constants/constants";
 import clsx from "clsx";
 
 const width = paletteWidth;

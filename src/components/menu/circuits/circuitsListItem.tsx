@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { selectedCircuitIdAtom } from "@/state/appState";
 import { Circuit } from "@/types";
 import { twMerge } from "tailwind-merge";
-import { getCircuitsElementId } from "@/constants";
+import { getCircuitsElementId } from "@/constants/constants";
 
 export const CircuitsSortableItem = ({
     circuitAtom,

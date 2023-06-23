@@ -1,4 +1,4 @@
-import { NormalizedZoomValue, PaletteTab } from "./types";
+import { NormalizedZoomValue, PaletteTab } from "@/types";
 
 // Zoom
 export const ZOOM_STEP = 0.1;
@@ -25,4 +25,3 @@ export const paletteTitleMap: Map<PaletteTab, string> = new Map();
 paletteTitleMap.set("actions", "Actions");
 paletteTitleMap.set("elements", "Logic Components");
 paletteTitleMap.set("circuit", "Circuits");
-

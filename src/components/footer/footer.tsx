@@ -1,4 +1,4 @@
-import { MAX_ZOOM, MIN_ZOOM } from "@/constants";
+import { MAX_ZOOM, MIN_ZOOM } from "@/constants/constants";
 
 import { useAtomValue, useSetAtom } from "jotai";
 import { setViewportZoom, zoomValueAtom } from "@/state/scene";

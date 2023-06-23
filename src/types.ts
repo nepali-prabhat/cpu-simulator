@@ -18,14 +18,14 @@ export type CanvasProperties = {
     zoom: NormalizedZoomValue;
     bgColor: string | undefined;
 };
-export type ElementConfig = {
+export type ElementInfo = {
+    displayName: string;
     height: number;
     width: number;
-    displayName: string;
 };
 export type ElementType =
-    | "not_gate"
     | "and_gate"
+    | "not_gate"
     | "or_gate"
     | "nand_gate"
     | "nor_gate"
@@ -80,4 +80,14 @@ export type Circuit = {
     title: string;
     description?: string;
     // TODO: inputs and outputs
+};
+
+export type ElementConfig = {
+    type: ElementType;
+    inputsCount?: number;
+    selectBits?: number;
+    dataBits?: number;
+    rotation?: number;
+    scale?: number;
+    color?: string;
 };

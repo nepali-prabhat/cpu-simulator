@@ -51,3 +51,11 @@ export const APP_BG_COLOR_PALETTE: ColorTuple = [
     "#fffce8",
     "#fdf8f6",
 ];
+const elementsColorIndex = 2;
+export const ELEMENTS_COLOR_PALETTE: ColorTuple = [
+    COLOR_PALETTE.black,
+    COLOR_PALETTE.red[elementsColorIndex],
+    COLOR_PALETTE.green[elementsColorIndex],
+    COLOR_PALETTE.blue[elementsColorIndex],
+    COLOR_PALETTE.yellow[elementsColorIndex],
+];

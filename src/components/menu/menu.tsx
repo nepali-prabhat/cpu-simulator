@@ -1,7 +1,7 @@
 import { useLayoutEffect, useRef, useState } from "react";
-import { ElementConfig } from "./ElementConfig/elementConfig";
 import { HamburgerMenu } from "./hamburgerMenu";
 import { MenuInput } from "./menuInput";
+import { ElementConfig } from "./ElementConfig/elementConfig";
 
 function useObservePaletteHeight() {
     const [top, setTop] = useState<number>(0);

@@ -1,6 +1,7 @@
 import { Element, BoundingBox, Circuit, ElementType } from "@/types";
 import { PrimitiveAtom, atom } from "jotai";
 import { nanoid } from "nanoid";
+import { elementsConfigAtomsMap } from "./elementsConfig";
 
 const ids = [
     nanoid(),
@@ -242,11 +243,20 @@ export const addNewCircuitAtom = atom(
 
 export const activeElementTypeAtom = atom<ElementType | undefined>(undefined);
 
+export const activeElementConfigAtom = atom((get) => {
+    const activeElementType = get(activeElementTypeAtom);
+    const elementDefaultsAtom =
+        activeElementType && elementsConfigAtomsMap.get(activeElementType);
+
+    return elementDefaultsAtom;
+});
+
 export const appStateAtom = atom((get) => {
     return {
         elements: get(elementsAtom),
         selectedElementIds: get(selectedElementIdsAtom),
         selectRect: get(selectRectAtom),
         activeElementType: get(activeElementTypeAtom),
+        activeElementConfig: get(activeElementConfigAtom),
     };
 });

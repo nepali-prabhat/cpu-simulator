@@ -1,4 +1,4 @@
-import { INITIAL_ZOOM } from "@/constants";
+import { INITIAL_ZOOM } from "@/constants/constants";
 import {
     CanvasDimension,
     CanvasProperties,

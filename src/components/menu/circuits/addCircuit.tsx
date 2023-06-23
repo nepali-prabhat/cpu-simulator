@@ -5,7 +5,7 @@ import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/appState";
 import { useAtom, useSetAtom } from "jotai";
 import { twMerge } from "tailwind-merge";
 import { flushSync } from "react-dom";
-import { circuitsMenuListId, getCircuitsElementId } from "@/constants";
+import { circuitsMenuListId, getCircuitsElementId } from "@/constants/constants";
 
 export const AddCircuit = () => {
     const [newCircuitTitle, setNewCircuitTitle] = useAtom(newCircuitTitleAtom);
