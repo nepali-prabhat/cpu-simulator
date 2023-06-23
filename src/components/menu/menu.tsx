@@ -15,7 +15,7 @@ function useObservePaletteHeight() {
                 setTop(
                     elements[0]?.target.getBoundingClientRect().bottom ||
                     menuRef.current?.getBoundingClientRect().bottom ||
-                    100 // should never reach here. Render with top 100 to show there is some error
+                    100 // should never reach here. Render with top 100 to visually show there is some error
                 );
             });
             observer.observe(palettePortalRef.current, {});

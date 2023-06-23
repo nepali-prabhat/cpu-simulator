@@ -129,7 +129,7 @@ export const elementsIconMap = Object.fromEntries(
 
 export const PaletteElements = () => {
     return (
-        <div className="grid grid-cols-4 gap-x-2 gap-y-3 content-start max-h-96 px-[4px] py-[4px]">
+        <div className="grid grid-cols-4 gap-x-2 gap-y-3 content-start max-h-[220px] px-[4px] py-[4px]">
             {elements.map(
                 (v, i) =>
                     !v.hide && (

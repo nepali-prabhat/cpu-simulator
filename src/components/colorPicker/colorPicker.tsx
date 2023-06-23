@@ -3,14 +3,12 @@ import { twMerge } from "tailwind-merge";
 
 const ColorButton = (props: {
     isSelected: boolean;
-    key: string;
     color: string;
     onChange: (v: string) => void;
 }) => {
     return (
         <button
             onClick={() => props.onChange(props.color)}
-            key={props.key}
             className={twMerge(
                 "rounded border border-gray-300 h-[24px] w-[24px]",
                 "hover:ring-1",

@@ -35,7 +35,7 @@ const inputConstants: {
         id: "element-config-input-data-bits",
     },
     rotation: {
-        label: "Facing",
+        label: "Direction",
         name: "rotation",
         id: "element-config-input-rotation",
     },
@@ -261,12 +261,14 @@ const ElementConfigSection = (
                             <label htmlFor={inputConstants.rotation?.id}>
                                 {inputConstants.rotation?.label}
                             </label>
-                            <div
-                                id={inputConstants.rotation?.id}
-                                className="flex gap-3"
-                            >
+                            <div className="flex gap-3">
                                 {[0, 90, 180, 270].map((r, i) => (
                                     <button
+                                        id={
+                                            rotation === r
+                                                ? inputConstants.rotation?.id
+                                                : undefined
+                                        }
                                         key={`element_config_rotation${config.type}_${r}_${i}`}
                                         className={twMerge(
                                             "flex justify-center items-center h-[35px] w-[35px] rounded-md text-xl",
@@ -313,6 +315,11 @@ const ElementConfigSection = (
                                                         : undefined;
                                     return (
                                         <button
+                                            id={
+                                                config.scale === value
+                                                    ? inputConstants.scale?.id
+                                                    : undefined
+                                            }
                                             key={`element_config_scale${config.type}_${s}_${i}`}
                                             className={twMerge(
                                                 "flex justify-center items-center rounded-md w-[35px] h-[35px]",

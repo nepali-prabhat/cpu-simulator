@@ -1,8 +1,9 @@
 import { HTMLAttributes, memo } from "react";
 import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
-import { useAtom } from "jotai";
+import { useAtom, useSetAtom } from "jotai";
 import { activeElementTypeAtom } from "@/state/appState";
+import { isMenuOpenAtom } from "@/state/ui";
 
 export type ComponentButtonProp = {
     type: ElementType;
@@ -15,10 +16,12 @@ export const ElementTypeButton = memo(
         const [activeElement, setActiveElement] = useAtom(
             activeElementTypeAtom
         );
+        const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
 
         // TODO: handleonClick
         const handleClick = () => {
             setActiveElement(props.type);
+            // setIsMenuOpen(false);
         };
 
         return (
@@ -30,7 +33,7 @@ export const ElementTypeButton = memo(
                 <button
                     onClick={handleClick}
                     className={twMerge(
-                        "py-3 px-3 text-2xl rounded-md ring-1 ring-gray-200",
+                        "py-3 px-3 text-xl rounded-md ring-1 ring-gray-200",
                         props.className,
                         activeElement === props.type
                             ? `ring-2 ring-blue-400`

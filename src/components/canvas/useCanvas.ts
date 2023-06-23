@@ -28,6 +28,7 @@ import {
     selectedElementIdsAtom,
 } from "@/state/appState";
 import { getNormalizedZoom } from "@/utils";
+import { isMenuOpenAtom } from "@/state/ui";
 
 const gridSpace = GRID_SPACE;
 
@@ -40,6 +41,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setDimension = useSetAtom(canvasDimensionAtom);
 
     const setActiveElementType = useSetAtom(activeElementTypeAtom);
+    const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
@@ -148,6 +150,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 }));
             } else if (e.key === "Escape") {
                 setActiveElementType(undefined);
+                // setIsMenuOpen(false);
             }
         };
         window.addEventListener("resize", _resizeHandler);
@@ -158,7 +161,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             window.removeEventListener("keydown", _keydownHandler);
             document.removeEventListener("mousemove", _mouseMoveHanlder);
         };
-    }, [setActiveElementType, setDimension, setZoom]);
+    }, [setActiveElementType, setDimension, setIsMenuOpen, setZoom]);
 
     const draw = useCallback(() => {
         const canvas = canvasRef.current;
