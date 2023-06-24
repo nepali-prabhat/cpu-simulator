@@ -13,38 +13,24 @@ export const CircuitIcon = (
             <rect
                 width={15}
                 height={15}
-                x={8}
+                x={23}
+                y={41}
+                stroke="#000"
+                strokeWidth={6}
+                rx={4}
+                transform="rotate(90 23 41)"
+            />
+            <rect
+                width={15}
+                height={15}
+                x={41}
                 y={23}
-                stroke="currentColor"
+                stroke="#000"
                 strokeWidth={6}
                 rx={4}
-                transform="rotate(-90 8 23)"
+                transform="rotate(-90 41 23)"
             />
-            <rect
-                width={15}
-                height={15}
-                x={56}
-                y={8}
-                stroke="currentColor"
-                strokeWidth={6}
-                rx={4}
-                transform="rotate(90 56 8)"
-            />
-            <rect
-                width={15}
-                height={15}
-                x={8}
-                y={56}
-                stroke="currentColor"
-                strokeWidth={6}
-                rx={4}
-                transform="rotate(-90 8 56)"
-            />
-            <path
-                stroke="currentColor"
-                strokeWidth={6}
-                d="M23 13h18M13 40V22"
-            />
+            <path stroke="#000" strokeWidth={6} d="M41 23 23 41" />
         </svg>
     );
 };

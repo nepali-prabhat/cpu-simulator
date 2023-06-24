@@ -5,14 +5,14 @@ import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
 import { elementsInfo, maxBitsSupported } from "@/constants/elementsInfo";
 import clsx from "clsx";
 import { ChangeEvent, useEffect, useState } from "react";
-import { ClassNameValue, twMerge } from "tailwind-merge";
+import { twMerge } from "tailwind-merge";
 import { elementsIconMap } from "../elements/elements";
 import { ColorPicker } from "@/components/colorPicker/colorPicker";
 import { ELEMENTS_COLOR_PALETTE } from "@/colors";
+import { useObservePaletteHeight } from "@/utils/hooks/useObservePaletteHeight";
+import { validator } from "./validator";
 
-type ElementConfigPropType = {
-    top: number;
-};
+type ElementConfigPropType = {};
 
 const inputConstants: {
     [key in keyof ElementConfigType]: { label: string; name: key; id: string };
@@ -51,56 +51,6 @@ const inputConstants: {
     },
 };
 
-function validator<T extends keyof ElementConfigType>({
-    name,
-    label,
-    minValue,
-    maxValue,
-    value,
-}: {
-    name: T;
-    label: string;
-    minValue?: number;
-    maxValue?: number;
-    value: any;
-}): { hasError: boolean; errors?: string[] } {
-    function checkNumber() {
-        return isNaN(+value) ? [`${label} must be a number`] : [];
-    }
-    function checkRequired() {
-        return value === undefined || value === null
-            ? [`${label} is required`]
-            : [];
-    }
-    function checkMin() {
-        return !isNaN(+value) && minValue && +value < minValue
-            ? [`${label} must be greater than ${minValue}`]
-            : [];
-    }
-    function checkMax() {
-        return !isNaN(+value) && maxValue && +value > maxValue
-            ? [`${label} must be less than ${maxValue}`]
-            : [];
-    }
-
-    switch (name) {
-        case "inputsCount":
-        case "dataBits":
-        case "scale":
-        case "selectBits": {
-            const errors = [
-                ...checkRequired(),
-                ...checkNumber(),
-                ...checkMin(),
-                ...checkMax(),
-            ];
-            return { hasError: errors.length > 0, errors };
-        }
-        default:
-            return { hasError: false };
-    }
-}
-
 const ElementConfigSection = (
     props: ElementConfigPropType & {
         configAtom: PrimitiveAtom<ElementConfigType>;
@@ -113,6 +63,7 @@ const ElementConfigSection = (
             value: ElementConfigType[key];
         };
     }>({});
+    const { top } = useObservePaletteHeight();
 
     useEffect(() => {
         setTransientValue({});
@@ -180,7 +131,7 @@ const ElementConfigSection = (
         return config[key] !== undefined ? (
             <div className="flex flex-col gap-1">
                 <label
-                    // className="font-semibold"
+                    className="text-gray-700"
                     htmlFor={inputConstants[key]?.id}
                 >
                     {inputConstants[key]?.label}
@@ -224,6 +175,140 @@ const ElementConfigSection = (
         ) : null;
     };
 
+    const renderRotation = () => {
+        return (
+            <>
+                {config.rotation !== undefined && (
+                    <div className="flex flex-col gap-1">
+                        <label
+                            className="text-gray-700"
+                            htmlFor={inputConstants.rotation?.id}
+                        >
+                            {inputConstants.rotation?.label}
+                        </label>
+                        <div className="flex gap-3">
+                            {[0, 90, 180, 270].map((r, i) => (
+                                <button
+                                    id={
+                                        rotation === r
+                                            ? inputConstants.rotation?.id
+                                            : undefined
+                                    }
+                                    key={`element_config_rotation${config.type}_${r}_${i}`}
+                                    className={twMerge(
+                                        "flex justify-center items-center h-[35px] w-[35px] rounded-md text-xl",
+                                        "ring-1 ring-gray-200 ",
+                                        rotation === r &&
+                                        `ring-2 ring-blue-400`,
+                                        "hover:ring-2 hover:ring-blue-400"
+                                    )}
+                                    style={{
+                                        rotate: r + "deg",
+                                    }}
+                                    onClick={() =>
+                                        setConfig((v) => ({
+                                            ...v,
+                                            rotation: r,
+                                        }))
+                                    }
+                                >
+                                    {elementIcon.icon({})}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
+    const renderScale = () => {
+        return (
+            <>
+                {config.scale !== undefined && (
+                    <div className="flex flex-col gap-1">
+                        <label
+                            className="text-gray-700"
+                            htmlFor={inputConstants.scale?.id}
+                        >
+                            {inputConstants.scale?.label}
+                        </label>
+                        <div
+                            id={inputConstants.scale?.id}
+                            className="flex gap-3"
+                        >
+                            {["sm", "md", "lg", "xl"].map((s, i) => {
+                                const value =
+                                    s === "sm"
+                                        ? 0.5
+                                        : s === "md"
+                                            ? 1
+                                            : s === "lg"
+                                                ? 2
+                                                : s === "xl"
+                                                    ? 4
+                                                    : undefined;
+                                return (
+                                    <button
+                                        id={
+                                            config.scale === value
+                                                ? inputConstants.scale?.id
+                                                : undefined
+                                        }
+                                        key={`element_config_scale${config.type}_${s}_${i}`}
+                                        className={twMerge(
+                                            "flex justify-center items-center rounded-md w-[35px] h-[35px]",
+                                            "ring-1 ring-gray-200 ",
+                                            "hover:ring-2 hover:ring-blue-400",
+                                            config.scale === value &&
+                                            `ring-2 ring-blue-400`
+                                        )}
+                                        onClick={() =>
+                                            setConfig((v) => ({
+                                                ...v,
+                                                scale: value || v.scale,
+                                            }))
+                                        }
+                                    >
+                                        {s}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
+    const renderColor = () => {
+        return (
+            <>
+                {config.color !== undefined && (
+                    <div className="flex flex-col">
+                        <label
+                            className="text-gray-700"
+                            htmlFor={inputConstants.color?.id}
+                        >
+                            {inputConstants.color?.label}
+                        </label>
+                        <div id={inputConstants.color?.id}>
+                            <ColorPicker
+                                defaultOptions={ELEMENTS_COLOR_PALETTE}
+                                name="elementColor"
+                                value={color}
+                                onChange={(color) => {
+                                    setConfig((v) => ({
+                                        ...v,
+                                        color: color,
+                                    }));
+                                }}
+                            />
+                        </div>
+                    </div>
+                )}
+            </>
+        );
+    };
+
     const errorElements = Object.values(transientValue)
         .map((v, i) =>
             v.error?.map((e, j) => (
@@ -243,9 +328,13 @@ const ElementConfigSection = (
 
     const elementIcon = elementsIconMap[config.type];
 
+    if (!top) {
+        return null;
+    }
+
     return (
         <section
-            style={{ top: props.top }}
+            style={{ top: top }}
             className="absolute p-3.5 m-1 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
         >
             <div className="grid gap-2 p-2" style={{ width: paletteWidth }}>
@@ -256,112 +345,9 @@ const ElementConfigSection = (
                     {renderNumberConfig("inputsCount")}
                     {renderNumberConfig("dataBits")}
                     {renderNumberConfig("selectBits")}
-                    {config.rotation !== undefined && (
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor={inputConstants.rotation?.id}>
-                                {inputConstants.rotation?.label}
-                            </label>
-                            <div className="flex gap-3">
-                                {[0, 90, 180, 270].map((r, i) => (
-                                    <button
-                                        id={
-                                            rotation === r
-                                                ? inputConstants.rotation?.id
-                                                : undefined
-                                        }
-                                        key={`element_config_rotation${config.type}_${r}_${i}`}
-                                        className={twMerge(
-                                            "flex justify-center items-center h-[35px] w-[35px] rounded-md text-xl",
-                                            "ring-1 ring-gray-200 ",
-                                            rotation === r &&
-                                            `ring-2 ring-blue-200`,
-                                            "hover:ring-2 hover:ring-blue-200"
-                                        )}
-                                        style={{
-                                            rotate: r + "deg",
-                                        }}
-                                        onClick={() =>
-                                            setConfig((v) => ({
-                                                ...v,
-                                                rotation: r,
-                                            }))
-                                        }
-                                    >
-                                        {elementIcon.icon({})}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                    {config.scale !== undefined && (
-                        <div className="flex flex-col gap-1">
-                            <label htmlFor={inputConstants.scale?.id}>
-                                {inputConstants.scale?.label}
-                            </label>
-                            <div
-                                id={inputConstants.scale?.id}
-                                className="flex gap-3"
-                            >
-                                {["sm", "md", "lg", "xl"].map((s, i) => {
-                                    const value =
-                                        s === "sm"
-                                            ? 0.5
-                                            : s === "md"
-                                                ? 1
-                                                : s === "lg"
-                                                    ? 2
-                                                    : s === "xl"
-                                                        ? 4
-                                                        : undefined;
-                                    return (
-                                        <button
-                                            id={
-                                                config.scale === value
-                                                    ? inputConstants.scale?.id
-                                                    : undefined
-                                            }
-                                            key={`element_config_scale${config.type}_${s}_${i}`}
-                                            className={twMerge(
-                                                "flex justify-center items-center rounded-md w-[35px] h-[35px]",
-                                                "ring-1 ring-gray-200 ",
-                                                "hover:ring-2 hover:ring-blue-200",
-                                                config.scale === value &&
-                                                `ring-2 ring-blue-200`
-                                            )}
-                                            onClick={() =>
-                                                setConfig((v) => ({
-                                                    ...v,
-                                                    scale: value || v.scale,
-                                                }))
-                                            }
-                                        >
-                                            {s}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                    )}
-                    {config.color !== undefined && (
-                        <div className="flex flex-col">
-                            <label htmlFor={inputConstants.color?.id}>
-                                {inputConstants.color?.label}
-                            </label>
-                            <div id={inputConstants.color?.id}>
-                                <ColorPicker
-                                    defaultOptions={ELEMENTS_COLOR_PALETTE}
-                                    name="elementColor"
-                                    value={color}
-                                    onChange={(color) => {
-                                        setConfig((v) => ({
-                                            ...v,
-                                            color: color,
-                                        }));
-                                    }}
-                                />
-                            </div>
-                        </div>
-                    )}
+                    {renderRotation()}
+                    {renderScale()}
+                    {renderColor()}
                 </div>
                 {errorElements && errorElements.length > 0 ? (
                     <div className="grid gap-4 p-2 mt-1 bg-red-100 rounded-md">

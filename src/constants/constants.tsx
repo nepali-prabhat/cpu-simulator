@@ -17,9 +17,14 @@ export const GRID_TYPE: "dots" | "lines" = "dots";
 export const paletteWidth = 200;
 export const tabs: PaletteTab[] = ["actions", "elements", "circuit"];
 export const scrollWidth = 8;
+
 // Ids used to scroll circuits list to the bottom once a circuit is added.
 export const circuitsMenuListId = "circuits-menu-list-id";
 export const getCircuitsElementId = (uid: string) => `CIRCUIT_SORTABLE_${uid}`;
+
+// Ids used to render elements config menu
+export const menuContainerId = "menu-portal-container";
+export const paletteContentId = "menu-portal-content1";
 
 export const paletteTitleMap: Map<PaletteTab, string> = new Map();
 paletteTitleMap.set("actions", "Actions");

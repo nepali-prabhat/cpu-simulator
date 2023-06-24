@@ -12,7 +12,7 @@ import { twMerge } from "tailwind-merge";
 const PaletteTabItem = (props: { type: PaletteTab }) => {
     const activeTab = useAtomValue(activePaletteTabAtom);
     const className = twMerge(
-        "transition-all duration-100 ease-linear scale-75",
+        "scale-95",
         activeTab === props.type
             ? "scale-150 opactiy-50"
             : "group-hover:opacity-100 group-hover:scale-125"

@@ -13,7 +13,7 @@ const ColorButton = (props: {
                 "rounded border border-gray-300 h-[24px] w-[24px]",
                 "hover:ring-1",
                 props.isSelected &&
-                `ring-2 ring-offset-white ring-blue-200 ring-offset-1`
+                `ring-2 ring-blue-200`
             )}
             style={{ background: props.color }}
         />

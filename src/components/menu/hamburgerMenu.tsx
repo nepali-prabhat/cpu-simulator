@@ -4,6 +4,7 @@ import { useAtom } from "jotai";
 import { Palette } from "./palette/palette";
 import clsx from "clsx";
 import { forwardRef } from "react";
+import { paletteContentId } from "@/constants/constants";
 
 export const HamburgerMenu = forwardRef<HTMLDivElement | null, {}>((_, ref) => {
     const [isMenuOpen, setIsMenuOpen] = useAtom(isMenuOpenAtom);
@@ -30,7 +31,7 @@ export const HamburgerMenu = forwardRef<HTMLDivElement | null, {}>((_, ref) => {
             </Popover.Trigger>
             <Popover.Portal forceMount>
                 <Popover.Content
-                    ref={ref}
+                    id={paletteContentId}
                     className={clsx(
                         "z-10 bg-white p-3.5 ml-1 mt-[9.5px] rounded-tr-lg rounded-br-lg border border-gray-300",
                         "data-[state=closed]:hidden"
