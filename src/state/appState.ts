@@ -49,10 +49,14 @@ export const setGhostPosition = atom(
     }
 );
 
-export const hideGhost = atom(null, (get, set) => {
+export const showGhost = atom(null, (get, set, value: boolean) => {
     const current = get(ghostElementAtom);
     if (current) {
-        set(ghostAtom, { ...current, show: false, x: undefined, y: undefined });
+        let point = {};
+        if (!value) {
+            point = { x: undefined, y: undefined };
+        }
+        set(ghostAtom, { ...current, show: value, ...point });
     }
 });
 

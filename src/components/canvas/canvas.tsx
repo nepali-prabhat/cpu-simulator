@@ -6,11 +6,13 @@ export function Canvas() {
         handlePointerDown,
         handlePointerUp,
         handlePointerMove,
+        handlePointerLeave,
+        handlePointerEnter,
         canvasRef,
         canvasProperties,
         handleCanvasContextMenu,
     } = useCanvas({
-        offset:{}
+        offset: {},
         // { x: 2.5, y: -1 }
     });
 
@@ -26,6 +28,8 @@ export function Canvas() {
                 // onClick={handleClick}
                 onPointerDown={handlePointerDown}
                 onPointerMove={handlePointerMove}
+                onPointerEnter={handlePointerEnter}
+                onPointerLeave={handlePointerLeave}
                 onPointerUp={handlePointerUp}
             // onPointerCancel={(e) => console.log("cancel: ", e)}
             >

@@ -25,7 +25,7 @@ import {
     selectRectAtom,
     selectedElementIdsAtom,
     setGhostPosition as _setGhostPosition,
-    hideGhost,
+    showGhost,
 } from "@/state/appState";
 
 import { selectedElementTypeAtom } from "@/state/ui";
@@ -45,7 +45,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const setActiveElementType = useSetAtom(selectedElementTypeAtom);
     const setGhostPosition = useSetAtom(_setGhostPosition);
-    const setHideGhost = useSetAtom(hideGhost);
+    const setShowGhost = useSetAtom(showGhost);
     const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
@@ -199,19 +199,12 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             offset
         );
 
-        // console.log(
-        //     "pointer down canvas x, y",
-        //     canvasXY.x,
-        //     canvasXY.y,
-        //     canvasProperties
-        // );
-
         const elementsMap = appState.elements;
         const selectedElementIds = appState.selectedElementIds;
         const ghostElement = appState.ghostElement;
 
         if (ghostElement && ghostElement.show) {
-            setHideGhost();
+            setShowGhost(false);
         } else {
             const { topLevelElement } = getElementsAt(
                 { x: canvasXY.x, y: canvasXY.y },
@@ -365,6 +358,26 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         }
     };
 
+    const handlePointerEnter: React.MouseEventHandler<HTMLCanvasElement> = (
+        e
+    ) => {
+        console.log("e: ", e);
+        const ghostElement = appState.ghostElement;
+        if (ghostElement) {
+            setShowGhost(true);
+        }
+    };
+
+    const handlePointerLeave: React.MouseEventHandler<HTMLCanvasElement> = (
+        e
+    ) => {
+        console.log("e: ", e);
+        const ghostElement = appState.ghostElement;
+        if (ghostElement) {
+            setShowGhost(false);
+        }
+    };
+
     const handleCanvasContextMenu: React.MouseEventHandler<
         HTMLCanvasElement
     > = (e) => {
@@ -378,6 +391,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         setZoom,
         handlePointerDown,
         handlePointerMove,
+        handlePointerLeave,
+        handlePointerEnter,
         handlePointerUp,
     };
 }
