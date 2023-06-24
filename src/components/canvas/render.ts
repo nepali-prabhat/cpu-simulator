@@ -102,12 +102,19 @@ function renderGhostElement({
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    const element = appState.ghostElement;
-    if (element && element.x && element.y) {
+    const ghostElement = appState.ghostElement;
+    if (ghostElement?.show && ghostElement?.x && ghostElement?.y) {
         const { scroll } = canvasProperties;
         context.save();
-        context.translate(element.x + scroll.x, element.y + scroll.y);
-        renderGate({ element, rc, context });
+        context.translate(ghostElement.x + scroll.x, ghostElement.y + scroll.y);
+        renderGate({
+            element: {
+                type: ghostElement.elementConfig.type,
+                nonce: ghostElement.nonce,
+            },
+            rc,
+            context,
+        });
         context.restore();
     }
 }

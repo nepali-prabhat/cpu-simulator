@@ -42,16 +42,17 @@ export type Element = BoundingBox & {
     nonce: number;
 };
 export type GhostElement =
-    | (Partial<Point> & { type: ElementType; nonce: number })
-    | undefined;
-export type GhostElementValue =
-    | (GhostElement & { elementConfig: ElementConfig })
+    | (Partial<Point> & {
+        show: boolean;
+        nonce: number;
+        elementConfig: ElementConfig;
+    })
     | undefined;
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
     selectedElementIds: Set<string>;
     selectRect?: BoundingBox;
-    ghostElement: GhostElementValue;
+    ghostElement: GhostElement;
 };
 export type PointerState = {
     moved: boolean;

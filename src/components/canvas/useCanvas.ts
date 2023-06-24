@@ -24,7 +24,8 @@ import {
     appStateAtom,
     selectRectAtom,
     selectedElementIdsAtom,
-    ghostElementAtom,
+    setGhostPosition as _setGhostPosition,
+    hideGhost,
 } from "@/state/appState";
 
 import { selectedElementTypeAtom } from "@/state/ui";
@@ -43,7 +44,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setDimension = useSetAtom(canvasDimensionAtom);
 
     const setActiveElementType = useSetAtom(selectedElementTypeAtom);
-    const setGhostElement = useSetAtom(ghostElementAtom);
+    const setGhostPosition = useSetAtom(_setGhostPosition);
+    const setHideGhost = useSetAtom(hideGhost);
     const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
@@ -206,56 +208,66 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
         const elementsMap = appState.elements;
         const selectedElementIds = appState.selectedElementIds;
+        const ghostElement = appState.ghostElement;
 
-        const { topLevelElement } = getElementsAt(
-            { x: canvasXY.x, y: canvasXY.y },
-            Object.values(elementsMap)
-        );
+        if (ghostElement && ghostElement.show) {
+            setHideGhost();
+        } else {
+            const { topLevelElement } = getElementsAt(
+                { x: canvasXY.x, y: canvasXY.y },
+                Object.values(elementsMap)
+            );
 
-        const existingSelectedElements = filterElementsByIds(
-            selectedElementIds,
-            elementsMap
-        );
+            const existingSelectedElements = filterElementsByIds(
+                selectedElementIds,
+                elementsMap
+            );
 
-        const selectBoundingBox = getBoundingRect(existingSelectedElements);
+            const selectBoundingBox = getBoundingRect(existingSelectedElements);
 
-        let preserveSelectBox = e.shiftKey;
-        let isClickedInsideSelectBox = isPointInsideBox(
-            canvasXY,
-            selectBoundingBox
-        );
-        if (selectBoundingBox) {
-            preserveSelectBox = e.shiftKey || isClickedInsideSelectBox;
-        }
-
-        const newSelectedElementIds = new Set<string>([
-            ...(topLevelElement && !isClickedInsideSelectBox
-                ? [topLevelElement.uid]
-                : []),
-            // ...(Array.from(intersectedElementIds)),
-            ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
-        ]);
-
-        // If there is no top level element, render a select box
-        let selectRect: AppState["selectRect"] = undefined;
-        if (!topLevelElement && !isClickedInsideSelectBox) {
-            selectRect = { x: canvasXY.x, y: canvasXY.y, width: 0, height: 0 };
-        }
-
-        // initial pointer state
-        pointerRef.current = {
-            moved: false,
-            selectedElementIds: newSelectedElementIds,
-            timeStamp: e.timeStamp,
-            lastPoint: canvasXY,
-            initial: {
-                viewportXY,
+            let preserveSelectBox = e.shiftKey;
+            let isClickedInsideSelectBox = isPointInsideBox(
                 canvasXY,
-            },
-        };
+                selectBoundingBox
+            );
+            if (selectBoundingBox) {
+                preserveSelectBox = e.shiftKey || isClickedInsideSelectBox;
+            }
 
-        setSelectedElementIds(newSelectedElementIds);
-        setSelectRect(selectRect);
+            const newSelectedElementIds = new Set<string>([
+                ...(topLevelElement && !isClickedInsideSelectBox
+                    ? [topLevelElement.uid]
+                    : []),
+                // ...(Array.from(intersectedElementIds)),
+                ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
+            ]);
+
+            // If there is no top level element, render a select box
+            let selectRect: AppState["selectRect"] = undefined;
+            if (!topLevelElement && !isClickedInsideSelectBox) {
+                selectRect = {
+                    x: canvasXY.x,
+                    y: canvasXY.y,
+                    width: 0,
+                    height: 0,
+                };
+            }
+
+            // initial pointer state
+            pointerRef.current = {
+                moved: false,
+                selectedElementIds: newSelectedElementIds,
+                timeStamp: e.timeStamp,
+                lastPoint: canvasXY,
+                initial: {
+                    viewportXY,
+                    canvasXY,
+                },
+            };
+
+            setSelectedElementIds(newSelectedElementIds);
+            setSelectRect(selectRect);
+        }
     };
 
     const handlePointerMove: React.MouseEventHandler<HTMLCanvasElement> = (
@@ -271,8 +283,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
         const ghostElement = appState.ghostElement;
 
-        if (ghostElement) {
-            setGhostElement((v) => (v ? { ...v, ...canvasXY } : undefined));
+        if (ghostElement && ghostElement.show) {
+            setGhostPosition(canvasXY);
         }
 
         if (pointerRef.current) {

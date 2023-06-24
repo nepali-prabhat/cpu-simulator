@@ -1,10 +1,8 @@
 import { HTMLAttributes, memo } from "react";
 import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
-import { useAtom, useSetAtom } from "jotai";
+import { useAtom } from "jotai";
 import { selectedElementTypeAtom } from "@/state/ui";
-import { ghostElementAtom } from "@/state/appState";
-import { randomInteger } from "@/utils/random";
 
 export type ComponentButtonProp = {
     type: ElementType;
@@ -17,15 +15,9 @@ export const ElementTypeButton = memo(
         const [activeElement, setActiveElement] = useAtom(
             selectedElementTypeAtom
         );
-        const setGhostElement = useSetAtom(ghostElementAtom);
 
         const handleClick = () => {
             setActiveElement(props.type);
-            setGhostElement((v) => ({
-                ...v,
-                type: props.type,
-                nonce: randomInteger(),
-            }));
         };
 
         return (
