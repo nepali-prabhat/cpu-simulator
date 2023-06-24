@@ -60,6 +60,13 @@ export function renderCanvas({
             height / zoom
         );
 
+    /* renderGlostElement({
+        appState,
+        context,
+        canvasProperties,
+        rc,
+    }); */
+
     renderElements({
         appState,
         context,
@@ -73,8 +80,36 @@ export function renderCanvas({
         canvasProperties,
     });
 
+    renderGhostElement({
+        appState,
+        context,
+        canvasProperties,
+        rc,
+    });
+
     // ctx.strokeRect(scroll.x, scroll.y, 2, 2);
     context.restore();
+}
+
+function renderGhostElement({
+    appState,
+    context,
+    canvasProperties,
+    rc,
+}: {
+    appState: AppState;
+    canvasProperties: CanvasProperties;
+    context: CanvasRenderingContext2D;
+    rc: RoughCanvas | null;
+}) {
+    const element = appState.ghostElement;
+    if (element && element.x && element.y) {
+        const { scroll } = canvasProperties;
+        context.save();
+        context.translate(element.x + scroll.x, element.y + scroll.y);
+        renderGate({ element, rc, context });
+        context.restore();
+    }
 }
 
 function renderElements({
@@ -104,6 +139,7 @@ function renderElements({
         context.restore();
     }
 }
+
 function renderSelectBox({
     appState,
     context,

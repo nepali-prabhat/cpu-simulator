@@ -1,8 +1,10 @@
 import { HTMLAttributes, memo } from "react";
 import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
-import { useAtom } from "jotai";
-import { activeElementTypeAtom } from "@/state/appState";
+import { useAtom, useSetAtom } from "jotai";
+import { selectedElementTypeAtom } from "@/state/ui";
+import { ghostElementAtom } from "@/state/appState";
+import { randomInteger } from "@/utils/random";
 
 export type ComponentButtonProp = {
     type: ElementType;
@@ -13,13 +15,17 @@ const width = 42;
 export const ElementTypeButton = memo(
     (props: ComponentButtonProp & React.PropsWithChildren) => {
         const [activeElement, setActiveElement] = useAtom(
-            activeElementTypeAtom
+            selectedElementTypeAtom
         );
+        const setGhostElement = useSetAtom(ghostElementAtom);
 
-        // TODO: handleonClick
         const handleClick = () => {
             setActiveElement(props.type);
-            // setIsMenuOpen(false);
+            setGhostElement((v) => ({
+                ...v,
+                type: props.type,
+                nonce: randomInteger(),
+            }));
         };
 
         return (

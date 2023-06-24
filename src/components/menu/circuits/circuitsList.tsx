@@ -20,7 +20,7 @@ import {
     restrictToWindowEdges,
 } from "@dnd-kit/modifiers";
 
-import { circuitsAtom } from "@/state/appState";
+import { circuitsAtom } from "@/state/circuits";
 import { useAtom } from "jotai";
 import { CircuitsSortableItem } from "./circuitsListItem";
 import { circuitsMenuListId } from "@/constants/constants";

@@ -1,7 +1,7 @@
 import { forwardRef, useLayoutEffect, useRef } from "react";
 import clsx from "clsx";
 import { useAtom } from "jotai";
-import { editableCircuitAtom } from "@/state/appState";
+import { editableCircuitAtom } from "@/state/circuits";
 import { mergeRefs } from "@/utils";
 
 export const MenuInput = () => {

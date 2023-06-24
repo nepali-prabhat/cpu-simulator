@@ -1,10 +1,8 @@
-export type BoundingBox = {
-    x: number;
-    y: number;
+export type Point = { x: number; y: number };
+export type BoundingBox = Point & {
     width: number;
     height: number;
 };
-export type Point = { x: number; y: number };
 export type NormalizedZoomValue = number & { _brand: "normalizedZoom" };
 
 export type CanvasDimension = {
@@ -43,10 +41,17 @@ export type Element = BoundingBox & {
     zIndex: number;
     nonce: number;
 };
+export type GhostElement =
+    | (Partial<Point> & { type: ElementType; nonce: number })
+    | undefined;
+export type GhostElementValue =
+    | (GhostElement & { elementConfig: ElementConfig })
+    | undefined;
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
     selectedElementIds: Set<string>;
     selectRect?: BoundingBox;
+    ghostElement: GhostElementValue;
 };
 export type PointerState = {
     moved: boolean;

@@ -1,6 +1,6 @@
 import { ElementConfig as ElementConfigType } from "@/types";
 import { paletteWidth } from "@/constants/constants";
-import { activeElementConfigAtom } from "@/state/appState";
+import { elementConfigAtomAtom } from "@/state/ui";
 import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
 import { elementsInfo, maxBitsSupported } from "@/constants/elementsInfo";
 import clsx from "clsx";
@@ -234,7 +234,7 @@ const ElementConfigSection = (
                         </label>
                         <div
                             id={inputConstants.scale?.id}
-                            className="flex gap-3"
+                            className="flex gap-3 text-sm"
                         >
                             {["sm", "md", "lg", "xl"].map((s, i) => {
                                 const value =
@@ -338,7 +338,7 @@ const ElementConfigSection = (
             className="absolute p-3.5 m-1 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
         >
             <div className="grid gap-2 p-2" style={{ width: paletteWidth }}>
-                <h1 className="text-xl font-bold">
+                <h1 className="text-lg text-gray-800 font-bold">
                     {elementsInfo.get(config.type)?.displayName}
                 </h1>
                 <div className="flex flex-col gap-3">
@@ -360,7 +360,7 @@ const ElementConfigSection = (
 };
 
 export const ElementConfig = (props: ElementConfigPropType) => {
-    const configAtom = useAtomValue(activeElementConfigAtom);
+    const configAtom = useAtomValue(elementConfigAtomAtom);
     return configAtom ? (
         <ElementConfigSection configAtom={configAtom} {...props} />
     ) : null;

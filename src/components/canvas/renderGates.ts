@@ -202,7 +202,7 @@ export function renderGate({
     context,
     rc,
 }: {
-    element: Element;
+    element: Pick<Element, "nonce" | "type">;
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {

@@ -21,14 +21,16 @@ import {
     getZoomFromStore,
 } from "@/state/scene";
 import {
-    activeElementTypeAtom,
     appStateAtom,
-    elementsAtom,
     selectRectAtom,
     selectedElementIdsAtom,
+    ghostElementAtom,
 } from "@/state/appState";
+
+import { selectedElementTypeAtom } from "@/state/ui";
 import { getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
+import { elementsAtom } from "@/state/elements";
 
 const gridSpace = GRID_SPACE;
 
@@ -40,7 +42,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setZoom = useSetAtom(setViewportZoom);
     const setDimension = useSetAtom(canvasDimensionAtom);
 
-    const setActiveElementType = useSetAtom(activeElementTypeAtom);
+    const setActiveElementType = useSetAtom(selectedElementTypeAtom);
+    const setGhostElement = useSetAtom(ghostElementAtom);
     const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
@@ -266,6 +269,12 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             offset
         );
 
+        const ghostElement = appState.ghostElement;
+
+        if (ghostElement) {
+            setGhostElement((v) => (v ? { ...v, ...canvasXY } : undefined));
+        }
+
         if (pointerRef.current) {
             const lastPoint = pointerRef.current.lastPoint;
             const dp = {
@@ -289,7 +298,14 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             // get elements that fall inside the select Rect.
             let updatedSelectedElements: AppState["elements"] = {};
             const additionalSelectedElements: Element["uid"][] = [];
-            if (!selectRect) {
+            if (selectRect) {
+                // add new selected elements
+                for (let element of Object.values(elementsMap)) {
+                    if (isBoxInsideAnotherBox(element, selectRect)) {
+                        additionalSelectedElements.push(element.uid);
+                    }
+                }
+            } else {
                 // move the elements
                 const selectedElements = getSelectedElements({
                     selectedElementIds,
@@ -301,13 +317,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                         x: element.x + dp.x,
                         y: element.y + dp.y,
                     };
-                }
-            } else {
-                // add new selected elements
-                for (let element of Object.values(elementsMap)) {
-                    if (isBoxInsideAnotherBox(element, selectRect)) {
-                        additionalSelectedElements.push(element.uid);
-                    }
                 }
             }
 
@@ -329,11 +338,11 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         if (pointerRef.current) {
             let selectedElementIds = appState.selectedElementIds;
 
-            let preserveSelectBox =
+            let preserveSelectedElements =
                 e.shiftKey ||
                 pointerRef.current.moved ||
                 pointerRef.current.selectedElementIds.size === 1;
-            if (!preserveSelectBox) {
+            if (!preserveSelectedElements) {
                 selectedElementIds = new Set<string>();
             }
 

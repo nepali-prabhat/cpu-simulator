@@ -1,7 +1,7 @@
 import { nanoid } from "nanoid";
 import { useRef } from "react";
 
-import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/appState";
+import { addNewCircuitAtom, newCircuitTitleAtom } from "@/state/circuits";
 import { useAtom, useSetAtom } from "jotai";
 import { twMerge } from "tailwind-merge";
 import { flushSync } from "react-dom";
