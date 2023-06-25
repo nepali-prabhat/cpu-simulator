@@ -64,7 +64,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             e.preventDefault();
             e.stopPropagation();
             const { deltaX, deltaY } = e;
+
             const rate = 1;
+
             let isZoom = e.ctrlKey || e.metaKey;
             if (isZoom) {
                 const sign = Math.sign(deltaY);

@@ -1,3 +1,4 @@
+import { APP_BG_COLOR_PALETTE } from "@/colors";
 import { INITIAL_ZOOM } from "@/constants/constants";
 import {
     CanvasDimension,
@@ -63,7 +64,7 @@ export const setViewportZoom = atom(
 
 export const bgColorAtom = atomWithStorage<string | undefined>(
     "bg_color",
-    undefined
+    APP_BG_COLOR_PALETTE[0]
 );
 
 export const sceneAtom = atom<CanvasProperties>((get) => {

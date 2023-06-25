@@ -33,5 +33,5 @@ paletteTitleMap.set("circuit", "Circuits");
 
 
 // Constants for rendering gates
-export const PIN_LENGTH = 10.2;
-export const PIN_HEIGHT = 6.8;
+export const PIN_LENGTH = 12;
+export const PIN_HEIGHT = 8;

@@ -7,7 +7,8 @@ export const maxSelectBits = Math.sqrt(maxBitsSupported);
 
 export const elementsInfo: Map<ElementType, ElementInfo> = new Map();
 elementsInfo.set("and_gate", {
-    ...element64x64,
+    height: 64,
+    width: 45,
     displayName: "And Gate",
 });
 elementsInfo.set("or_gate", {

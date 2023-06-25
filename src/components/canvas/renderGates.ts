@@ -1,8 +1,14 @@
-import { PIN_HEIGHT, PIN_LENGTH } from "@/constants/constants";
+import {
+    PIN_HEIGHT,
+    PIN_LENGTH,
+    PIN_MID_POINT_GAP,
+} from "@/constants/constants";
+import { elementsInfo } from "@/constants/elementsInfo";
 import {
     CanvasProperties,
     Element,
     ElementConfig,
+    ElementType,
     GhostElement,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
@@ -18,41 +24,104 @@ type GatesRenderer = (props: {
     };
 }) => void;
 
+function getEffectiveDimension({
+    type,
+    inputsCount = 1,
+}: {
+    type: ElementType;
+    inputsCount?: number;
+}) {
+    const info = elementsInfo.get(type);
+    if (!info) {
+        return;
+    }
+    const evenInputsCount = inputsCount + (inputsCount % 2);
+    const effectiveInputPinsCount = evenInputsCount * 2;
+    const effectivePinsHeight = effectiveInputPinsCount * PIN_HEIGHT;
+    const padding = Math.max(info.height - PIN_HEIGHT * 4, 4);
+    return {
+        width: info.width + PIN_LENGTH * 2,
+        height: padding + effectivePinsHeight,
+    };
+}
+
+function renderGateTop({
+    rc,
+    path,
+    config,
+    configWithFill,
+}: {
+    rc: RoughCanvas;
+    path?: string;
+    config: Options;
+    configWithFill: Options;
+}) {
+    if (path) {
+        rc.path(path, config);
+        rc.path(path, configWithFill);
+    }
+}
+
 export const renderAndGate: GatesRenderer = ({
     rc,
     option: { config, configWithFill, context, elementConfig },
 }) => {
-    const height = 64;
-    const width = 64;
-    // rc.rectangle(0, 0, width, height, config);
+    const effectiveDimension = getEffectiveDimension({
+        type: elementConfig.type,
+        inputsCount: elementConfig.inputsCount,
+    });
+    const info = elementsInfo.get(elementConfig.type);
+    if (!info || !effectiveDimension) {
+        return;
+    }
+    const { width, height } = effectiveDimension;
+    // BUG: use this to debug zoom in offset bug
+    // rc.rectangle(
+    //     0,
+    //     0,
+    //     effectiveDimension?.width,
+    //     effectiveDimension?.height,
+    //     configWithFill
+    // );
     context.save();
-    context.translate(PIN_LENGTH, 0);
-    rc.path(
-        "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
-        config
-    );
-    rc.path(
-        "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
-        configWithFill
-    );
-    // output pin
+    context.translate(PIN_LENGTH, height / 2 - info.height / 2);
+    // AND Gate
+    renderGateTop({
+        rc,
+        path: "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
+        config,
+        configWithFill,
+    });
+    context.restore();
+    // Output pin
     rc.rectangle(
-        45,
+        info.width + PIN_LENGTH,
         height / 2 - PIN_HEIGHT / 2,
         PIN_LENGTH,
         PIN_HEIGHT,
         config
     );
+    rc.line(PIN_LENGTH, 0, PIN_LENGTH, height, {...config, roughness:0.5});
     const midPoint = height / 2;
-    context.translate(-PIN_LENGTH, midPoint);
     const numberOfPins = elementConfig.inputsCount || 0;
-    for (let i = 0; i < numberOfPins; i++) {
-        const isEven = i % 2 === 0;
-        const yOffset = isEven ? -15 * (i + 1) : 15 * (i + 1);
-        context.translate(0, yOffset);
-        rc.rectangle(0, -PIN_HEIGHT / 2, PIN_LENGTH, PIN_HEIGHT, config);
+    for (let i = 0; i < Math.ceil(numberOfPins / 2); i++) {
+        rc.rectangle(
+            0,
+            midPoint - PIN_HEIGHT * (i + 1) * 2,
+            PIN_LENGTH,
+            PIN_HEIGHT,
+            config
+        );
     }
-    context.restore();
+    for (let i = 0; i < Math.floor(numberOfPins / 2); i++) {
+        rc.rectangle(
+            0,
+            midPoint + PIN_HEIGHT * (i + 1) * 2 - PIN_HEIGHT / 2,
+            PIN_LENGTH,
+            PIN_HEIGHT,
+            config
+        );
+    }
 };
 
 export const renderOrGate: GatesRenderer = ({
