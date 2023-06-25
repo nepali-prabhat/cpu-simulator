@@ -1,46 +1,58 @@
-import { Element } from "@/types";
-import { getUIStore } from "@/utils";
+import { PIN_HEIGHT, PIN_LENGTH } from "@/constants/constants";
+import {
+    CanvasProperties,
+    Element,
+    ElementConfig,
+    GhostElement,
+} from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
 
 type GatesRenderer = (props: {
-    rc: RoughCanvas | null;
+    rc: RoughCanvas;
     option: {
         config: Options;
         configWithFill: Options;
         context: CanvasRenderingContext2D;
+        elementConfig: ElementConfig;
     };
 }) => void;
 
 export const renderAndGate: GatesRenderer = ({
     rc,
-    option: { config, configWithFill },
+    option: { config, configWithFill, context, elementConfig },
 }) => {
-    /* rc?.path(
-        "M10 16a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4ZM10 44a2 2 0 1 0 0 4v-4Zm0 4h12v-4H10v4Z",
+    const height = 64;
+    const width = 64;
+    // rc.rectangle(0, 0, width, height, config);
+    context.save();
+    context.translate(PIN_LENGTH, 0);
+    rc.path(
+        "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
         config
-    ); */
-    rc?.path(
-        "M54 32c0 12.275-8.485 22-21.294 22H24a2 2 0 0 1-2-2V12a2 2 0 0 1 2-2h8.706C45.516 10 54 19.725 54 32Z",
-        { ...configWithFill }
     );
-    const add = 14;
-    const start = -9;
-    const n = 6;
-    rc?.line(22, -18, 22, 64 + 18, {
-        ...config,
-        roughness: 1,
-    });
-    for (let i = 0; i < n; i++) {
-        rc?.rectangle(8, start + i * add, 14, 4, {
-            ...config,
-            roughness: 1,
-        });
+    rc.path(
+        "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
+        configWithFill
+    );
+    // output pin
+    rc.rectangle(
+        45,
+        height / 2 - PIN_HEIGHT / 2,
+        PIN_LENGTH,
+        PIN_HEIGHT,
+        config
+    );
+    const midPoint = height / 2;
+    context.translate(-PIN_LENGTH, midPoint);
+    const numberOfPins = elementConfig.inputsCount || 0;
+    for (let i = 0; i < numberOfPins; i++) {
+        const isEven = i % 2 === 0;
+        const yOffset = isEven ? -15 * (i + 1) : 15 * (i + 1);
+        context.translate(0, yOffset);
+        rc.rectangle(0, -PIN_HEIGHT / 2, PIN_LENGTH, PIN_HEIGHT, config);
     }
-    rc?.rectangle(56, 30, 14, 4, {
-        ...config,
-        roughness: 1,
-    });
+    context.restore();
 };
 
 export const renderOrGate: GatesRenderer = ({
@@ -224,7 +236,94 @@ export function renderGate({
         configWithFill,
         context,
     };
-    switch (element.type) {
+    // switch (element.type) {
+    //     case "and_gate": {
+    //         renderAndGate({ rc, option });
+    //         break;
+    //     }
+    //     case "or_gate": {
+    //         renderOrGate({ rc, option });
+    //         break;
+    //     }
+    //     case "not_gate": {
+    //         renderNotGate({ rc, option });
+    //         break;
+    //     }
+    //     case "nand_gate": {
+    //         renderNandGate({ rc, option });
+    //         break;
+    //     }
+    //     case "nor_gate": {
+    //         renderNorGate({ rc, option });
+    //         break;
+    //     }
+    //     case "buffer": {
+    //         renderBuffer({ rc, option });
+    //         break;
+    //     }
+    //     case "xor_gate": {
+    //         renderXorGate({ rc, option });
+    //         break;
+    //     }
+    //     case "xnor_gate": {
+    //         renderXnorGate({ rc, option });
+    //         break;
+    //     }
+    //     case "mux": {
+    //         renderMux({ rc, option });
+    //         break;
+    //     }
+    //     case "dmux": {
+    //         renderDmux({ rc, option });
+    //         break;
+    //     }
+    //     case "decoder": {
+    //         renderDecoder({ rc, option });
+    //         break;
+    //     }
+    //     case "DQ_flip_flop": {
+    //         renderDQFlipFlop({ rc, option });
+    //         break;
+    //     }
+    // }
+}
+
+export function renderGhostGate({
+    element,
+    canvasProperties,
+    context,
+    rc,
+}: {
+    element: GhostElement;
+    canvasProperties: CanvasProperties;
+    context: CanvasRenderingContext2D;
+    rc: RoughCanvas | null;
+}) {
+    if (!element?.show || !rc) {
+        return;
+    }
+    const config: Options = {
+        seed: element.seed + 1,
+        roughness: 0.2,
+        fill: canvasProperties.bgColor || "white",
+        // stroke: element.elementConfig.color,
+        fillStyle: "solid",
+    };
+    const configWithFill: Options = {
+        ...config,
+        fill: element.elementConfig.color,
+        fillStyle: "hachure",
+        // stroke: element.elementConfig.color,
+        hachureGap: 4,
+    };
+    const option = {
+        config,
+        configWithFill,
+        context,
+        elementConfig: element.elementConfig,
+    };
+    console.log("element: ", element);
+    switch (element.elementConfig.type) {
         case "and_gate": {
             renderAndGate({ rc, option });
             break;

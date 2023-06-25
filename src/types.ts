@@ -44,7 +44,7 @@ export type Element = BoundingBox & {
 export type GhostElement =
     | (Partial<Point> & {
         show: boolean;
-        nonce: number;
+        seed: number;
         elementConfig: ElementConfig;
     })
     | undefined;

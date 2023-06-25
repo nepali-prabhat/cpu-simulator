@@ -18,14 +18,14 @@ export const ghostElementAtom = atom((get) => {
         const isSelectionChanged =
             value?.elementConfig.type !== elementConfig.type;
         const rv: GhostElement = {
-            ...(value || {}),
+           ...(value || {}),
             show:
                 value?.show === undefined || isSelectionChanged
                     ? true
                     : value?.show,
-            nonce: isSelectionChanged
+            seed: isSelectionChanged
                 ? randomInteger()
-                : value?.nonce || randomInteger(),
+                : value?.seed || randomInteger(),
             elementConfig,
         };
         return rv;

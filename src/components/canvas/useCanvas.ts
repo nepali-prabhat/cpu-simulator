@@ -204,7 +204,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         const ghostElement = appState.ghostElement;
 
         if (ghostElement && ghostElement.show) {
-            setShowGhost(false);
+            // setShowGhost(false);
+            // TODO: make an element
+            setActiveElementType(undefined);
         } else {
             const { topLevelElement } = getElementsAt(
                 { x: canvasXY.x, y: canvasXY.y },
@@ -358,20 +360,18 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         }
     };
 
-    const handlePointerEnter: React.MouseEventHandler<HTMLCanvasElement> = (
-        e
-    ) => {
-        console.log("e: ", e);
+    const handlePointerEnter: React.MouseEventHandler<
+        HTMLCanvasElement
+    > = () => {
         const ghostElement = appState.ghostElement;
         if (ghostElement) {
             setShowGhost(true);
         }
     };
 
-    const handlePointerLeave: React.MouseEventHandler<HTMLCanvasElement> = (
-        e
-    ) => {
-        console.log("e: ", e);
+    const handlePointerLeave: React.MouseEventHandler<
+        HTMLCanvasElement
+    > = () => {
         const ghostElement = appState.ghostElement;
         if (ghostElement) {
             setShowGhost(false);

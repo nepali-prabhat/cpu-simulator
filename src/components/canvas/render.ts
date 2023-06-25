@@ -4,7 +4,7 @@ import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { elementsInfo } from "@/constants/elementsInfo";
-import { renderGate } from "./renderGates";
+import { renderGate, renderGhostGate } from "./renderGates";
 
 export function renderCanvas({
     context,
@@ -103,17 +103,20 @@ function renderGhostElement({
     rc: RoughCanvas | null;
 }) {
     const ghostElement = appState.ghostElement;
-    if (ghostElement?.show && ghostElement?.x && ghostElement?.y) {
+    if (
+        ghostElement &&
+        ghostElement.show &&
+        ghostElement?.x &&
+        ghostElement?.y
+    ) {
         const { scroll } = canvasProperties;
         context.save();
         context.translate(ghostElement.x + scroll.x, ghostElement.y + scroll.y);
-        renderGate({
-            element: {
-                type: ghostElement.elementConfig.type,
-                nonce: ghostElement.nonce,
-            },
+        renderGhostGate({
+            element: ghostElement,
             rc,
             context,
+            canvasProperties
         });
         context.restore();
     }

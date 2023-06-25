@@ -30,3 +30,8 @@ export const paletteTitleMap: Map<PaletteTab, string> = new Map();
 paletteTitleMap.set("actions", "Actions");
 paletteTitleMap.set("elements", "Logic Components");
 paletteTitleMap.set("circuit", "Circuits");
+
+
+// Constants for rendering gates
+export const PIN_LENGTH = 10.2;
+export const PIN_HEIGHT = 6.8;
