@@ -1,7 +1,7 @@
 import { APP_BG_COLOR_PALETTE } from "@/colors";
 import { INITIAL_ZOOM } from "@/constants/constants";
 import {
-    CanvasDimension,
+    Dimension,
     CanvasProperties,
     Point,
     SetViewportZoom,
@@ -10,7 +10,7 @@ import { getNormalizedZoom } from "@/utils";
 import { atom, getDefaultStore } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
-export const canvasDimensionAtom = atom<CanvasDimension>({
+export const canvasDimensionAtom = atom<Dimension>({
     width: 300,
     height: 150,
 });

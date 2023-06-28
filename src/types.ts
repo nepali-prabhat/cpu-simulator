@@ -1,25 +1,26 @@
 export type Point = { x: number; y: number };
-export type BoundingBox = Point & {
+export type Dimension = {
     width: number;
     height: number;
 };
+export type BoundingBox = Point & Dimension;
+export type BoundingRect = [number, number, number, number];
 export type NormalizedZoomValue = number & { _brand: "normalizedZoom" };
 
-export type CanvasDimension = {
-    width: number;
-    height: number;
-};
+export type PinType = "output" | "input";
 
 export type CanvasProperties = {
-    dimension: CanvasDimension;
+    dimension: Dimension;
     scroll: Point;
     zoom: NormalizedZoomValue;
     bgColor: string | undefined;
 };
 export type ElementInfo = {
     displayName: string;
+    path?:string;
     height: number;
     width: number;
+    negateOutputPins?: number[];
 };
 export type ElementType =
     | "and_gate"
@@ -77,7 +78,7 @@ export type MenuState = {
 export type SetViewportZoom =
     | ((
         zoom: number,
-        dimension: CanvasDimension
+        dimension: Dimension
     ) => number | { zoom: number; viewport: Point })
     | number;
 

@@ -157,7 +157,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const keydownHandler = useCallback(
         (e: KeyboardEvent) => {
-            console.log("e.key: ", e.key);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -167,9 +166,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     zoom: getNormalizedZoom(1),
                 }));
             } else if (e.key === "Escape") {
-                setActiveElementType(undefined);
+                // setActiveElementType(undefined);
                 // setIsMenuOpen(false);
-            } else if (e.key === "r") {
+            } else if (!(e.ctrlKey || e.metaKey) && e.key === "r") {
                 rotateGhostElement(90);
             }
         },
