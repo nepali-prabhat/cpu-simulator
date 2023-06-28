@@ -2,6 +2,7 @@ import { ElementType, MenuState, PaletteTab } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { elementsConfigAtomsMap } from "./elementsConfig";
+import { ghostElementAtom } from "./appState";
 
 export const isMenuOpenAtom = atomWithStorage<MenuState["isMenuOpen"]>(
     "menu_open",
@@ -25,4 +26,17 @@ export const elementConfigAtomAtom = atom((get) => {
         ? elementsConfigAtomsMap.get(selectedElementType)
         : undefined;
     return elementDefaultsAtom;
+});
+
+export const rotateGhostElementAtom = atom(null, (get, set, value: number) => {
+    const elementConfigAtom = get(elementConfigAtomAtom);
+    const ghostElement = get(ghostElementAtom);
+    if (ghostElement && elementConfigAtom) {
+        const currentValue = get(elementConfigAtom);
+        set(elementConfigAtom, {
+            ...currentValue,
+            rotation:
+                ((ghostElement?.elementConfig?.rotation || 0) + value) % 360,
+        });
+    }
 });

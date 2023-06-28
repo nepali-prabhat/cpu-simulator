@@ -1,3 +1,13 @@
+import {
+    applyToPoints,
+    scale,
+    rotate,
+    translate,
+    compose,
+    applyToPoint,
+    Matrix,
+} from "transformation-matrix";
+
 import { COLOR_PALETTE } from "@/colors";
 import {
     DEBUG_BOUNDING_BOX,
@@ -12,9 +22,12 @@ import {
     ElementConfig,
     ElementType,
     GhostElement,
+    Point,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
+import { d } from "jotai-devtools/useAtomsDevtools-f8e164e7";
+import { getRectangleFromDiagonals as getRectFromDiagonals } from "@/utils";
 
 type GatesRenderer = (props: {
     rc: RoughCanvas;
@@ -38,7 +51,7 @@ function getEffectiveDimension({
         return;
     }
 
-    const evenInputsCount = inputsCount + (inputsCount % 2);
+    const evenInputsCount = inputsCount - (inputsCount % 2);
     const effectiveInputPinsCount = evenInputsCount * 2;
     const effectivePinsHeight = effectiveInputPinsCount * PIN_HEIGHT;
     const padding = PIN_HEIGHT * 1;
@@ -51,22 +64,19 @@ function getEffectiveDimension({
 }
 
 function getPinsBoundingBox({
-    element,
-    strokeWidth = 3,
+    elementConfig,
 }: {
-    element: GhostElement;
-    strokeWidth?: number;
+    elementConfig: ElementConfig;
 }) {
     const rv: {
         inputs: BoundingBox[];
         outputs: BoundingBox[];
-        lines: BoundingBox[];
+        lines: { x: number; y: number; x1: number; y1: number }[];
     } = {
         inputs: [],
         outputs: [],
         lines: [],
     };
-    const elementConfig = element?.elementConfig;
     if (!elementConfig) {
         return rv;
     }
@@ -80,12 +90,12 @@ function getPinsBoundingBox({
     }
     const { height } = effectiveDimension;
     // make output gate
-    switch (element.elementConfig.type) {
+    switch (elementConfig.type) {
         case "and_gate": {
             rv.outputs.push({
-                x: info.width + PIN_LENGTH + 1,
+                x: info.width + PIN_LENGTH,
                 y: height / 2 - PIN_HEIGHT / 2,
-                width: PIN_LENGTH - 1,
+                width: PIN_LENGTH,
                 height: PIN_HEIGHT,
             });
             break;
@@ -94,9 +104,17 @@ function getPinsBoundingBox({
     const midPoint = height / 2;
     const numberOfPins = elementConfig.inputsCount || 0;
     // make input gate
-    switch (element.elementConfig.type) {
+    switch (elementConfig.type) {
         case "and_gate": {
-            for (let i = 1; i <= Math.ceil(numberOfPins / 2); i++) {
+            if (numberOfPins % 2 === 1) {
+                rv.inputs.push({
+                    x: 0,
+                    y: midPoint - PIN_HEIGHT / 2,
+                    width: PIN_LENGTH,
+                    height: PIN_HEIGHT,
+                });
+            }
+            for (let i = 1; i <= Math.floor(numberOfPins / 2); i++) {
                 rv.inputs.push({
                     x: 0,
                     y: midPoint - PIN_HEIGHT * i * 2 - PIN_HEIGHT / 2,
@@ -108,8 +126,8 @@ function getPinsBoundingBox({
                     rv.lines.push({
                         x: PIN_LENGTH,
                         y: midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-                        width: PIN_LENGTH,
-                        height: midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
+                        x1: PIN_LENGTH,
+                        y1: midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
                     });
                 }
             }
@@ -121,26 +139,14 @@ function getPinsBoundingBox({
                     width: PIN_LENGTH,
                     height: PIN_HEIGHT,
                 });
-                if (i === lastButtomPinNumber) {
-                    if ((elementConfig.inputsCount || 0) % 2 === 1) {
-                        rv.lines.push({
-                            x: PIN_LENGTH,
-                            y: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-                            width: PIN_LENGTH,
-                            height:
-                                midPoint +
-                                PIN_HEIGHT * i * 2 +
-                                PIN_HEIGHT * 3 -
-                                strokeWidth,
-                        });
-                    }
-                } else {
+                // a line at the bottom
+                if (i !== lastButtomPinNumber) {
                     rv.lines.push({
                         x: PIN_LENGTH,
                         y: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
 
-                        width: PIN_LENGTH,
-                        height: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
+                        x1: PIN_LENGTH,
+                        y1: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
                     });
                 }
             }
@@ -150,21 +156,55 @@ function getPinsBoundingBox({
     return rv;
 }
 
+function transformRect({ tm, rect }: { tm: Matrix; rect: BoundingBox }) {
+    const p1 = { x: rect.x, y: rect.y };
+    const p2 = { x: rect.x + rect.width, y: rect.y + rect.height };
+    const [d1, d2] = applyToPoints(tm, [p1, p2]);
+    return getRectFromDiagonals(d1, d2);
+}
+
 function renderGateTop({
+    context,
     rc,
     path,
-    config,
-    configWithFill,
+    options: { config, configWithFill, rotation },
+    dimensions: {
+        effectiveDimension: { width, height },
+        elementDimension,
+    },
 }: {
+    context: CanvasRenderingContext2D;
     rc: RoughCanvas;
     path?: string;
-    config: Options;
-    configWithFill: Options;
+    options: {
+        config: Options;
+        configWithFill: Options;
+        rotation: number;
+    };
+    dimensions: {
+        effectiveDimension: { width: number; height: number };
+        elementDimension: { width: number; height: number };
+    };
 }) {
+    context.save();
+    if (rotation === 180) {
+        context.rotate(Math.PI);
+        context.translate(-width, -height);
+    }
+    if (rotation === 90) {
+        context.rotate(Math.PI / 2);
+        context.translate(0, -height);
+    }
+    if (rotation === 270) {
+        context.rotate(Math.PI * (3 / 2));
+        context.translate(-width, 0);
+    }
+    context.translate(PIN_LENGTH, height / 2 - elementDimension.height / 2);
     if (path) {
         rc.path(path, config);
         rc.path(path, configWithFill);
     }
+    context.restore();
 }
 
 export const renderAndGate: GatesRenderer = ({
@@ -181,110 +221,113 @@ export const renderAndGate: GatesRenderer = ({
         return;
     }
     const { width, height } = effectiveDimension;
-    /* if (elementConfig.rotation === 180) {
-        context.rotate(Math.PI);
-        context.translate(-width, -height);
+
+    let tm: Matrix = compose(rotate(0));
+    if (elementConfig.rotation === 180) {
+        tm = compose(rotate(Math.PI), translate(-width, -height));
     }
     if (elementConfig.rotation === 90) {
-        context.rotate(Math.PI / 2);
-        context.translate(0, -height);
+        tm = compose(rotate(Math.PI / 2), translate(0, -height));
     }
     if (elementConfig.rotation === 270) {
-        context.rotate((Math.PI * 3) / 2);
-        context.translate(-width, 0);
-    } */
+        tm = compose(rotate(Math.PI * (3 / 2)), translate(-width, 0));
+    }
 
     // BUG: use this to debug zoom in offset bug
+    const debugConfig = {
+        ...config,
+        fill: undefined,
+        stroke: COLOR_PALETTE.blue[2],
+    };
     if (DEBUG_BOUNDING_BOX) {
         rc.rectangle(
-            0,
-            0,
-            effectiveDimension?.width,
-            effectiveDimension?.height,
-            { ...config, fill: undefined, stroke: COLOR_PALETTE.blue[1] }
+            ...transformRect({ tm, rect: { x: 0, y: 0, width, height } }),
+            debugConfig
         );
     }
-    context.save();
-    context.translate(PIN_LENGTH, height / 2 - info.height / 2);
+
+    // gate top bounding box
+    const tmTop = compose(
+        tm,
+        translate(PIN_LENGTH, height / 2 - info.height / 2)
+    );
+    DEBUG_BOUNDING_BOX &&
+        rc.rectangle(
+            ...transformRect({
+                tm: tmTop,
+                rect: {
+                    x: 0,
+                    y: 0,
+                    width: info.width,
+                    height: info.height,
+                },
+            }),
+            debugConfig
+        );
+
     // AND Gate
     renderGateTop({
         rc,
+        context,
         path: "M43 32C43 48.8201 32.0851 62 15.8824 62H4C2.89543 62 2 61.1046 2 60V4C2 2.89543 2.89543 2 4 2H15.8824C32.0851 2 43 15.1799 43 32Z",
-        config,
-        configWithFill,
+        options: {
+            config,
+            configWithFill,
+            rotation: elementConfig.rotation || 0,
+        },
+        dimensions: {
+            effectiveDimension,
+            elementDimension: info,
+        },
     });
-    context.restore();
+
     // Output pin
     const pinsConfig = {
         ...config,
         bowing: 20,
     };
+    const { inputs, outputs, lines } = getPinsBoundingBox({
+        elementConfig,
+    });
     rc.rectangle(
-        info.width + PIN_LENGTH + 1,
-        height / 2 - PIN_HEIGHT / 2,
-        PIN_LENGTH - 1,
-        PIN_HEIGHT,
+        ...transformRect({
+            tm,
+            rect: {
+                x: outputs[0].x,
+                y: outputs[0].y,
+                width: outputs[0].width,
+                height: outputs[0].height,
+            },
+        }),
         pinsConfig
     );
-    const midPoint = height / 2;
-    const numberOfPins = elementConfig.inputsCount || 0;
-    for (let i = 1; i <= Math.ceil(numberOfPins / 2); i++) {
+    inputs.forEach((input) => {
         rc.rectangle(
-            0,
-            midPoint - PIN_HEIGHT * i * 2 - PIN_HEIGHT / 2,
-            PIN_LENGTH,
-            PIN_HEIGHT,
+            ...transformRect({
+                tm,
+                rect: {
+                    x: input.x,
+                    y: input.y,
+                    width: input.width,
+                    height: input.height,
+                },
+            }),
             pinsConfig
         );
-        if (i !== 1) {
-            rc.line(
-                PIN_LENGTH,
-                midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-
-                PIN_LENGTH,
-                midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
-                config
-            );
-        }
-    }
-    const lastButtomPinNumber = Math.floor(numberOfPins / 2);
-    for (let i = 1; i <= lastButtomPinNumber; i++) {
-        rc.rectangle(
-            0,
-            midPoint + PIN_HEIGHT * i * 2 - PIN_HEIGHT / 2,
-            PIN_LENGTH,
-            PIN_HEIGHT,
-            pinsConfig
-        );
-        if (i === lastButtomPinNumber) {
-            if ((elementConfig.inputsCount || 0) % 2 === 1) {
-                rc.line(
-                    PIN_LENGTH,
-                    midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-
-                    PIN_LENGTH,
-                    midPoint +
-                    PIN_HEIGHT * i * 2 +
-                    PIN_HEIGHT * 3 -
-                    (config.strokeWidth ?? 3),
-                    config
-                );
-            }
-            continue;
-        }
-        rc.line(
-            PIN_LENGTH,
-            midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-
-            PIN_LENGTH,
-            midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
-            config
-        );
-    }
-    // rc.line(PIN_LENGTH, 0, PIN_LENGTH, height, {
-    //     ...config,
-    //     bowing: 10
-    // });
+    });
+    lines.forEach((line) => {
+        const [p1, p2] = applyToPoints(tm, [
+            {
+                x: line.x,
+                y: line.y,
+            },
+            {
+                x: line.x1,
+                y: line.y1,
+            },
+        ]);
+        rc.line(p1.x, p1.y, p2.x, p2.y, pinsConfig);
+    });
     context.restore();
 };
 

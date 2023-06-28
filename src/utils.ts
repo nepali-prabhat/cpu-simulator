@@ -1,6 +1,6 @@
 import { getDefaultStore } from "jotai";
 import { MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
-import { NormalizedZoomValue } from "./types";
+import { NormalizedZoomValue, Point } from "./types";
 
 export function mergeRefs<T = any>(
     refs: Array<React.MutableRefObject<T> | React.LegacyRef<T>>
@@ -24,3 +24,11 @@ export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
 export const getUIStore = () => {
     return getDefaultStore();
 };
+
+export function getRectangleFromDiagonals(
+    d1: Point,
+    d2: Point
+): [number, number, number, number] {
+    return [d1.x, d1.y, d2.x - d1.x, d2.y - d1.y];
+}
+

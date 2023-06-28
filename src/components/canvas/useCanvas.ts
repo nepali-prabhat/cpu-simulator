@@ -28,7 +28,7 @@ import {
     showGhost,
 } from "@/state/appState";
 
-import { selectedElementTypeAtom } from "@/state/ui";
+import { rotateGhostElementAtom, selectedElementTypeAtom } from "@/state/ui";
 import { getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import { elementsAtom } from "@/state/elements";
@@ -50,6 +50,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
+    const rotateGhostElement = useSetAtom(rotateGhostElementAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -146,7 +147,17 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const { clientX, clientY } = e;
             lastViewportPosition.current = { x: clientX, y: clientY };
         };
-        const _keydownHandler = (e: KeyboardEvent) => {
+        window.addEventListener("resize", _resizeHandler);
+        document.addEventListener("mousemove", _mouseMoveHanlder);
+        return () => {
+            window.removeEventListener("resize", _resizeHandler);
+            document.removeEventListener("mousemove", _mouseMoveHanlder);
+        };
+    }, [setActiveElementType, setDimension, setIsMenuOpen, setZoom]);
+
+    const keydownHandler = useCallback(
+        (e: KeyboardEvent) => {
+            console.log("e.key: ", e.key);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -158,17 +169,20 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             } else if (e.key === "Escape") {
                 setActiveElementType(undefined);
                 // setIsMenuOpen(false);
+            } else if (e.key === "r") {
+                rotateGhostElement(90);
             }
-        };
-        window.addEventListener("resize", _resizeHandler);
+        },
+        [setZoom, setActiveElementType, rotateGhostElement]
+    );
+
+    useEffect(() => {
+        const _keydownHandler = keydownHandler;
         window.addEventListener("keydown", _keydownHandler);
-        document.addEventListener("mousemove", _mouseMoveHanlder);
         return () => {
-            window.removeEventListener("resize", _resizeHandler);
             window.removeEventListener("keydown", _keydownHandler);
-            document.removeEventListener("mousemove", _mouseMoveHanlder);
         };
-    }, [setActiveElementType, setDimension, setIsMenuOpen, setZoom]);
+    }, [keydownHandler]);
 
     const draw = useCallback(() => {
         const canvas = canvasRef.current;
