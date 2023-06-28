@@ -21,25 +21,3 @@ export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
     return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
 }
 
-export const getUIStore = () => {
-    return getDefaultStore();
-};
-
-export function getRectangleFromDiagonals(
-    d1: Point,
-    d2: Point
-): [number, number, number, number] {
-    return [d1.x, d1.y, d2.x - d1.x, d2.y - d1.y];
-}
-
-
-export function convertBoxToRect(boundingBox: BoundingBox): BoundingRect {
-    const rect: BoundingRect = [
-        boundingBox.x,
-        boundingBox.y,
-        boundingBox.width,
-        boundingBox.height,
-    ];
-    return rect;
-}
-

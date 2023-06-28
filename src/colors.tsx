@@ -1,7 +1,7 @@
 import oc from "open-color";
 import { Merge } from "./utilTypes";
 
-export const ELEMENTS_PALETTE_SHADE_INDEXES = [0, 2, 4, 6, 8] as const;
+export const ELEMENTS_PALETTE_SHADE_INDEXES = [1, 3, 5, 7, 9] as const;
 
 export type ColorPickerColor =
     | Exclude<keyof oc, "indigo" | "lime">
@@ -53,7 +53,7 @@ export const APP_BG_COLOR_PALETTE: ColorTuple = [
 ];
 const elementsColorIndex = 4;
 export const ELEMENTS_COLOR_PALETTE: ColorTuple = [
-    COLOR_PALETTE.black,
+    COLOR_PALETTE.gray[elementsColorIndex],
     COLOR_PALETTE.red[elementsColorIndex],
     COLOR_PALETTE.green[elementsColorIndex],
     COLOR_PALETTE.blue[elementsColorIndex],

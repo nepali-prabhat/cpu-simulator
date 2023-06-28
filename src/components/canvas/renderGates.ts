@@ -1,34 +1,24 @@
-import {
-    applyToPoints,
-    rotate,
-    translate,
-    compose,
-    Matrix,
-} from "transformation-matrix";
+import { applyToPoints, translate, compose } from "transformation-matrix";
 
 import { COLOR_PALETTE } from "@/colors";
-import {
-    DEBUG_BOUNDING_BOX,
-    PIN_HEIGHT,
-    PIN_LENGTH,
-} from "@/constants/constants";
+import { DEBUG_BOUNDING_BOX, PIN_LENGTH } from "@/constants/constants";
 import { elementsInfo } from "@/constants/elementsInfo";
 import {
-    BoundingBox,
     BoundingRect,
     CanvasProperties,
-    Dimension,
     Element,
     ElementConfig,
+    ElementInfo,
     GhostElement,
-    PinType,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
 import {
     convertBoxToRect,
-    getRectangleFromDiagonals as getRectFromDiagonals,
-} from "@/utils";
+    getEffectiveDimension,
+    getPinsBoundingBox,
+} from "@/utils/box";
+import { makeTransformationMatrix, transformRect } from "@/utils/transform";
 
 export function renderGate({
     element,
@@ -54,11 +44,36 @@ export function renderGhostGate({
     if (!element?.show || !rc) {
         return;
     }
-    const seed = element.seed + 1;
+
+    const elementConfig = element.elementConfig;
+
+    // Transformation matrices
+    drawGate({
+        elementConfig,
+        rc,
+        context,
+        seed: element.seed,
+        bgColor: canvasProperties.bgColor,
+    });
+}
+
+function drawGate({
+    elementConfig,
+    rc,
+    context,
+    seed,
+    bgColor = "#fff",
+}: {
+    elementConfig: ElementConfig;
+    rc: RoughCanvas;
+    context: CanvasRenderingContext2D;
+    seed: number;
+    bgColor?: string;
+}) {
+    seed += 1;
     const roughness = 0.2;
     const hachureGap = 4;
-    const bgColor = canvasProperties.bgColor || "#fff";
-    const elementColor = element.elementConfig.color || "#000";
+    const elementColor = elementConfig.color || "#000";
     const debugConfig = {
         seed,
         roughness,
@@ -66,14 +81,12 @@ export function renderGhostGate({
         stroke: COLOR_PALETTE.blue[1],
     };
 
-    const elementConfig = element.elementConfig;
     const info = elementsInfo.get(elementConfig.type);
     const effectiveDimension = getEffectiveDimension(elementConfig);
     if (!info || !effectiveDimension) {
         return;
     }
 
-    // Transformation matrices
     const tm = makeTransformationMatrix({
         elementConfig,
         effectiveDimension,
@@ -99,6 +112,55 @@ export function renderGhostGate({
         tm: tmIcon,
         rect: gateIconRect,
     });
+    const gateConfig = {
+        bgConfig: {
+            seed,
+            roughness,
+            fill: bgColor,
+            fillStyle: "solid",
+            stroke: elementColor,
+        },
+        fgConfig: {
+            seed,
+            roughness,
+            fill: elementColor,
+            fillStyle: "hachure",
+            hachureGap,
+            stroke: elementColor,
+        },
+    };
+    if (info.path) {
+        context.save();
+        context.transform(
+            tmIcon.a,
+            tmIcon.b,
+            tmIcon.c,
+            tmIcon.d,
+            tmIcon.e,
+            tmIcon.f
+        );
+        renderGateIcon({
+            rc,
+            paths: info.path,
+            noFillPathIndex: info.noFillPathIndex,
+            config: gateConfig,
+        });
+        context.restore();
+    } else {
+        rc.rectangle(...iconBoundingRect, {
+            seed,
+            roughness,
+            fill: bgColor,
+            fillStyle: "solid",
+            stroke: elementColor,
+            strokeWidth: 1,
+        });
+        context.fillText(
+            elementConfig.type,
+            iconBoundingRect[0],
+            iconBoundingRect[1]
+        );
+    }
 
     const pinsConfig = {
         seed,
@@ -132,60 +194,8 @@ export function renderGhostGate({
         rc.line(p1.x, p1.y, p2.x, p2.y, pinsConfig);
     }
 
-    const gateConfig = {
-        bgConfig: {
-            seed,
-            roughness,
-            fill: bgColor,
-            fillStyle: "solid",
-            stroke: elementColor,
-        },
-        fgConfig: {
-            seed,
-            roughness,
-            fill: elementColor,
-            fillStyle: "hachure",
-            hachureGap,
-            stroke: elementColor,
-        },
-    };
-    if (info.path) {
-        context.save();
-        context.transform(
-            tmIcon.a,
-            tmIcon.b,
-            tmIcon.c,
-            tmIcon.d,
-            tmIcon.e,
-            tmIcon.f
-        );
-        renderGateIcon({
-            rc,
-            paths: info.path,
-            config: gateConfig,
-        });
-        context.restore();
-    } else {
-        rc.rectangle(...iconBoundingRect, {
-            seed,
-            roughness,
-            fill: bgColor,
-            fillStyle: "solid",
-            stroke: elementColor,
-            strokeWidth: 1,
-        });
-        context.fillText(
-            elementConfig.type,
-            iconBoundingRect[0],
-            iconBoundingRect[1]
-        );
-    }
-
     if (DEBUG_BOUNDING_BOX) {
-        const rects: BoundingRect[] = [
-            transformedDimension,
-            // iconBoundingRect
-        ];
+        const rects: BoundingRect[] = [transformedDimension, iconBoundingRect];
         rects.forEach((rect) => {
             rc.rectangle(...rect, debugConfig);
         });
@@ -195,187 +205,28 @@ export function renderGhostGate({
 function renderGateIcon({
     rc,
     paths,
+    noFillPathIndex,
     config,
 }: {
     rc: RoughCanvas;
     paths: string | string[];
+    noFillPathIndex?: number[];
     config: {
         bgConfig: Options;
         fgConfig: Options;
     };
 }) {
     if (Array.isArray(paths)) {
-        paths.forEach((path) => {
-            rc.path(path, config.bgConfig);
-            rc.path(path, config.fgConfig);
+        paths.forEach((path, i) => {
+            if (noFillPathIndex && noFillPathIndex.includes(i)) {
+                rc.path(path, { ...config.fgConfig, fill: undefined });
+            } else {
+                rc.path(path, config.bgConfig);
+                rc.path(path, config.fgConfig);
+            }
         });
     } else {
         rc.path(paths, config.bgConfig);
         rc.path(paths, config.fgConfig);
     }
-}
-
-function makeTransformationMatrix({
-    elementConfig,
-    effectiveDimension,
-}: {
-    elementConfig: ElementConfig;
-    effectiveDimension: Dimension;
-}): Matrix {
-    const { width, height } = effectiveDimension;
-    let tm: Matrix = compose(rotate(0));
-    if (elementConfig.rotation === 180) {
-        tm = compose(rotate(Math.PI), translate(-width, -height));
-    }
-    if (elementConfig.rotation === 90) {
-        tm = compose(rotate(Math.PI / 2), translate(0, -height));
-    }
-    if (elementConfig.rotation === 270) {
-        tm = compose(rotate(Math.PI * (3 / 2)), translate(-width, 0));
-    }
-    return tm;
-}
-
-function transformRect({
-    tm,
-    rect,
-}: {
-    tm: Matrix;
-    rect: BoundingRect;
-}): BoundingRect {
-    const [d1, d2] = applyToPoints(tm, [
-        { x: rect[0], y: rect[1] },
-        { x: rect[0] + rect[2], y: rect[1] + rect[3] },
-    ]);
-    return getRectFromDiagonals(d1, d2);
-}
-
-function getEffectiveDimension({ type, inputsCount = 1 }: ElementConfig) {
-    const info = elementsInfo.get(type);
-    if (!info) {
-        return;
-    }
-    const evenInputsCount = inputsCount - (inputsCount % 2);
-    const effectiveInputPinsCount = evenInputsCount * 2;
-    const effectivePinsHeight = effectiveInputPinsCount * PIN_HEIGHT;
-    const padding = PIN_HEIGHT * 1;
-    const height = Math.max(info.height, padding + effectivePinsHeight);
-    let width = info.width + PIN_LENGTH * 2;
-
-    return {
-        width,
-        height,
-    };
-}
-
-function getPinsBoundingBox(elementConfig: ElementConfig) {
-    const rv: {
-        pins: (BoundingBox & {
-            type: PinType;
-            negate?: boolean;
-            pinIndex: number;
-        })[];
-        lines: { x: number; y: number; x1: number; y1: number }[];
-    } = {
-        pins: [],
-        lines: [],
-    };
-    const info = elementsInfo.get(elementConfig.type);
-    if (!elementConfig || !info) {
-        return rv;
-    }
-    const effectiveDimension = getEffectiveDimension(elementConfig);
-    if (!effectiveDimension) {
-        return rv;
-    }
-    const { height } = effectiveDimension;
-    // make output gate
-    switch (elementConfig.type) {
-        default: {
-            // TODO: make this dynamic
-            if (info.negateOutputPins?.includes(0)) {
-                rv.pins.push({
-                    type: "output",
-                    negate: true,
-                    pinIndex: 0,
-                    x: info.width + PIN_LENGTH + PIN_HEIGHT / 2,
-                    y: height / 2 - PIN_HEIGHT / 2 + PIN_LENGTH / 2,
-                    width: PIN_LENGTH,
-                    height: PIN_HEIGHT,
-                });
-            } else {
-                rv.pins.push({
-                    type: "output",
-                    pinIndex: 0,
-                    x: info.width + PIN_LENGTH,
-                    y: height / 2 - PIN_HEIGHT / 2,
-                    width: PIN_LENGTH,
-                    height: PIN_HEIGHT,
-                });
-            }
-            break;
-        }
-    }
-    const midPoint = height / 2;
-    const numberOfPins = elementConfig.inputsCount || 1;
-    // make input gate
-    switch (elementConfig.type) {
-        default: {
-            const edgePinCount = Math.floor(numberOfPins / 2);
-            if (edgePinCount * 2 !== numberOfPins) {
-                // middle pin
-                rv.pins.push({
-                    type: "input",
-                    pinIndex: edgePinCount,
-                    x: 0,
-                    y: midPoint - PIN_HEIGHT / 2,
-                    width: PIN_LENGTH,
-                    height: PIN_HEIGHT,
-                });
-            }
-            // edge pins
-            for (let i = 1; i <= edgePinCount; i++) {
-                // top pin
-                rv.pins.push({
-                    type: "input",
-                    pinIndex: i - 1,
-                    x: 0,
-                    y: midPoint - PIN_HEIGHT * i * 2 - PIN_HEIGHT / 2,
-                    width: PIN_LENGTH,
-                    height: PIN_HEIGHT,
-                });
-                // bottom pin
-                rv.pins.push({
-                    type: "input",
-                    pinIndex: edgePinCount + i - 1,
-                    x: 0,
-                    y: midPoint + PIN_HEIGHT * i * 2 - PIN_HEIGHT / 2,
-                    width: PIN_LENGTH,
-                    height: PIN_HEIGHT,
-                });
-                // top pin lines
-                if (i !== 1) {
-                    rv.lines.push({
-                        x: PIN_LENGTH,
-                        y: midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-                        x1: PIN_LENGTH,
-                        y1: midPoint - PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
-                    });
-                }
-                // bottom pin lines
-                if (i !== edgePinCount) {
-                    rv.lines.push({
-                        x: PIN_LENGTH,
-                        y: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT / 2,
-
-                        x1: PIN_LENGTH,
-                        y1: midPoint + PIN_HEIGHT * i * 2 + PIN_HEIGHT * 2,
-                    });
-                }
-            }
-
-            break;
-        }
-    }
-    return rv;
 }

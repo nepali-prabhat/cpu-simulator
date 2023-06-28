@@ -18,6 +18,7 @@ export type CanvasProperties = {
 export type ElementInfo = {
     displayName: string;
     path?: string | string[];
+    noFillPathIndex?: number[];
     height: number;
     width: number;
     negateOutputPins?: number[];
