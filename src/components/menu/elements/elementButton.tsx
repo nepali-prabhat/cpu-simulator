@@ -38,7 +38,7 @@ export const ElementTypeButton = memo(
                 >
                     {props.children}
                 </button>
-                <button
+                <span
                     onClick={handleClick}
                     className={twMerge(
                         `text-sm pt-2 rounded-md select-none text-center truncate px-0.5`
@@ -47,7 +47,7 @@ export const ElementTypeButton = memo(
                     title={props.name}
                 >
                     {props.name}
-                </button>
+                </span>
             </div>
         );
     },

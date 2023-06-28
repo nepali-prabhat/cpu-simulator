@@ -38,35 +38,25 @@ type GatesRenderer2 = (props: {
     };
 }) => void;
 
-function getEffectiveDimension({
-    type,
-    inputsCount = 1,
-}: {
-    type: ElementType;
-    inputsCount?: number;
-}) {
+function getEffectiveDimension({ type, inputsCount = 1 }: ElementConfig) {
     const info = elementsInfo.get(type);
     if (!info) {
         return;
     }
-
     const evenInputsCount = inputsCount - (inputsCount % 2);
     const effectiveInputPinsCount = evenInputsCount * 2;
     const effectivePinsHeight = effectiveInputPinsCount * PIN_HEIGHT;
     const padding = PIN_HEIGHT * 1;
     const height = Math.max(info.height, padding + effectivePinsHeight);
     let width = info.width + PIN_LENGTH * 2;
+
     return {
         width,
         height,
     };
 }
 
-function getPinsBoundingBox({
-    elementConfig,
-}: {
-    elementConfig: ElementConfig;
-}) {
+function getPinsBoundingBox(elementConfig: ElementConfig) {
     const rv: {
         pins: (BoundingBox & {
             type: PinType;
@@ -82,10 +72,7 @@ function getPinsBoundingBox({
     if (!elementConfig || !info) {
         return rv;
     }
-    const effectiveDimension = getEffectiveDimension({
-        type: elementConfig.type,
-        inputsCount: elementConfig.inputsCount,
-    });
+    const effectiveDimension = getEffectiveDimension(elementConfig);
     if (!effectiveDimension) {
         return rv;
     }
@@ -406,76 +393,7 @@ export function renderGate({
     element: Pick<Element, "nonce" | "type">;
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
-}) {
-    const config: Options = {
-        seed: element.nonce + 1,
-        roughness: 0.2,
-        fill: "white",
-        fillStyle: "solid",
-    };
-    const fill = "metal";
-    const configWithFill: Options = {
-        ...config,
-        fill,
-        fillStyle: "hachure",
-        hachureGap: 4,
-    };
-    const option = {
-        config,
-        configWithFill,
-        context,
-    };
-    // switch (element.type) {
-    //     case "and_gate": {
-    //         renderAndGate({ rc, option });
-    //         break;
-    //     }
-    //     case "or_gate": {
-    //         renderOrGate({ rc, option });
-    //         break;
-    //     }
-    //     case "not_gate": {
-    //         renderNotGate({ rc, option });
-    //         break;
-    //     }
-    //     case "nand_gate": {
-    //         renderNandGate({ rc, option });
-    //         break;
-    //     }
-    //     case "nor_gate": {
-    //         renderNorGate({ rc, option });
-    //         break;
-    //     }
-    //     case "buffer": {
-    //         renderBuffer({ rc, option });
-    //         break;
-    //     }
-    //     case "xor_gate": {
-    //         renderXorGate({ rc, option });
-    //         break;
-    //     }
-    //     case "xnor_gate": {
-    //         renderXnorGate({ rc, option });
-    //         break;
-    //     }
-    //     case "mux": {
-    //         renderMux({ rc, option });
-    //         break;
-    //     }
-    //     case "dmux": {
-    //         renderDmux({ rc, option });
-    //         break;
-    //     }
-    //     case "decoder": {
-    //         renderDecoder({ rc, option });
-    //         break;
-    //     }
-    //     case "DQ_flip_flop": {
-    //         renderDQFlipFlop({ rc, option });
-    //         break;
-    //     }
-    // }
-}
+}) { }
 
 export function renderGhostGate({
     element,
@@ -505,10 +423,7 @@ export function renderGhostGate({
 
     const elementConfig = element.elementConfig;
     const info = elementsInfo.get(elementConfig.type);
-    const effectiveDimension = getEffectiveDimension({
-        type: elementConfig.type,
-        inputsCount: elementConfig.inputsCount,
-    });
+    const effectiveDimension = getEffectiveDimension(elementConfig);
     if (!info || !effectiveDimension) {
         return;
     }
@@ -528,9 +443,7 @@ export function renderGhostGate({
         rect: [0, 0, effectiveDimension.width, effectiveDimension.height],
     });
 
-    const { pins, lines } = getPinsBoundingBox({
-        elementConfig,
-    });
+    const { pins, lines } = getPinsBoundingBox(elementConfig);
     const transformedPins = pins.map((pin) => ({
         rect: transformRect({ tm, rect: convertBoxToRect(pin) }),
         originalPin: pin,
@@ -554,7 +467,7 @@ export function renderGhostGate({
     for (let pin of transformedPins) {
         if (pin.originalPin.negate) {
             const rect = pin.rect;
-            rc.circle(rect[0], rect[1], rect[2], pinsConfig);
+            rc.circle(rect[0], rect[1], rect[3], pinsConfig);
         } else {
             rc.rectangle(...pin.rect, pinsConfig);
         }
@@ -603,7 +516,7 @@ export function renderGhostGate({
         );
         renderGateIcon({
             rc,
-            path: info.path,
+            paths: info.path,
             config: gateConfig,
         });
         context.restore();
@@ -636,18 +549,25 @@ export function renderGhostGate({
 
 function renderGateIcon({
     rc,
-    path,
+    paths,
     config,
 }: {
     rc: RoughCanvas;
-    path: string;
+    paths: string | string[];
     config: {
         bgConfig: Options;
         fgConfig: Options;
     };
 }) {
-    rc.path(path, config.bgConfig);
-    rc.path(path, config.fgConfig);
+    if (Array.isArray(paths)) {
+        paths.forEach((path, i) => {
+            rc.path(path, config.bgConfig);
+            rc.path(path, config.fgConfig);
+        });
+    } else {
+        rc.path(paths, config.bgConfig);
+        rc.path(paths, config.fgConfig);
+    }
 }
 
 function convertBoxToRect(boundingBox: BoundingBox): BoundingRect {

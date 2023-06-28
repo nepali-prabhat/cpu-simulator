@@ -37,4 +37,4 @@ export const PIN_LENGTH = 7.2/1.25;
 export const PIN_HEIGHT = 8/1.25;
 
 
-export const DEBUG_BOUNDING_BOX = false
+export const DEBUG_BOUNDING_BOX = true
