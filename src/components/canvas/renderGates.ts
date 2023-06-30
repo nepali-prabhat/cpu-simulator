@@ -1,36 +1,19 @@
-import { applyToPoints, translate, compose } from "transformation-matrix";
-
 import { COLOR_PALETTE } from "@/colors";
-import { DEBUG_BOUNDING_BOX, PIN_LENGTH } from "@/constants/constants";
+import { DEBUG_BOUNDING_BOX } from "@/constants/constants";
 import { elementsInfo } from "@/constants/elementsInfo";
 import {
     BoundingRect,
     CanvasProperties,
     Element,
     ElementConfig,
-    ElementInfo,
+    ElementPins,
     GhostElement,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
-import {
-    convertBoxToRect,
-    getEffectiveDimension,
-    getPinsBoundingBox,
-} from "@/utils/box";
-import { makeTransformationMatrix, transformRect } from "@/utils/transform";
+import { Matrix } from "transformation-matrix";
 
-export function renderGate({
-    element,
-    context,
-    rc,
-}: {
-    element: Pick<Element, "nonce" | "type">;
-    context: CanvasRenderingContext2D;
-    rc: RoughCanvas | null;
-}) { }
-
-export function renderGhostGate({
+export function renderElement({
     element,
     canvasProperties,
     context,
@@ -41,30 +24,37 @@ export function renderGhostGate({
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    if (!element?.show || !rc) {
+    if (!rc) {
         return;
     }
 
-    const elementConfig = element.elementConfig;
-
     // Transformation matrices
     drawGate({
-        elementConfig,
+        ...element,
         rc,
         context,
-        seed: element.seed,
         bgColor: canvasProperties.bgColor,
     });
 }
 
 function drawGate({
-    elementConfig,
+    tmIcon,
+    iconRect,
+    io,
+    rect,
+    config,
+
     rc,
     context,
     seed,
     bgColor = "#fff",
 }: {
-    elementConfig: ElementConfig;
+    io: ElementPins;
+    tmIcon: Matrix;
+    rect: BoundingRect;
+    iconRect: BoundingRect;
+    config: ElementConfig;
+
     rc: RoughCanvas;
     context: CanvasRenderingContext2D;
     seed: number;
@@ -73,45 +63,9 @@ function drawGate({
     seed += 1;
     const roughness = 0.2;
     const hachureGap = 4;
-    const elementColor = elementConfig.color || "#000";
-    const debugConfig = {
-        seed,
-        roughness,
-        fill: undefined,
-        stroke: COLOR_PALETTE.blue[1],
-    };
+    const elementColor = config.color || "#000";
+    const info = elementsInfo.get(config.type);
 
-    const info = elementsInfo.get(elementConfig.type);
-    const effectiveDimension = getEffectiveDimension(elementConfig);
-    if (!info || !effectiveDimension) {
-        return;
-    }
-
-    const tm = makeTransformationMatrix({
-        elementConfig,
-        effectiveDimension,
-    });
-    const tmIcon = compose(
-        tm,
-        translate(PIN_LENGTH, effectiveDimension.height / 2 - info.height / 2)
-    );
-
-    const transformedDimension = transformRect({
-        tm,
-        rect: [0, 0, effectiveDimension.width, effectiveDimension.height],
-    });
-
-    const { pins, lines } = getPinsBoundingBox(elementConfig);
-    const transformedPins = pins.map((pin) => ({
-        rect: transformRect({ tm, rect: convertBoxToRect(pin) }),
-        originalPin: pin,
-    }));
-
-    const gateIconRect: BoundingRect = [0, 0, info.width, info.height];
-    const iconBoundingRect = transformRect({
-        tm: tmIcon,
-        rect: gateIconRect,
-    });
     const gateConfig = {
         bgConfig: {
             seed,
@@ -129,7 +83,7 @@ function drawGate({
             stroke: elementColor,
         },
     };
-    if (info.path) {
+    if (info?.path) {
         context.save();
         context.transform(
             tmIcon.a,
@@ -147,7 +101,7 @@ function drawGate({
         });
         context.restore();
     } else {
-        rc.rectangle(...iconBoundingRect, {
+        rc.rectangle(...iconRect, {
             seed,
             roughness,
             fill: bgColor,
@@ -155,11 +109,7 @@ function drawGate({
             stroke: elementColor,
             strokeWidth: 1,
         });
-        context.fillText(
-            elementConfig.type,
-            iconBoundingRect[0],
-            iconBoundingRect[1]
-        );
+        context.fillText(config.type, iconRect[0], iconRect[1]);
     }
 
     const pinsConfig = {
@@ -171,8 +121,8 @@ function drawGate({
         stroke: elementColor,
     };
     // render input and outputs
-    for (let pin of transformedPins) {
-        if (pin.originalPin.negate) {
+    for (let pin of io.pins) {
+        if (pin.negate) {
             const rect = pin.rect;
             rc.circle(rect[0], rect[1], rect[3], pinsConfig);
         } else {
@@ -180,24 +130,19 @@ function drawGate({
         }
     }
 
-    for (let line of lines) {
-        const [p1, p2] = applyToPoints(tm, [
-            {
-                x: line.x,
-                y: line.y,
-            },
-            {
-                x: line.x1,
-                y: line.y1,
-            },
-        ]);
-        rc.line(p1.x, p1.y, p2.x, p2.y, pinsConfig);
+    for (let line of io.lines) {
+        rc.line(...line, pinsConfig);
     }
 
     if (DEBUG_BOUNDING_BOX) {
-        const rects: BoundingRect[] = [transformedDimension, iconBoundingRect];
+        const rects: BoundingRect[] = [[0, 0, rect[2], rect[3]], iconRect];
         rects.forEach((rect) => {
-            rc.rectangle(...rect, debugConfig);
+            rc.rectangle(...rect, {
+                seed,
+                roughness,
+                fill: undefined,
+                stroke: COLOR_PALETTE.blue[1],
+            });
         });
     }
 }

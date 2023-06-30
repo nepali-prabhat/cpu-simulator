@@ -7,7 +7,7 @@ export const MAX_ZOOM = 15;
 export const INITIAL_ZOOM = 1 as NormalizedZoomValue;
 
 export const SELECT_SIZE = 4;
-export const SELECT_PADDING = 0;
+export const SELECT_PADDING = 2;
 
 // Development mode options
 export const GRID_SPACE = 16;
@@ -36,4 +36,4 @@ paletteTitleMap.set("circuit", "Circuits");
 export const PIN_LENGTH = 7.2/1.25;
 export const PIN_HEIGHT = 8/1.25;
 
-export const DEBUG_BOUNDING_BOX = false
+export const DEBUG_BOUNDING_BOX = true

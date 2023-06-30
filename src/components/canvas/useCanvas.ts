@@ -31,7 +31,8 @@ import {
 import { rotateGhostElementAtom, selectedElementTypeAtom } from "@/state/ui";
 import { getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
-import { elementsAtom } from "@/state/elements";
+import { addElementAtom, elementsAtom } from "@/state/elements";
+import { convertRectToBox } from "@/utils/box";
 
 const gridSpace = GRID_SPACE;
 
@@ -44,6 +45,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setDimension = useSetAtom(canvasDimensionAtom);
 
     const setActiveElementType = useSetAtom(selectedElementTypeAtom);
+    const addElement = useSetAtom(addElementAtom);
     const setGhostPosition = useSetAtom(_setGhostPosition);
     const setShowGhost = useSetAtom(showGhost);
     const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
@@ -166,7 +168,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     zoom: getNormalizedZoom(1),
                 }));
             } else if (e.key === "Escape") {
-                // setActiveElementType(undefined);
+                setActiveElementType(undefined);
                 // setIsMenuOpen(false);
             } else if (!(e.ctrlKey || e.metaKey) && e.key === "r") {
                 rotateGhostElement(90);
@@ -220,7 +222,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
         if (ghostElement && ghostElement.show) {
             // setShowGhost(false);
-            // TODO: make an element
+            addElement(ghostElement);
             setActiveElementType(undefined);
         } else {
             const { topLevelElement } = getElementsAt(
@@ -291,11 +293,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             offset
         );
 
-        const ghostElement = appState.ghostElement;
-
-        if (ghostElement && ghostElement.show) {
-            setGhostPosition(canvasXY);
-        }
+        setGhostPosition([canvasXY.x, canvasXY.y]);
 
         if (pointerRef.current) {
             const lastPoint = pointerRef.current.lastPoint;
@@ -323,7 +321,12 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             if (selectRect) {
                 // add new selected elements
                 for (let element of Object.values(elementsMap)) {
-                    if (isBoxInsideAnotherBox(element, selectRect)) {
+                    if (
+                        isBoxInsideAnotherBox(
+                            convertRectToBox(element.rect),
+                            selectRect
+                        )
+                    ) {
                         additionalSelectedElements.push(element.uid);
                     }
                 }
@@ -336,8 +339,12 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 for (let element of selectedElements) {
                     updatedSelectedElements[element.uid] = {
                         ...element,
-                        x: element.x + dp.x,
-                        y: element.y + dp.y,
+                        rect: [
+                            element.rect[0] + dp.x,
+                            element.rect[1] + dp.y,
+                            element.rect[2],
+                            element.rect[3],
+                        ],
                     };
                 }
             }

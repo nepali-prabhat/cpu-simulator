@@ -1,3 +1,6 @@
+import { PrimitiveAtom } from "jotai";
+import { Matrix } from "transformation-matrix";
+
 export type Point = { x: number; y: number };
 export type Dimension = {
     width: number;
@@ -7,7 +10,7 @@ export type BoundingBox = Point & Dimension;
 export type BoundingRect = [number, number, number, number];
 export type NormalizedZoomValue = number & { _brand: "normalizedZoom" };
 
-export type PinType = "output" | "input";
+export type PinType = "output" | "input" | "select";
 
 export type CanvasProperties = {
     dimension: Dimension;
@@ -37,24 +40,44 @@ export type ElementType =
     | "decoder"
     | "DQ_flip_flop"
     | "JK_flip_flop";
-export type Element = BoundingBox & {
+
+export type PinLine = [number, number, number, number];
+export type ElementPin = {
+    rect: BoundingRect;
+    uid: string;
+    type: PinType;
+    negate?: boolean;
+    pinIndex: number;
+};
+export type ElementPins = {
+    pins: ElementPin[];
+    lines: PinLine[];
+};
+export type Element = {
     uid: string;
     type: ElementType;
     zIndex: number;
-    nonce: number;
+    seed: number;
+    rect: BoundingRect;
+    io: ElementPins;
+    tmIcon: Matrix;
+    iconRect: BoundingRect;
+    config: PrimitiveAtom<ElementConfig>;
 };
-export type GhostElement =
-    | (Partial<Point> & {
-        show: boolean;
-        seed: number;
-        elementConfig: ElementConfig;
-    })
-    | undefined;
+export type GhostElement = {
+    show?: boolean;
+    seed: number;
+    rect: BoundingRect;
+    io: ElementPins;
+    tmIcon: Matrix;
+    iconRect: BoundingRect;
+    config: ElementConfig;
+};
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
     selectedElementIds: Set<string>;
     selectRect?: BoundingBox;
-    ghostElement: GhostElement;
+    ghostElement?: GhostElement;
 };
 export type PointerState = {
     moved: boolean;

@@ -35,8 +35,7 @@ export const rotateGhostElementAtom = atom(null, (get, set, value: number) => {
         const currentValue = get(elementConfigAtom);
         set(elementConfigAtom, {
             ...currentValue,
-            rotation:
-                ((ghostElement?.elementConfig?.rotation || 0) + value) % 360,
+            rotation: ((ghostElement?.config?.rotation || 0) + value) % 360,
         });
     }
 });

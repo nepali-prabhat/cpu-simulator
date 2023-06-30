@@ -1,4 +1,4 @@
-import { BoundingRect, Dimension, ElementConfig } from "@/types";
+import { BoundingRect, Dimension, ElementConfig, Point } from "@/types";
 import {
     Matrix,
     applyToPoints,
@@ -10,21 +10,36 @@ import { getRectFromDiagonals } from "./box";
 
 export function makeTransformationMatrix({
     elementConfig,
+    position = { x: 0, y: 0 },
     effectiveDimension,
 }: {
     elementConfig: ElementConfig;
+    position?: Point;
     effectiveDimension: Dimension;
 }): Matrix {
     const { width, height } = effectiveDimension;
     let tm: Matrix = compose(rotate(0));
+    const originTranslation = translate(position.x || 0, position?.y || 0);
     if (elementConfig.rotation === 180) {
-        tm = compose(rotate(Math.PI), translate(-width, -height));
+        tm = compose(
+            originTranslation,
+            rotate(Math.PI),
+            translate(-width, -height)
+        );
     }
     if (elementConfig.rotation === 90) {
-        tm = compose(rotate(Math.PI / 2), translate(0, -height));
+        tm = compose(
+            originTranslation,
+            rotate(Math.PI / 2),
+            translate(0, -height)
+        );
     }
     if (elementConfig.rotation === 270) {
-        tm = compose(rotate(Math.PI * (3 / 2)), translate(-width, 0));
+        tm = compose(
+            originTranslation,
+            rotate(Math.PI * (3 / 2)),
+            translate(-width, 0)
+        );
     }
     return tm;
 }

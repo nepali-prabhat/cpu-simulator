@@ -6,6 +6,7 @@ import {
     NormalizedZoomValue,
     Point,
 } from "@/types";
+import { convertRectToBox } from "@/utils/box";
 
 export function getElementsAt(coordinates: Point, elements: Element[]) {
     const { x: canvasX, y: canvasY } = coordinates;
@@ -13,7 +14,7 @@ export function getElementsAt(coordinates: Point, elements: Element[]) {
     let intersectedElementIds: Set<string> = new Set();
     let intersectedElements: Element[] = [];
     for (let element of elements) {
-        const { x, y, width, height } = element;
+        const { x, y, width, height } = convertRectToBox(element.rect);
         if (
             canvasX >= x &&
             canvasX <= x + width &&
@@ -26,7 +27,7 @@ export function getElementsAt(coordinates: Point, elements: Element[]) {
                 topLevelElement = topLevelElement || element;
                 if (element.zIndex === topLevelElement.zIndex) {
                     topLevelElement =
-                        element.nonce >= topLevelElement.nonce
+                        element.seed >= topLevelElement.seed
                             ? element
                             : topLevelElement;
                 } else if (element.zIndex !== topLevelElement.zIndex) {
@@ -68,18 +69,24 @@ export function getBoundingRect(elements: Element[]) {
     for (let element of elements) {
         if (bounds === undefined) {
             bounds = {
-                min: { x: element.x, y: element.y },
+                min: { x: element.rect[0], y: element.rect[1] },
                 max: {
-                    x: element.x + element.width,
-                    y: element.y + element.height,
+                    x: element.rect[0] + element.rect[2],
+                    y: element.rect[1] + element.rect[3],
                 },
             };
         } else {
-            bounds.min.x = Math.min(bounds.min.x, element.x);
-            bounds.min.y = Math.min(bounds.min.y, element.y);
+            bounds.min.x = Math.min(bounds.min.x, element.rect[0]);
+            bounds.min.y = Math.min(bounds.min.y, element.rect[1]);
 
-            bounds.max.x = Math.max(bounds.max.x, element.x + element.width);
-            bounds.max.y = Math.max(bounds.max.y, element.y + element.height);
+            bounds.max.x = Math.max(
+                bounds.max.x,
+                element.rect[0] + element.rect[2]
+            );
+            bounds.max.y = Math.max(
+                bounds.max.y,
+                element.rect[1] + element.rect[3]
+            );
         }
     }
     if (bounds) {

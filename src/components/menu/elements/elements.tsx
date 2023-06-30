@@ -10,7 +10,6 @@ import { Reduce2To1Gate } from "@/resources/icons/logic/reduce2To1";
 import { XnorGate } from "@/resources/icons/logic/xnorGate";
 import { XorGate } from "@/resources/icons/logic/xorGate";
 import { ElementTypeButton, ComponentButtonProp } from "./elementButton";
-import { ElementType } from "@/types";
 
 export const elements: {
     hide?: boolean;

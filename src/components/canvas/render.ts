@@ -4,7 +4,9 @@ import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { elementsInfo } from "@/constants/elementsInfo";
-import { renderGate, renderGhostGate } from "./renderGates";
+import { renderElement } from "./renderGates";
+import { convertRectToBox } from "@/utils/box";
+import { getDefaultStore } from "jotai";
 
 export function renderCanvas({
     context,
@@ -42,7 +44,6 @@ export function renderCanvas({
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.x % gridSpace),
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
 
-            // 0,0,
             width / zoom,
             height / zoom
         );
@@ -55,17 +56,9 @@ export function renderCanvas({
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.x % gridSpace),
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
 
-            // 0,0,
             width / zoom,
             height / zoom
         );
-
-    /* renderGlostElement({
-        appState,
-        context,
-        canvasProperties,
-        rc,
-    }); */
 
     renderElements({
         appState,
@@ -87,7 +80,6 @@ export function renderCanvas({
         rc,
     });
 
-    // ctx.strokeRect(scroll.x, scroll.y, 2, 2);
     context.restore();
 }
 
@@ -102,21 +94,19 @@ function renderGhostElement({
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    const ghostElement = appState.ghostElement;
-    if (
-        ghostElement &&
-        ghostElement.show &&
-        ghostElement?.x &&
-        ghostElement?.y
-    ) {
+    const element = appState.ghostElement;
+    if (element && element?.show && element.rect) {
         const { scroll } = canvasProperties;
         context.save();
-        context.translate(ghostElement.x + scroll.x, ghostElement.y + scroll.y);
-        renderGhostGate({
-            element: ghostElement,
+        context.translate(
+            element.rect[0] + scroll.x,
+            element.rect[1] + scroll.y
+        );
+        renderElement({
+            element: element,
             rc,
             context,
-            canvasProperties
+            canvasProperties,
         });
         context.restore();
     }
@@ -138,14 +128,17 @@ function renderElements({
 
     for (let element of Object.values(elements)) {
         context.save();
-        context.translate(element.x + scroll.x, element.y + scroll.y);
-        context.scale(
-            element.width /
-            (elementsInfo.get(element.type)?.width || element.width),
-            element.height /
-            (elementsInfo.get(element.type)?.height || element.height)
+        context.translate(
+            element.rect[0] + scroll.x,
+            element.rect[1] + scroll.y
         );
-        renderGate({ element, rc, context });
+        const config = getDefaultStore().get(element.config);
+        renderElement({
+            element: { ...element, config },
+            rc,
+            context,
+            canvasProperties,
+        });
         context.restore();
     }
 }
@@ -175,7 +168,7 @@ function renderSelectBox({
     const multipleSelected = selectedElements.length > 1;
     for (let element of selectedElements) {
         // draw selection box in selected elements
-        renderBoundingBox(context, scroll, element, {
+        renderBoundingBox(context, scroll, convertRectToBox(element.rect), {
             renderHandles: !multipleSelected,
         });
     }

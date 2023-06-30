@@ -1,63 +1,79 @@
-import { Element, BoundingBox, GhostElement, AppState, Point } from "@/types";
+import {
+    Element,
+    BoundingBox,
+    GhostElement,
+    AppState,
+    ElementType,
+    BoundingRect,
+} from "@/types";
 import { atom } from "jotai";
 import { elementsAtom } from "./elements";
 import { elementConfigAtomAtom } from "./ui";
-import { randomInteger } from "@/utils/random";
+import { getElementRects } from "@/utils/box";
+import { atomWithStorage } from "jotai/utils";
 
 export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
     new Set<Element["uid"]>()
 );
 export const selectRectAtom = atom<BoundingBox | undefined>(undefined);
 
-const ghostAtom = atom<GhostElement>(undefined);
+export const ghostStateAtom = atomWithStorage<
+    | {
+        position?: [number, number];
+        seed: number;
+        show: boolean;
+        type: ElementType;
+    }
+    | undefined
+>("ghost_atom_state", undefined);
+ghostStateAtom.debugLabel = "ghostStateAtom";
+
 export const ghostElementAtom = atom((get) => {
-    const value = get(ghostAtom);
+    const value = get(ghostStateAtom);
     const elementConfigAtom = get(elementConfigAtomAtom);
     if (elementConfigAtom) {
-        const elementConfig = get(elementConfigAtom);
-        const isSelectionChanged =
-            value?.elementConfig.type !== elementConfig.type;
+        const config = get(elementConfigAtom);
+
+        let elementRects =
+            config &&
+            getElementRects({
+                config: config,
+            });
+        if (!elementRects || !value) {
+            return undefined;
+        }
+        const rect: BoundingRect = value?.position
+            ? [...value.position, elementRects.rect[2], elementRects.rect[3]]
+            : elementRects.rect;
+
         const rv: GhostElement = {
-           ...(value || {}),
-            show:
-                value?.show === undefined || isSelectionChanged
-                    ? true
-                    : value?.show,
-            seed: isSelectionChanged
-                ? randomInteger()
-                : value?.seed || randomInteger(),
-            elementConfig,
+            show: value.show,
+            seed: value.seed,
+            ...elementRects,
+            rect,
+            config: config,
         };
         return rv;
     }
     return undefined;
 });
+ghostElementAtom.debugLabel = "ghost element atom";
 
-type GhostPosition = Partial<Point>;
 export const setGhostPosition = atom(
     null,
-    (
-        get,
-        set,
-        value: GhostPosition | ((v: GhostPosition) => GhostPosition)
-    ) => {
-        const current = get(ghostElementAtom);
-        if (current && current.show) {
-            const v = typeof value === "function" ? value(current) : value;
-            set(ghostAtom, { ...current, ...v });
+    (get, set, value: [number, number]) => {
+        const ghostState = get(ghostStateAtom);
+        if (ghostState) {
+            set(ghostStateAtom, {
+                ...ghostState,
+                position: value,
+            });
         }
     }
 );
 
-export const showGhost = atom(null, (get, set, value: boolean) => {
-    const current = get(ghostElementAtom);
-    if (current) {
-        let point = {};
-        if (!value) {
-            point = { x: undefined, y: undefined };
-        }
-        set(ghostAtom, { ...current, show: value, ...point });
-    }
+export const showGhost = atom(null, (_, set, value: boolean) => {
+    set(ghostStateAtom, (v) => (!!v ? { ...v, show: value } : undefined));
 });
 
 export const appStateAtom = atom<AppState>((get) => {
