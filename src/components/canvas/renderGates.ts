@@ -30,7 +30,7 @@ export function renderElement({
             rect: element.rect,
             rc,
             context,
-            bgColor: canvasProperties.bgColor,
+            canvasProperties,
         });
     }
 }
@@ -45,7 +45,7 @@ function drawGate({
     rc,
     context,
     seed,
-    bgColor = "#fff",
+    canvasProperties,
 }: {
     io: ElementPins;
     tmIcon: Matrix;
@@ -56,9 +56,10 @@ function drawGate({
     rc: RoughCanvas;
     context: CanvasRenderingContext2D;
     seed: number;
-    bgColor?: string;
+    canvasProperties: CanvasProperties;
 }) {
     seed += 1;
+    const bgColor = canvasProperties.bgColor || "#fff";
     const roughness = 0.2;
     const hachureGap = 4;
     const elementColor = config.color || "#000";
@@ -81,7 +82,6 @@ function drawGate({
             fill: elementColor,
             fillStyle: "hachure",
             hachureGap,
-            stroke: elementColor,
         },
     };
     if (info?.path) {
@@ -108,7 +108,7 @@ function drawGate({
             fill: bgColor,
             fillStyle: "solid",
             stroke: elementColor,
-            strokeWidth: 1,
+            strokeWidth: 1 * canvasProperties.zoom,
         });
         context.fillText(config.type, iconRect[0], iconRect[1]);
     }
@@ -119,19 +119,18 @@ function drawGate({
         bowing: 20,
         fill: bgColor,
         fillStyle: "solid",
-        stroke: elementColor,
+        strokeWidth: 1 * (config.scale || 1),
     };
     // render input and outputs
     for (let pin of io.pins) {
         rects.push(pin.rect);
         if (pin.negate) {
             const rect = pin.rect;
-            rc.circle(
-                rect[0] + rect[2] / 2,
-                rect[1] + rect[3] / 2,
-                rect[3],
-                pinsConfig
-            );
+            rc.circle(rect[0] + rect[2] / 2, rect[1] + rect[3] / 2, rect[3], {
+                ...pinsConfig,
+                fillStyle: "hachure",
+                hachureGap,
+            });
         } else {
             rc.rectangle(...pin.rect, pinsConfig);
         }

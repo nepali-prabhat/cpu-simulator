@@ -243,9 +243,9 @@ const ElementConfigSection = (
                                         : s === "md"
                                             ? 1
                                             : s === "lg"
-                                                ? 2
+                                                ? 1.25
                                                 : s === "xl"
-                                                    ? 4
+                                                    ? 1.5
                                                     : undefined;
                                 return (
                                     <button
