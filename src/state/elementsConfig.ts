@@ -1,6 +1,6 @@
 import { ELEMENTS_COLOR_PALETTE } from "@/colors";
 import { ElementConfig, ElementType } from "@/types";
-import { PrimitiveAtom, atom } from "jotai";
+import { PrimitiveAtom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
 export const elementsConfigAtomsMap: Map<

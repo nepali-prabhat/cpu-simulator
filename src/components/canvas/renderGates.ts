@@ -4,7 +4,6 @@ import { elementsInfo } from "@/constants/elementsInfo";
 import {
     BoundingRect,
     CanvasProperties,
-    Element,
     ElementConfig,
     ElementPins,
     GhostElement,
@@ -24,17 +23,16 @@ export function renderElement({
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    if (!rc) {
-        return;
+    if (rc && element.rect) {
+        // Transformation matrices
+        drawGate({
+            ...element,
+            rect: element.rect,
+            rc,
+            context,
+            bgColor: canvasProperties.bgColor,
+        });
     }
-
-    // Transformation matrices
-    drawGate({
-        ...element,
-        rc,
-        context,
-        bgColor: canvasProperties.bgColor,
-    });
 }
 
 function drawGate({
@@ -65,6 +63,9 @@ function drawGate({
     const hachureGap = 4;
     const elementColor = config.color || "#000";
     const info = elementsInfo.get(config.type);
+
+    // INFO: for debug bounding box
+    const rects: BoundingRect[] = [[0, 0, rect[2], rect[3]], iconRect];
 
     const gateConfig = {
         bgConfig: {
@@ -122,9 +123,15 @@ function drawGate({
     };
     // render input and outputs
     for (let pin of io.pins) {
+        rects.push(pin.rect);
         if (pin.negate) {
             const rect = pin.rect;
-            rc.circle(rect[0], rect[1], rect[3], pinsConfig);
+            rc.circle(
+                rect[0] + rect[2] / 2,
+                rect[1] + rect[3] / 2,
+                rect[3],
+                pinsConfig
+            );
         } else {
             rc.rectangle(...pin.rect, pinsConfig);
         }
@@ -135,14 +142,15 @@ function drawGate({
     }
 
     if (DEBUG_BOUNDING_BOX) {
-        const rects: BoundingRect[] = [[0, 0, rect[2], rect[3]], iconRect];
+        const debugConfig = {
+            seed,
+            roughness,
+            fill: undefined,
+            stroke: COLOR_PALETTE.blue[1],
+        };
         rects.forEach((rect) => {
-            rc.rectangle(...rect, {
-                seed,
-                roughness,
-                fill: undefined,
-                stroke: COLOR_PALETTE.blue[1],
-            });
+            rc.rectangle(...rect, debugConfig);
+            rc.circle(rect[0], rect[1], 2, { ...debugConfig });
         });
     }
 }

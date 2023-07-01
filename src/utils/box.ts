@@ -9,7 +9,12 @@ import {
     PinLine,
 } from "@/types";
 import { makeTransformationMatrix, transformRect } from "@/utils/transform";
-import { applyToPoints, compose, translate } from "transformation-matrix";
+import {
+    applyToPoint,
+    applyToPoints,
+    compose,
+    translate,
+} from "transformation-matrix";
 import { nanoid } from "nanoid";
 
 export function getRectFromDiagonals(
@@ -73,8 +78,8 @@ export function getPinsBoundingBox(elementConfig: ElementConfig) {
             negate: true,
             pinIndex: 0,
             rect: [
-                info.width + PIN_LENGTH + PIN_HEIGHT / 2,
-                height / 2 - PIN_HEIGHT / 2 + PIN_LENGTH / 2,
+                info.width + PIN_LENGTH,
+                height / 2 - PIN_HEIGHT / 2,
                 PIN_LENGTH,
                 PIN_HEIGHT,
             ],
@@ -164,10 +169,10 @@ export function getPinsBoundingBox(elementConfig: ElementConfig) {
 
 export function getElementRects({
     config,
-    position,
+    position = [0, 0],
 }: {
     config: ElementConfig;
-    position?: Point;
+    position?: [number, number];
 }) {
     const info = elementsInfo.get(config.type);
     const effectiveDimension = getEffectiveDimension(config);
@@ -176,17 +181,19 @@ export function getElementRects({
     }
     const tm = makeTransformationMatrix({
         elementConfig: config,
-        position,
         effectiveDimension,
     });
     const tmIcon = compose(
         tm,
         translate(PIN_LENGTH, effectiveDimension.height / 2 - info.height / 2)
     );
-    const transformedDimension = transformRect({
-        tm,
-        rect: [0, 0, effectiveDimension.width, effectiveDimension.height],
-    });
+    const tranformedRect: BoundingRect = [
+        ...position,
+        ...((config.rotation === 90 || config.rotation === 270
+            ? [effectiveDimension.height, effectiveDimension.width]
+            : [effectiveDimension.width, effectiveDimension.height]
+        ).map((n) => n * (config.scale || 1)) as [number, number]),
+    ];
 
     const { pins, lines } = getPinsBoundingBox(config);
     const transformedPins = pins.map((pin) => ({
@@ -218,6 +225,6 @@ export function getElementRects({
         tmIcon,
         iconRect: iconBoundingRect,
         io,
-        rect: transformedDimension,
+        rect: tranformedRect,
     };
 }

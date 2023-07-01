@@ -67,7 +67,7 @@ export type Element = {
 export type GhostElement = {
     show?: boolean;
     seed: number;
-    rect: BoundingRect;
+    rect?: BoundingRect;
     io: ElementPins;
     tmIcon: Matrix;
     iconRect: BoundingRect;

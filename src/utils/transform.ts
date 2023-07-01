@@ -4,13 +4,13 @@ import {
     applyToPoints,
     compose,
     rotate,
+    scale,
     translate,
 } from "transformation-matrix";
 import { getRectFromDiagonals } from "./box";
 
 export function makeTransformationMatrix({
     elementConfig,
-    position = { x: 0, y: 0 },
     effectiveDimension,
 }: {
     elementConfig: ElementConfig;
@@ -18,30 +18,29 @@ export function makeTransformationMatrix({
     effectiveDimension: Dimension;
 }): Matrix {
     const { width, height } = effectiveDimension;
-    let tm: Matrix = compose(rotate(0));
-    const originTranslation = translate(position.x || 0, position?.y || 0);
-    if (elementConfig.rotation === 180) {
-        tm = compose(
-            originTranslation,
-            rotate(Math.PI),
-            translate(-width, -height)
-        );
+    let transformations: Matrix[] = [];
+    transformations.push(scale(elementConfig.scale || 1));
+    switch (elementConfig.rotation) {
+        case 90: {
+            transformations.push(rotate(Math.PI / 2), translate(0, -height));
+            break;
+        }
+        case 180: {
+            transformations.push(rotate(Math.PI), translate(-width, -height));
+            break;
+        }
+        case 270: {
+            transformations.push(
+                rotate(Math.PI * (3 / 2)),
+                translate(-width, 0)
+            );
+            break;
+        }
+        default: {
+            transformations.push(rotate(0));
+        }
     }
-    if (elementConfig.rotation === 90) {
-        tm = compose(
-            originTranslation,
-            rotate(Math.PI / 2),
-            translate(0, -height)
-        );
-    }
-    if (elementConfig.rotation === 270) {
-        tm = compose(
-            originTranslation,
-            rotate(Math.PI * (3 / 2)),
-            translate(-width, 0)
-        );
-    }
-    return tm;
+    return compose(transformations);
 }
 
 export function transformRect({

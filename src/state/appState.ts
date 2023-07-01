@@ -38,19 +38,15 @@ export const ghostElementAtom = atom((get) => {
             config &&
             getElementRects({
                 config: config,
+                position: value?.position,
             });
         if (!elementRects || !value) {
             return undefined;
         }
-        const rect: BoundingRect = value?.position
-            ? [...value.position, elementRects.rect[2], elementRects.rect[3]]
-            : elementRects.rect;
-
         const rv: GhostElement = {
             show: value.show,
             seed: value.seed,
             ...elementRects,
-            rect,
             config: config,
         };
         return rv;

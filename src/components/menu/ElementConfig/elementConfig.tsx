@@ -239,7 +239,7 @@ const ElementConfigSection = (
                             {["sm", "md", "lg", "xl"].map((s, i) => {
                                 const value =
                                     s === "sm"
-                                        ? 0.5
+                                        ? 0.75
                                         : s === "md"
                                             ? 1
                                             : s === "lg"

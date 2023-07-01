@@ -7,6 +7,7 @@ import { elementsInfo } from "@/constants/elementsInfo";
 import { renderElement } from "./renderGates";
 import { convertRectToBox } from "@/utils/box";
 import { getDefaultStore } from "jotai";
+import { COLOR_PALETTE } from "@/colors";
 
 export function renderCanvas({
     context,
@@ -79,6 +80,8 @@ export function renderCanvas({
         canvasProperties,
         rc,
     });
+
+    rc?.circle(0, 0, 5, { fill:"black", seed: 1, stroke: COLOR_PALETTE.blue[2] });
 
     context.restore();
 }

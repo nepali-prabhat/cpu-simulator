@@ -30,12 +30,24 @@ export const elementConfigAtomAtom = atom((get) => {
 
 export const rotateGhostElementAtom = atom(null, (get, set, value: number) => {
     const elementConfigAtom = get(elementConfigAtomAtom);
-    const ghostElement = get(ghostElementAtom);
-    if (ghostElement && elementConfigAtom) {
+    if (elementConfigAtom) {
         const currentValue = get(elementConfigAtom);
         set(elementConfigAtom, {
             ...currentValue,
-            rotation: ((ghostElement?.config?.rotation || 0) + value) % 360,
+            rotation: ((currentValue.rotation || 0) + value) % 360,
+        });
+    }
+});
+
+export const addToGEInputsCountAtom = atom(null, (get, set, value: number) => {
+    const elementConfigAtom = get(elementConfigAtomAtom);
+    if (elementConfigAtom) {
+        const currentValue = get(elementConfigAtom);
+        set(elementConfigAtom, {
+            ...currentValue,
+            inputsCount: currentValue.inputsCount
+                ? currentValue.inputsCount + value
+                : undefined,
         });
     }
 });

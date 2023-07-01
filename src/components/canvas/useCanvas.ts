@@ -1,7 +1,7 @@
 import rough from "roughjs/bin/rough";
 import { useCallback, useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Element, AppState, Point, PointerState } from "@/types";
+import { Element, AppState, Point, PointerState, GhostElement } from "@/types";
 import { renderCanvas } from "./render";
 import {
     filterElementsByIds,
@@ -28,11 +28,16 @@ import {
     showGhost,
 } from "@/state/appState";
 
-import { rotateGhostElementAtom, selectedElementTypeAtom } from "@/state/ui";
+import {
+    addToGEInputsCountAtom,
+    rotateGhostElementAtom,
+    selectedElementTypeAtom,
+} from "@/state/ui";
 import { getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import { addElementAtom, elementsAtom } from "@/state/elements";
 import { convertRectToBox } from "@/utils/box";
+import { WithRequired } from "@/utilTypes";
 
 const gridSpace = GRID_SPACE;
 
@@ -53,6 +58,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
     const rotateGhostElement = useSetAtom(rotateGhostElementAtom);
+    const addToGeInputsCount = useSetAtom(addToGEInputsCountAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -159,6 +165,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const keydownHandler = useCallback(
         (e: KeyboardEvent) => {
+            console.log("e key: ", e.key);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -172,9 +179,18 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 // setIsMenuOpen(false);
             } else if (!(e.ctrlKey || e.metaKey) && e.key === "r") {
                 rotateGhostElement(90);
+            } else if (e.key === "ArrowUp") {
+                addToGeInputsCount(1);
+            } else if(e.key === "ArrowDown"){
+                addToGeInputsCount(-1);
             }
         },
-        [setZoom, setActiveElementType, rotateGhostElement]
+        [
+            setZoom,
+            setActiveElementType,
+            rotateGhostElement,
+            addToGeInputsCount,
+        ]
     );
 
     useEffect(() => {
@@ -220,9 +236,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         const selectedElementIds = appState.selectedElementIds;
         const ghostElement = appState.ghostElement;
 
-        if (ghostElement && ghostElement.show) {
+        if (ghostElement && ghostElement.show && ghostElement.rect) {
             // setShowGhost(false);
-            addElement(ghostElement);
+            addElement(ghostElement as WithRequired<GhostElement, "rect">);
             setActiveElementType(undefined);
         } else {
             const { topLevelElement } = getElementsAt(
