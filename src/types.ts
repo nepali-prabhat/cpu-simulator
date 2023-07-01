@@ -53,6 +53,14 @@ export type ElementPins = {
     pins: ElementPin[];
     lines: PinLine[];
 };
+export type RenderableElement = {
+    seed: number;
+    rect: BoundingRect;
+    io: ElementPins;
+    tmIcon: Matrix;
+    iconRect: BoundingRect;
+    config: ElementConfig;
+};
 export type Element = {
     uid: string;
     type: ElementType;
@@ -64,14 +72,10 @@ export type Element = {
     iconRect: BoundingRect;
     config: PrimitiveAtom<ElementConfig>;
 };
-export type GhostElement = {
+
+export type GhostElement = RenderableElement & {
     show?: boolean;
-    seed: number;
     rect?: BoundingRect;
-    io: ElementPins;
-    tmIcon: Matrix;
-    iconRect: BoundingRect;
-    config: ElementConfig;
 };
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };

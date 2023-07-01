@@ -19,3 +19,17 @@ export function mergeRefs<T = any>(
 export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
     return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
 }
+
+export const getGridPoint = (
+  x: number,
+  y: number,
+  gridSize: number | null,
+): [number, number] => {
+  if (gridSize) {
+    return [
+      Math.round(x / gridSize) * gridSize,
+      Math.round(y / gridSize) * gridSize,
+    ];
+  }
+  return [x, y];
+};

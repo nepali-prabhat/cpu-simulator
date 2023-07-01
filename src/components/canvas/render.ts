@@ -3,7 +3,6 @@ import { dotsGrid, strokeGrid } from "./grid";
 import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
-import { elementsInfo } from "@/constants/elementsInfo";
 import { renderElement } from "./renderGates";
 import { convertRectToBox } from "@/utils/box";
 import { getDefaultStore } from "jotai";
@@ -81,7 +80,11 @@ export function renderCanvas({
         rc,
     });
 
-    rc?.circle(0, 0, 5, { fill:"black", seed: 1, stroke: COLOR_PALETTE.blue[2] });
+    rc?.circle(0, 0, 5, {
+        fill: "black",
+        seed: 1,
+        stroke: COLOR_PALETTE.blue[2],
+    });
 
     context.restore();
 }
@@ -98,7 +101,7 @@ function renderGhostElement({
     rc: RoughCanvas | null;
 }) {
     const element = appState.ghostElement;
-    if (element && element?.show && element.rect) {
+    if (element && element?.show) {
         const { scroll } = canvasProperties;
         context.save();
         context.translate(
@@ -106,7 +109,8 @@ function renderGhostElement({
             element.rect[1] + scroll.y
         );
         renderElement({
-            element: element,
+            element,
+            isGhostElement: true,
             rc,
             context,
             canvasProperties,

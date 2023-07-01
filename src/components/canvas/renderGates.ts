@@ -1,4 +1,4 @@
-import { COLOR_PALETTE } from "@/colors";
+import { COLOR_PALETTE, GHOST_ELEMENT_COLOR } from "@/colors";
 import { DEBUG_BOUNDING_BOX } from "@/constants/constants";
 import { elementsInfo } from "@/constants/elementsInfo";
 import {
@@ -6,7 +6,7 @@ import {
     CanvasProperties,
     ElementConfig,
     ElementPins,
-    GhostElement,
+    GhostElement as RenderableElement,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
@@ -14,20 +14,22 @@ import { Matrix } from "transformation-matrix";
 
 export function renderElement({
     element,
+    isGhostElement,
     canvasProperties,
     context,
     rc,
 }: {
-    element: GhostElement;
+    element: RenderableElement;
+    isGhostElement?: boolean;
     canvasProperties: CanvasProperties;
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
 }) {
-    if (rc && element.rect) {
+    if (rc) {
         // Transformation matrices
         drawGate({
-            ...element,
-            rect: element.rect,
+            element,
+            isGhostElement,
             rc,
             context,
             canvasProperties,
@@ -36,34 +38,28 @@ export function renderElement({
 }
 
 function drawGate({
-    tmIcon,
-    iconRect,
-    io,
-    rect,
-    config,
+    element,
+    isGhostElement = false,
 
     rc,
     context,
-    seed,
     canvasProperties,
 }: {
-    io: ElementPins;
-    tmIcon: Matrix;
-    rect: BoundingRect;
-    iconRect: BoundingRect;
-    config: ElementConfig;
+    element: RenderableElement;
+    isGhostElement?: boolean;
 
     rc: RoughCanvas;
     context: CanvasRenderingContext2D;
-    seed: number;
     canvasProperties: CanvasProperties;
 }) {
+    let { seed, tmIcon, iconRect, io, rect, config } = element;
     seed += 1;
-    const bgColor = canvasProperties.bgColor || "#fff";
+    const ghostElementColor = isGhostElement ? GHOST_ELEMENT_COLOR : undefined;
+    const bgColor = !isGhostElement ? canvasProperties.bgColor || "#fff": undefined;
     const roughness = 0.2;
     const hachureGap = 4;
-    const elementColor = config.color || "#000";
     const info = elementsInfo.get(config.type);
+    const elementColor = config.color || "#000";
 
     // INFO: for debug bounding box
     const rects: BoundingRect[] = [[0, 0, rect[2], rect[3]], iconRect];
@@ -74,14 +70,15 @@ function drawGate({
             roughness,
             fill: bgColor,
             fillStyle: "solid",
-            stroke: elementColor,
+            stroke: ghostElementColor || elementColor,
         },
         fgConfig: {
             seed,
             roughness,
-            fill: elementColor,
+            fill: ghostElementColor || elementColor,
             fillStyle: "hachure",
             hachureGap,
+            stroke: ghostElementColor,
         },
     };
     if (info?.path) {
@@ -107,7 +104,7 @@ function drawGate({
             roughness,
             fill: bgColor,
             fillStyle: "solid",
-            stroke: elementColor,
+            stroke: ghostElementColor,
             strokeWidth: 1 * canvasProperties.zoom,
         });
         context.fillText(config.type, iconRect[0], iconRect[1]);
@@ -120,6 +117,7 @@ function drawGate({
         fill: bgColor,
         fillStyle: "solid",
         strokeWidth: 1 * (config.scale || 1),
+        stroke: ghostElementColor,
     };
     // render input and outputs
     for (let pin of io.pins) {
@@ -157,11 +155,13 @@ function drawGate({
 function renderGateIcon({
     rc,
     paths,
+    isGhostElement,
     noFillPathIndex,
     config,
 }: {
     rc: RoughCanvas;
     paths: string | string[];
+    isGhostElement?: boolean;
     noFillPathIndex?: number[];
     config: {
         bgConfig: Options;
@@ -170,7 +170,10 @@ function renderGateIcon({
 }) {
     if (Array.isArray(paths)) {
         paths.forEach((path, i) => {
-            if (noFillPathIndex && noFillPathIndex.includes(i)) {
+            if (
+                isGhostElement ||
+                (noFillPathIndex && noFillPathIndex.includes(i))
+            ) {
                 rc.path(path, { ...config.fgConfig, fill: undefined });
             } else {
                 rc.path(path, config.bgConfig);

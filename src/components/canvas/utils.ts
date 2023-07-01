@@ -1,4 +1,4 @@
-import { SELECT_PADDING } from "@/constants/constants";
+import { GRID_SPACE, SELECT_PADDING } from "@/constants/constants";
 import {
     AppState,
     BoundingBox,
@@ -6,6 +6,7 @@ import {
     NormalizedZoomValue,
     Point,
 } from "@/types";
+import { getGridPoint } from "@/utils";
 import { convertRectToBox } from "@/utils/box";
 
 export function getElementsAt(coordinates: Point, elements: Element[]) {
@@ -61,7 +62,8 @@ export function getCanvasPointFromViewport(
     const canvasY =
         (viewportPoint.y - _offset.y) / canvasProperties.zoom -
         canvasProperties.scroll.y;
-    return { x: canvasX, y: canvasY };
+    const gridCoords = getGridPoint(canvasX, canvasY, GRID_SPACE);
+    return { x: gridCoords[0], y: gridCoords[1] };
 }
 
 export function getBoundingRect(elements: Element[]) {

@@ -10,7 +10,7 @@ export const SELECT_SIZE = 4;
 export const SELECT_PADDING = 2;
 
 // Development mode options
-export const GRID_SPACE = 16;
+export const GRID_SPACE = 20;
 export const GRID_TYPE: "dots" | "lines" = "dots";
 
 // Used in palette

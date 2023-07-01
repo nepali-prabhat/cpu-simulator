@@ -44,7 +44,7 @@ export const ghostElementAtom = atom((get) => {
             return undefined;
         }
         const rv: GhostElement = {
-            show: value.show,
+            show: value.show && !!value.position,
             seed: value.seed,
             ...elementRects,
             config: config,
