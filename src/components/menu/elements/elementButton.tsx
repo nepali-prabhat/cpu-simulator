@@ -3,7 +3,7 @@ import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { useAtom, useSetAtom } from "jotai";
 import { selectedElementTypeAtom } from "@/state/ui";
-import { ghostStateAtom } from "@/state/appState";
+import { ghostStateAtom, selectedElementIdsAtom } from "@/state/appState";
 import { randomInteger } from "@/utils/random";
 
 export type ComponentButtonProp = {
@@ -18,6 +18,7 @@ export const ElementTypeButton = memo(
             selectedElementTypeAtom
         );
         const setGhostState = useSetAtom(ghostStateAtom);
+        const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
 
         const handleClick = () => {
             setActiveElement(props.type);
@@ -26,6 +27,7 @@ export const ElementTypeButton = memo(
                 seed: randomInteger(),
                 show: true,
             });
+            setSelectedElementIds(new Set());
         };
 
         return (

@@ -1,7 +1,7 @@
 import { ElementConfig as ElementConfigType } from "@/types";
 import { paletteWidth } from "@/constants/constants";
 import { elementConfigAtomAtom } from "@/state/ui";
-import { PrimitiveAtom, useAtom, useAtomValue } from "jotai";
+import { PrimitiveAtom, WritableAtom, useAtom, useAtomValue } from "jotai";
 import { elementsInfo, maxBitsSupported } from "@/constants/elementsInfo";
 import clsx from "clsx";
 import { ChangeEvent, useEffect, useState } from "react";
@@ -11,6 +11,7 @@ import { ColorPicker } from "@/components/colorPicker/colorPicker";
 import { ELEMENTS_COLOR_PALETTE } from "@/colors";
 import { useObservePaletteHeight } from "@/utils/hooks/useObservePaletteHeight";
 import { validator } from "./validator";
+import { selectedElementConfigAtomAtom } from "@/state/elements";
 
 type ElementConfigPropType = {};
 
@@ -53,7 +54,13 @@ const inputConstants: {
 
 const ElementConfigSection = (
     props: ElementConfigPropType & {
-        configAtom: PrimitiveAtom<ElementConfigType>;
+        configAtom:
+        | PrimitiveAtom<ElementConfigType>
+        | WritableAtom<
+            ElementConfigType,
+            [value: (v: ElementConfigType) => ElementConfigType],
+            void
+        >;
     }
 ) => {
     const [config, setConfig] = useAtom(props.configAtom);
@@ -67,7 +74,7 @@ const ElementConfigSection = (
 
     useEffect(() => {
         setTransientValue({});
-    }, [config.type]);
+    }, [config?.type]);
 
     function handleChange<T extends keyof ElementConfigType>(
         {
@@ -323,14 +330,14 @@ const ElementConfigSection = (
         )
         .reduce((agg, v) => [...(agg || []), ...(v || [])], []);
 
+    if (!top || !config) {
+        return null;
+    }
+
     const rotation = config.rotation;
     const color = config.color;
 
     const elementIcon = elementsIconMap[config.type];
-
-    if (!top) {
-        return null;
-    }
 
     return (
         <section
@@ -338,7 +345,7 @@ const ElementConfigSection = (
             className="absolute p-3.5 m-1 bg-white rounded-tr-lg rounded-br-lg border border-gray-300"
         >
             <div className="grid gap-2 p-2" style={{ width: paletteWidth }}>
-                <h1 className="text-lg text-gray-800 font-bold">
+                <h1 className="text-lg font-bold text-gray-800">
                     {elementsInfo.get(config.type)?.displayName}
                 </h1>
                 <div className="flex flex-col gap-3">
@@ -347,7 +354,7 @@ const ElementConfigSection = (
                     {renderNumberConfig("selectBits")}
                     {renderRotation()}
                     {renderScale()}
-                    {/* {renderColor()} */}
+                    {renderColor()}
                 </div>
                 {errorElements && errorElements.length > 0 ? (
                     <div className="grid gap-4 p-2 mt-1 bg-red-100 rounded-md">
@@ -361,7 +368,16 @@ const ElementConfigSection = (
 
 export const ElementConfig = (props: ElementConfigPropType) => {
     const configAtom = useAtomValue(elementConfigAtomAtom);
-    return configAtom ? (
-        <ElementConfigSection configAtom={configAtom} {...props} />
-    ) : null;
+    const selectedElementConfigAtom = useAtomValue(
+        selectedElementConfigAtomAtom
+    );
+    if (configAtom || selectedElementConfigAtom) {
+        return (
+            <ElementConfigSection
+                configAtom={configAtom || selectedElementConfigAtom!}
+                {...props}
+            />
+        );
+    }
+    return null;
 };

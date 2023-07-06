@@ -4,13 +4,12 @@ import {
     GhostElement,
     AppState,
     ElementType,
-    BoundingRect,
 } from "@/types";
 import { atom } from "jotai";
+import { atomWithStorage } from "jotai/utils";
 import { elementsAtom } from "./elements";
 import { elementConfigAtomAtom } from "./ui";
 import { getElementRects } from "@/utils/box";
-import { atomWithStorage } from "jotai/utils";
 
 export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
     new Set<Element["uid"]>()

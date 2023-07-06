@@ -24,7 +24,7 @@ export const getSpecificColorShades = (
     return indexArr.map((index) => oc[color][index]) as any as ColorTuple;
 };
 
-export const GHOST_ELEMENT_COLOR = oc.gray[9];
+export const GHOST_ELEMENT_COLOR = oc.gray[6];
 
 export const COLOR_PALETTE = {
     transparent: "transparent",

@@ -4,13 +4,10 @@ import { elementsInfo } from "@/constants/elementsInfo";
 import {
     BoundingRect,
     CanvasProperties,
-    ElementConfig,
-    ElementPins,
     GhostElement as RenderableElement,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { Options } from "roughjs/bin/core";
-import { Matrix } from "transformation-matrix";
 
 export function renderElement({
     element,
@@ -55,7 +52,7 @@ function drawGate({
     let { seed, tmIcon, iconRect, io, rect, config } = element;
     seed += 1;
     const ghostElementColor = isGhostElement ? GHOST_ELEMENT_COLOR : undefined;
-    const bgColor = !isGhostElement ? canvasProperties.bgColor || "#fff": undefined;
+    const bgColor = canvasProperties.bgColor || "#fff";
     const roughness = 0.2;
     const hachureGap = 4;
     const info = elementsInfo.get(config.type);
@@ -77,6 +74,7 @@ function drawGate({
             roughness,
             fill: ghostElementColor || elementColor,
             fillStyle: "hachure",
+            hachureAngle: -41 + (config?.rotation || 0),
             hachureGap,
             stroke: ghostElementColor,
         },

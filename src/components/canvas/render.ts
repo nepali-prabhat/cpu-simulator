@@ -139,9 +139,8 @@ function renderElements({
             element.rect[0] + scroll.x,
             element.rect[1] + scroll.y
         );
-        const config = getDefaultStore().get(element.config);
         renderElement({
-            element: { ...element, config },
+            element,
             rc,
             context,
             canvasProperties,

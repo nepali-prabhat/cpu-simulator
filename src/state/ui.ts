@@ -2,7 +2,7 @@ import { ElementType, MenuState, PaletteTab } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { elementsConfigAtomsMap } from "./elementsConfig";
-import { ghostElementAtom } from "./appState";
+import { selectedElementConfigAtomAtom } from "./elements";
 
 export const isMenuOpenAtom = atomWithStorage<MenuState["isMenuOpen"]>(
     "menu_open",
@@ -28,26 +28,48 @@ export const elementConfigAtomAtom = atom((get) => {
     return elementDefaultsAtom;
 });
 
-export const rotateGhostElementAtom = atom(null, (get, set, value: number) => {
-    const elementConfigAtom = get(elementConfigAtomAtom);
-    if (elementConfigAtom) {
-        const currentValue = get(elementConfigAtom);
-        set(elementConfigAtom, {
-            ...currentValue,
-            rotation: ((currentValue.rotation || 0) + value) % 360,
-        });
+export const rotateActiveElementConfigAtom = atom(
+    null,
+    (get, set, value: number) => {
+        const elementConfigAtom = get(elementConfigAtomAtom);
+        if (elementConfigAtom) {
+            const currentValue = get(elementConfigAtom);
+            set(elementConfigAtom, {
+                ...currentValue,
+                rotation: ((currentValue.rotation || 0) + value) % 360,
+            });
+        }
+        const selectedElementConfigAtom = get(selectedElementConfigAtomAtom);
+        if (selectedElementConfigAtom) {
+            set(selectedElementConfigAtom, (currentValue) => ({
+                ...currentValue,
+                rotation: ((currentValue.rotation || 0) + value) % 360,
+            }));
+        }
     }
-});
+);
 
-export const addToGEInputsCountAtom = atom(null, (get, set, value: number) => {
-    const elementConfigAtom = get(elementConfigAtomAtom);
-    if (elementConfigAtom) {
-        const currentValue = get(elementConfigAtom);
-        set(elementConfigAtom, {
-            ...currentValue,
-            inputsCount: currentValue.inputsCount
-                ? currentValue.inputsCount + value
-                : undefined,
-        });
+export const addToActiveInputsCountAtom = atom(
+    null,
+    (get, set, value: number) => {
+        const elementConfigAtom = get(elementConfigAtomAtom);
+        if (elementConfigAtom) {
+            const currentValue = get(elementConfigAtom);
+            set(elementConfigAtom, {
+                ...currentValue,
+                inputsCount: currentValue.inputsCount
+                    ? currentValue.inputsCount + value
+                    : undefined,
+            });
+        }
+        const selectedElementConfigAtom = get(selectedElementConfigAtomAtom);
+        if (selectedElementConfigAtom) {
+            set(selectedElementConfigAtom, (currentValue) => ({
+                ...currentValue,
+                inputsCount: currentValue.inputsCount
+                    ? currentValue.inputsCount + value
+                    : undefined,
+            }));
+        }
     }
-});
+);

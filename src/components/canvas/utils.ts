@@ -63,7 +63,12 @@ export function getCanvasPointFromViewport(
         (viewportPoint.y - _offset.y) / canvasProperties.zoom -
         canvasProperties.scroll.y;
     const gridCoords = getGridPoint(canvasX, canvasY, GRID_SPACE);
-    return { x: gridCoords[0], y: gridCoords[1] };
+    return {
+        x: canvasX,
+        y: canvasY,
+        gridX: gridCoords[0],
+        gridY: gridCoords[1],
+    };
 }
 
 export function getBoundingRect(elements: Element[]) {

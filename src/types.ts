@@ -70,7 +70,7 @@ export type Element = {
     io: ElementPins;
     tmIcon: Matrix;
     iconRect: BoundingRect;
-    config: PrimitiveAtom<ElementConfig>;
+    config: ElementConfig;
 };
 
 export type GhostElement = RenderableElement & {

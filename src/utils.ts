@@ -1,4 +1,4 @@
-import { MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
+import { GRID_SPACE, MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
 import { NormalizedZoomValue } from "./types";
 
 export function mergeRefs<T = any>(
@@ -21,15 +21,19 @@ export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
 }
 
 export const getGridPoint = (
-  x: number,
-  y: number,
-  gridSize: number | null,
+    x: number,
+    y: number,
+    gridSize: number | null = GRID_SPACE
 ): [number, number] => {
-  if (gridSize) {
-    return [
-      Math.round(x / gridSize) * gridSize,
-      Math.round(y / gridSize) * gridSize,
-    ];
-  }
-  return [x, y];
+    if (gridSize) {
+        return [
+            Math.round(x / gridSize) * gridSize,
+            Math.round(y / gridSize) * gridSize,
+        ];
+    }
+    return [x, y];
+};
+
+export const convertTupleToPoint = (tuple: [number, number]) => {
+    return { x: tuple[0], y: tuple[1] };
 };

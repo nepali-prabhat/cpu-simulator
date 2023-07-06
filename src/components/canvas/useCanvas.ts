@@ -29,11 +29,11 @@ import {
 } from "@/state/appState";
 
 import {
-    addToGEInputsCountAtom,
-    rotateGhostElementAtom,
+    addToActiveInputsCountAtom,
+    rotateActiveElementConfigAtom,
     selectedElementTypeAtom,
 } from "@/state/ui";
-import { getNormalizedZoom } from "@/utils";
+import { getGridPoint, getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import { addElementAtom, elementsAtom } from "@/state/elements";
 import { convertRectToBox } from "@/utils/box";
@@ -57,8 +57,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
-    const rotateGhostElement = useSetAtom(rotateGhostElementAtom);
-    const addToGeInputsCount = useSetAtom(addToGEInputsCountAtom);
+    const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
+    const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -165,7 +165,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const keydownHandler = useCallback(
         (e: KeyboardEvent) => {
-            console.log("e key: ", e.key);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -181,16 +180,11 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 rotateGhostElement(90);
             } else if (e.key === "ArrowUp") {
                 addToGeInputsCount(1);
-            } else if(e.key === "ArrowDown"){
+            } else if (e.key === "ArrowDown") {
                 addToGeInputsCount(-1);
             }
         },
-        [
-            setZoom,
-            setActiveElementType,
-            rotateGhostElement,
-            addToGeInputsCount,
-        ]
+        [setZoom, setActiveElementType, rotateGhostElement, addToGeInputsCount]
     );
 
     useEffect(() => {
@@ -309,7 +303,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             offset
         );
 
-        setGhostPosition([canvasXY.x, canvasXY.y]);
+        setGhostPosition([canvasXY.gridX, canvasXY.gridY]);
 
         if (pointerRef.current) {
             const lastPoint = pointerRef.current.lastPoint;
