@@ -3,8 +3,9 @@ import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { useAtom, useSetAtom } from "jotai";
 import { selectedElementTypeAtom } from "@/state/ui";
-import { ghostStateAtom, selectedElementIdsAtom } from "@/state/appState";
+import { selectedElementIdsAtom } from "@/state/elements";
 import { randomInteger } from "@/utils/random";
+import { ghostStateAtom } from "@/state/appState";
 
 export type ComponentButtonProp = {
     type: ElementType;

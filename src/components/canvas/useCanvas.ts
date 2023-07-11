@@ -23,20 +23,24 @@ import {
 import {
     appStateAtom,
     selectRectAtom,
-    selectedElementIdsAtom,
     setGhostPosition as _setGhostPosition,
     showGhost,
 } from "@/state/appState";
+import { selectedElementIdsAtom } from "@/state/elements";
 
 import {
     addToActiveInputsCountAtom,
     rotateActiveElementConfigAtom,
     selectedElementTypeAtom,
 } from "@/state/ui";
-import { getGridPoint, getNormalizedZoom } from "@/utils";
+import { getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
-import { addElementAtom, elementsAtom } from "@/state/elements";
-import { convertRectToBox } from "@/utils/box";
+import {
+    addElementAtom,
+    deleteSelectedElementsAtom,
+    elementsAtom,
+} from "@/state/elements";
+import { convertRectToBox, getIntersectedRectOfElement } from "@/utils/box";
 import { WithRequired } from "@/utilTypes";
 
 const gridSpace = GRID_SPACE;
@@ -59,6 +63,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setSelectRect = useSetAtom(selectRectAtom);
     const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
     const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
+    const deleteSelectedElements = useSetAtom(deleteSelectedElementsAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -178,13 +183,21 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 // setIsMenuOpen(false);
             } else if (!(e.ctrlKey || e.metaKey) && e.key === "r") {
                 rotateGhostElement(90);
-            } else if (e.key === "ArrowUp") {
+            } else if (e.shiftKey && e.key === "ArrowUp") {
                 addToGeInputsCount(1);
-            } else if (e.key === "ArrowDown") {
+            } else if (e.shiftKey && e.key === "ArrowDown") {
                 addToGeInputsCount(-1);
+            } else if (e.key === "Backspace") {
+                deleteSelectedElements();
             }
         },
-        [setZoom, setActiveElementType, rotateGhostElement, addToGeInputsCount]
+        [
+            setZoom,
+            setActiveElementType,
+            rotateGhostElement,
+            addToGeInputsCount,
+            deleteSelectedElements,
+        ]
     );
 
     useEffect(() => {
@@ -239,6 +252,14 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 { x: canvasXY.x, y: canvasXY.y },
                 Object.values(elementsMap)
             );
+
+            if (topLevelElement) {
+                const intersectedRect = getIntersectedRectOfElement(
+                    topLevelElement,
+                    [canvasXY.x, canvasXY.y]
+                );
+                console.log("intersected rect: ", intersectedRect);
+            }
 
             const existingSelectedElements = filterElementsByIds(
                 selectedElementIds,

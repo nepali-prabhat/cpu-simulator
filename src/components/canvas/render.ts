@@ -135,6 +135,28 @@ function renderElements({
 
     for (let element of Object.values(elements)) {
         context.save();
+        /* context.fillText(
+            `x: ${element.rect[0].toFixed(2)} y:${element.rect[1].toFixed(2)}`,
+            element.rect[0] + scroll.x,
+            element.rect[1] + scroll.y
+        );
+        const topLeft = element.rect;
+        for (let pin of element.io.pins) {
+            const [x, y, width, height] = pin.rect;
+            const effectiveRect = [
+                topLeft[0] + x,
+                topLeft[1] + y,
+                width,
+                height,
+            ];
+            context.fillText(
+                `x: ${effectiveRect[0].toFixed(2)} y:${effectiveRect[1].toFixed(
+                    2
+                )}`,
+                effectiveRect[0] + scroll.x,
+                effectiveRect[1] + scroll.y
+            );
+        } */
         context.translate(
             element.rect[0] + scroll.x,
             element.rect[1] + scroll.y

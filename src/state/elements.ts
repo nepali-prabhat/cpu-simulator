@@ -3,9 +3,11 @@ import { WithRequired } from "@/utilTypes";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { nanoid } from "nanoid";
-import { selectedElementIdsAtom } from "./appState";
 import { getElementRects } from "@/utils/box";
 
+export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
+    new Set<Element["uid"]>()
+);
 export const elementsAtom = atomWithStorage<{ [key: Element["uid"]]: Element }>(
     "elements",
     {}
@@ -27,6 +29,19 @@ export const addElementAtom = atom(
         set(elementsAtom, (v) => ({ ...v, [uid]: element }));
     }
 );
+
+export const deleteSelectedElementsAtom = atom(null, (get, set) => {
+    const selectedElementIds = get(selectedElementIdsAtom);
+    set(elementsAtom, (elements) => {
+        const newElements: { [key: Element["uid"]]: Element } = {};
+        for (let id of Object.keys(elements)) {
+            if (!selectedElementIds.has(id)) {
+                newElements[id] = elements[id];
+            }
+        }
+        return newElements;
+    });
+});
 
 export const selectedElementConfigAtomAtom = atom((get) => {
     const selectedElementIds = get(selectedElementIdsAtom);

@@ -7,6 +7,8 @@ import {
     ElementConfig,
     ElementPins,
     PinLine,
+    Element,
+    PinType,
 } from "@/types";
 import { makeTransformationMatrix, transformRect } from "@/utils/transform";
 import {
@@ -21,7 +23,17 @@ export function getRectFromDiagonals(
     d1: Point,
     d2: Point
 ): [number, number, number, number] {
-    return [d1.x, d1.y, d2.x - d1.x, d2.y - d1.y];
+    const rv = [d1.x, d1.y, d2.x - d1.x, d2.y - d1.y];
+    let topRightPoint: Point = {
+        x: d1.x + Math.min(0, rv[2]),
+        y: d1.y + Math.min(0, rv[3]),
+    };
+    return [
+        topRightPoint.x,
+        topRightPoint.y,
+        Math.abs(d2.x - d1.x),
+        Math.abs(d2.y - d1.y),
+    ];
 }
 
 export function convertRectToBox(rect: BoundingRect): BoundingBox {
@@ -227,4 +239,25 @@ export function getElementRects({
         io,
         rect: tranformedRect,
     };
+}
+
+export function getIntersectedRectOfElement(
+    element: Element,
+    point: [number, number]
+) {
+    let intersected: { type: PinType | "icon"; rect: BoundingRect }[] = [];
+    const topLeft = element.rect;
+    for (let pin of element.io.pins) {
+        const [x, y, width, height] = pin.rect;
+        const effectiveRect = [topLeft[0] + x, topLeft[1] + y, width, height];
+        if (
+            effectiveRect[0] <= point[0] &&
+            effectiveRect[0] + effectiveRect[2] >= point[0] &&
+            effectiveRect[1] <= point[1] &&
+            effectiveRect[1] + effectiveRect[3] >= point[1]
+        ) {
+            intersected.push({ type: pin.type, rect: pin.rect });
+        }
+    }
+    return intersected;
 }

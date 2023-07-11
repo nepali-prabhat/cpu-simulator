@@ -1,4 +1,3 @@
-import { PrimitiveAtom } from "jotai";
 import { Matrix } from "transformation-matrix";
 
 export type Point = { x: number; y: number };
@@ -71,6 +70,12 @@ export type Element = {
     tmIcon: Matrix;
     iconRect: BoundingRect;
     config: ElementConfig;
+};
+export type Wire = {
+    uid: string;
+    points: Point[];
+    touchingWireIds?: string[];
+    touchingPinIds?: string[];
 };
 
 export type GhostElement = RenderableElement & {
