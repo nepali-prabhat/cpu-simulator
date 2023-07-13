@@ -1,4 +1,4 @@
-import { Element, ElementConfig, GhostElement } from "@/types";
+import { AppState, Element, ElementConfig, GhostElement } from "@/types";
 import { WithRequired } from "@/utilTypes";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -86,3 +86,29 @@ export const selectedElementConfigAtomAtom = atom((get) => {
         }
     }
 });
+
+export const moveSelectedElementsAtom = atom(
+    null,
+    (get, set, value: [number, number]) => {
+        const selectedElementIds = get(selectedElementIdsAtom);
+        const elements = get(elementsAtom);
+        let updatedElements: AppState["elements"] = {};
+        if (selectedElementIds.size > 0) {
+            for (let id of Array.from(selectedElementIds)) {
+                const element = elements[id];
+                if (element) {
+                    updatedElements[element.uid] = {
+                        ...element,
+                        rect: [
+                            element.rect[0] + value[0],
+                            element.rect[1] + value[1],
+                            element.rect[2],
+                            element.rect[3],
+                        ],
+                    };
+                }
+            }
+        }
+        set(elementsAtom, (v) => ({ ...v, ...updatedElements }));
+    }
+);

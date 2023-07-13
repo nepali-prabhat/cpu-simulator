@@ -98,6 +98,7 @@ export type AppState = {
 export type PointerState = {
     moved: boolean;
     selectedElementIds: Set<string>;
+    elementsMap: AppState["elements"];
     boundingBox?: BoundingBox;
     intersectedElementRect?: ElementIntersectedRect[];
     pinId?: string;

@@ -26,14 +26,17 @@ import {
     setGhostPosition as _setGhostPosition,
     showGhost,
 } from "@/state/appState";
-import { selectedElementIdsAtom } from "@/state/elements";
+import {
+    moveSelectedElementsAtom,
+    selectedElementIdsAtom,
+} from "@/state/elements";
 
 import {
     addToActiveInputsCountAtom,
     rotateActiveElementConfigAtom,
     selectedElementTypeAtom,
 } from "@/state/ui";
-import { getNormalizedZoom } from "@/utils";
+import { getGridPoint, getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import {
     addElementAtom,
@@ -66,6 +69,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
     const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
     const deleteSelectedElements = useSetAtom(deleteSelectedElementsAtom);
+    const moveSelectedElements = useSetAtom(moveSelectedElementsAtom);
     const addWire = useSetAtom(addWireAtom);
     const updateWire = useSetAtom(updateWireAtom);
 
@@ -174,6 +178,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const keydownHandler = useCallback(
         (e: KeyboardEvent) => {
+            console.log("e.key: ", e.key, e);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -193,6 +198,14 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 addToGeInputsCount(-1);
             } else if (e.key === "Backspace") {
                 deleteSelectedElements();
+            } else if (e.key === "ArrowUp") {
+                moveSelectedElements([0, -GRID_SPACE]);
+            } else if (e.key === "ArrowDown") {
+                moveSelectedElements([0, GRID_SPACE]);
+            } else if (e.key === "ArrowRight") {
+                moveSelectedElements([GRID_SPACE, 0]);
+            } else if (e.key === "ArrowLeft") {
+                moveSelectedElements([-GRID_SPACE, 0]);
             }
         },
         [
@@ -201,6 +214,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             rotateGhostElement,
             addToGeInputsCount,
             deleteSelectedElements,
+            moveSelectedElements,
         ]
     );
 
@@ -274,10 +288,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             const newSelectedElementIds = new Set<string>([
-                ...(topLevelElement && !isClickedInsideSelectBox
-                    ? [topLevelElement.uid]
-                    : []),
-                // ...(Array.from(intersectedElementIds)),
+                ...(topLevelElement ? [topLevelElement.uid] : []),
                 ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
             ]);
 
@@ -304,6 +315,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             pointerRef.current = {
                 moved: false,
                 selectedElementIds: newSelectedElementIds,
+                elementsMap,
                 timeStamp: e.timeStamp,
                 lastPoint: canvasXY,
                 intersectedElementRect,
@@ -338,7 +350,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 y: canvasXY.y - lastPoint.y,
             };
 
-            const elementsMap = appState.elements;
             const selectedElementIds = appState.selectedElementIds;
 
             // If there is select Rect, change  its width and height
@@ -401,7 +412,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             if (!pinRect) {
                 if (selectRect) {
                     // add new selected elements
-                    for (let element of Object.values(elementsMap)) {
+                    for (let element of Object.values(appState.elements)) {
                         if (
                             isBoxInsideAnotherBox(
                                 convertRectToBox(element.rect),
@@ -413,6 +424,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     }
                 } else {
                     // move the elements
+                    const elementsMap = pointerRef.current.elementsMap;
                     const selectedElements = getSelectedElements({
                         selectedElementIds,
                         elements: elementsMap,
@@ -433,11 +445,29 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
             pointerRef.current = {
                 ...pointerRef.current,
+                elementsMap: {
+                    ...pointerRef.current.elementsMap,
+                    ...updatedSelectedElements,
+                },
                 pinId,
                 moved: true,
                 lastPoint: canvasXY,
             };
-            setElements((e) => ({ ...e, ...updatedSelectedElements }));
+            setElements((e) => {
+                let elementsSnappedToGrid: AppState["elements"] = {};
+                for (let uid in updatedSelectedElements) {
+                    const element = updatedSelectedElements[uid];
+                    elementsSnappedToGrid[uid] = {
+                        ...element,
+                        rect: [
+                            ...getGridPoint(element.rect[0], element.rect[1]),
+                            element.rect[2],
+                            element.rect[3],
+                        ],
+                    };
+                }
+                return { ...e, ...elementsSnappedToGrid };
+            });
             setSelectedElementIds(
                 (v) =>
                     new Set([...Array.from(v), ...additionalSelectedElements])

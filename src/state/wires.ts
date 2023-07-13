@@ -7,6 +7,8 @@ export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     {}
 );
 
+export const selectedWires = atom(new Set<string>());
+
 export const addWireAtom = atom(null, (_, set, value: Wire) => {
     set(wiresAtom, (v) => ({
         ...v,

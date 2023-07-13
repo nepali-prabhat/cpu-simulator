@@ -46,13 +46,17 @@ export const COLOR_PALETTE = {
     bronze: ["#f8f1ee", "#eaddd7", "#d2bab0", "#a18072", "#846358"],
 } as ColorPalette;
 
-export const APP_BG_COLOR_PALETTE: ColorTuple = [
-    "#ffffff",
-    "#f8f9fa",
-    "#f5faff",
-    "#fffce8",
-    "#fdf8f6",
-];
+export const APP_BG_COLOR_PALETTE_MAP: {
+    [key: string]: keyof ColorPalette;
+} = {
+    "#ffffff": "black",
+    "#f8f9fa": "gray",
+    "#f5faff": "blue",
+    "#fffce8": "yellow",
+    "#fdf8f6": "pink",
+};
+export const APP_BG_COLOR_PALETTE = Object.keys(APP_BG_COLOR_PALETTE_MAP);
+
 const elementsColorIndex = 4;
 export const ELEMENTS_COLOR_PALETTE: ColorTuple = [
     COLOR_PALETTE.black,

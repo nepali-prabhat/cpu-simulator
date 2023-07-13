@@ -45,7 +45,10 @@ export function renderCanvas({
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
 
             width / zoom,
-            height / zoom
+            height / zoom,
+
+            canvasProperties.bgColor,
+            rc
         );
 
     GRID_TYPE === "lines" &&
@@ -57,7 +60,10 @@ export function renderCanvas({
             -Math.ceil(zoom / gridSpace) * gridSpace + (scroll.y % gridSpace),
 
             width / zoom,
-            height / zoom
+            height / zoom,
+
+            canvasProperties.bgColor,
+            rc
         );
 
     renderElements({
@@ -120,7 +126,7 @@ function renderWires({
             );
             rc?.linearPath(paths, {
                 seed: 1,
-                roughness: 0.5,
+                roughness: 0.75,
                 fillStyle: "solid",
                 stroke: "black",
             });
