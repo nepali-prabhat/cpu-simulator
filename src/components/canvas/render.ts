@@ -80,6 +80,13 @@ export function renderCanvas({
         rc,
     });
 
+    renderWires({
+        appState,
+        context,
+        canvasProperties,
+        rc,
+    });
+
     rc?.circle(0, 0, 5, {
         fill: "black",
         seed: 1,
@@ -87,6 +94,49 @@ export function renderCanvas({
     });
 
     context.restore();
+}
+
+function renderWires({
+    appState,
+    context,
+    canvasProperties,
+    rc,
+}: {
+    appState: AppState;
+    canvasProperties: CanvasProperties;
+    context: CanvasRenderingContext2D;
+    rc: RoughCanvas | null;
+}) {
+    const wires = appState.wires;
+    const { scroll } = canvasProperties;
+    for (let wireId in wires) {
+        const wire = wires[wireId];
+        if (wire.points.length > 1) {
+            context.save();
+            context.translate(scroll.x, scroll.y);
+            // TODO: render a line
+            const paths = wire.points.map(
+                (p) => [p.x, p.y] as [number, number]
+            );
+            rc?.linearPath(paths, {
+                seed: 1,
+                roughness: 0.5,
+                fillStyle: "solid",
+                stroke: "black",
+            });
+            context.restore();
+            for (let path of paths) {
+                context.save();
+                context.translate(path[0] + scroll.x, path[1] + scroll.y);
+                rc?.circle(0, 0, 2, {
+                    seed: 1,
+                    roughness: 0.5,
+                    stroke: "black",
+                });
+                context.restore();
+            }
+        }
+    }
 }
 
 function renderGhostElement({

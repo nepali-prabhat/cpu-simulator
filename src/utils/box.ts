@@ -9,6 +9,7 @@ import {
     PinLine,
     Element,
     PinType,
+    ElementIntersectedRect,
 } from "@/types";
 import { makeTransformationMatrix, transformRect } from "@/utils/transform";
 import {
@@ -245,19 +246,31 @@ export function getIntersectedRectOfElement(
     element: Element,
     point: [number, number]
 ) {
-    let intersected: { type: PinType | "icon"; rect: BoundingRect }[] = [];
+    let intersected: ElementIntersectedRect[] = [];
     const topLeft = element.rect;
+    let i = 0;
     for (let pin of element.io.pins) {
         const [x, y, width, height] = pin.rect;
-        const effectiveRect = [topLeft[0] + x, topLeft[1] + y, width, height];
+        const effectiveRect: BoundingRect = [
+            topLeft[0] + x,
+            topLeft[1] + y,
+            width,
+            height,
+        ];
         if (
             effectiveRect[0] <= point[0] &&
             effectiveRect[0] + effectiveRect[2] >= point[0] &&
             effectiveRect[1] <= point[1] &&
             effectiveRect[1] + effectiveRect[3] >= point[1]
         ) {
-            intersected.push({ type: pin.type, rect: pin.rect });
+            intersected.push({
+                uid: pin.uid,
+                pinIndex: pin.pinIndex,
+                type: pin.type,
+                rect: effectiveRect,
+            });
         }
+        i++;
     }
     return intersected;
 }

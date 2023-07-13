@@ -42,6 +42,8 @@ import {
 } from "@/state/elements";
 import { convertRectToBox, getIntersectedRectOfElement } from "@/utils/box";
 import { WithRequired } from "@/utilTypes";
+import { nanoid } from "nanoid";
+import { addWireAtom, updateWireAtom } from "@/state/wires";
 
 const gridSpace = GRID_SPACE;
 
@@ -64,6 +66,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
     const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
     const deleteSelectedElements = useSetAtom(deleteSelectedElementsAtom);
+    const addWire = useSetAtom(addWireAtom);
+    const updateWire = useSetAtom(updateWireAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -253,14 +257,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 Object.values(elementsMap)
             );
 
-            if (topLevelElement) {
-                const intersectedRect = getIntersectedRectOfElement(
-                    topLevelElement,
-                    [canvasXY.x, canvasXY.y]
-                );
-                console.log("intersected rect: ", intersectedRect);
-            }
-
             const existingSelectedElements = filterElementsByIds(
                 selectedElementIds,
                 elementsMap
@@ -296,12 +292,21 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 };
             }
 
+            const intersectedElementRect =
+                topLevelElement && newSelectedElementIds.size <= 1
+                    ? getIntersectedRectOfElement(topLevelElement, [
+                        canvasXY.x,
+                        canvasXY.y,
+                    ])
+                    : undefined;
+
             // initial pointer state
             pointerRef.current = {
                 moved: false,
                 selectedElementIds: newSelectedElementIds,
                 timeStamp: e.timeStamp,
                 lastPoint: canvasXY,
+                intersectedElementRect,
                 initial: {
                     viewportXY,
                     canvasXY,
@@ -346,42 +351,89 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 };
             }
 
-            // get elements that fall inside the select Rect.
+            // check if intersected element's rect is a pin
+            const pinRect = pointerRef.current.intersectedElementRect?.find(
+                (v) => ["output", "input", "select"].includes(v.type)
+            );
+            console.log("pinRect: ", pinRect);
+            let pinId = pointerRef.current.pinId;
+            if (pinRect && pinId) {
+                // TODO: update the wire's points
+                updateWire({
+                    uid: pinId,
+                    updater: (v) => {
+                        return {
+                            points: [
+                                v.points[0],
+                                {
+                                    x: v.points[1].x + dp.x,
+                                    y: v.points[1].y + dp.y,
+                                },
+                            ],
+                        };
+                    },
+                });
+            } else if (pinRect && !pinId) {
+                // TODO: make a wire
+                pinId = nanoid();
+                const touchingPinIds = [pinRect.uid];
+                const touchingWireIds: string[] = [];
+                const startPoint = {
+                    x: pinRect.rect[0] + pinRect.rect[2] / 2,
+                    y: pinRect.rect[1] + pinRect.rect[3] / 2,
+                };
+                const endPoint = {
+                    x: startPoint.x + dp.x,
+                    y: startPoint.y + dp.y,
+                };
+                const points = [startPoint, endPoint];
+                addWire({
+                    uid: pinId,
+                    touchingPinIds,
+                    touchingWireIds,
+                    points,
+                });
+            }
+
             let updatedSelectedElements: AppState["elements"] = {};
             const additionalSelectedElements: Element["uid"][] = [];
-            if (selectRect) {
-                // add new selected elements
-                for (let element of Object.values(elementsMap)) {
-                    if (
-                        isBoxInsideAnotherBox(
-                            convertRectToBox(element.rect),
-                            selectRect
-                        )
-                    ) {
-                        additionalSelectedElements.push(element.uid);
+            // get elements that fall inside the select Rect.
+            if (!pinRect) {
+                if (selectRect) {
+                    // add new selected elements
+                    for (let element of Object.values(elementsMap)) {
+                        if (
+                            isBoxInsideAnotherBox(
+                                convertRectToBox(element.rect),
+                                selectRect
+                            )
+                        ) {
+                            additionalSelectedElements.push(element.uid);
+                        }
                     }
-                }
-            } else {
-                // move the elements
-                const selectedElements = getSelectedElements({
-                    selectedElementIds,
-                    elements: elementsMap,
-                });
-                for (let element of selectedElements) {
-                    updatedSelectedElements[element.uid] = {
-                        ...element,
-                        rect: [
-                            element.rect[0] + dp.x,
-                            element.rect[1] + dp.y,
-                            element.rect[2],
-                            element.rect[3],
-                        ],
-                    };
+                } else {
+                    // move the elements
+                    const selectedElements = getSelectedElements({
+                        selectedElementIds,
+                        elements: elementsMap,
+                    });
+                    for (let element of selectedElements) {
+                        updatedSelectedElements[element.uid] = {
+                            ...element,
+                            rect: [
+                                element.rect[0] + dp.x,
+                                element.rect[1] + dp.y,
+                                element.rect[2],
+                                element.rect[3],
+                            ],
+                        };
+                    }
                 }
             }
 
             pointerRef.current = {
                 ...pointerRef.current,
+                pinId,
                 moved: true,
                 lastPoint: canvasXY,
             };

@@ -71,6 +71,12 @@ export type Element = {
     iconRect: BoundingRect;
     config: ElementConfig;
 };
+export type ElementIntersectedRect = {
+    uid: string;
+    pinIndex: number;
+    type: PinType | "icon";
+    rect: BoundingRect;
+};
 export type Wire = {
     uid: string;
     points: Point[];
@@ -87,11 +93,14 @@ export type AppState = {
     selectedElementIds: Set<string>;
     selectRect?: BoundingBox;
     ghostElement?: GhostElement;
+    wires: { [key: Wire["uid"]]: Wire };
 };
 export type PointerState = {
     moved: boolean;
     selectedElementIds: Set<string>;
     boundingBox?: BoundingBox;
+    intersectedElementRect?: ElementIntersectedRect[];
+    pinId?: string;
     timeStamp: number;
     lastPoint: Point;
     initial: {
