@@ -6,6 +6,7 @@ export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     "wires",
     {}
 );
+wiresAtom.debugLabel="wires atom"
 
 export const selectedWires = atom(new Set<string>());
 

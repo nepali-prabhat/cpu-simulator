@@ -178,7 +178,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const keydownHandler = useCallback(
         (e: KeyboardEvent) => {
-            console.log("e.key: ", e.key, e);
+            // console.log("e.key: ", e.key, e);
             if ((e.ctrlKey || e.metaKey) && e.key === "0") {
                 setZoom((_, c) => ({
                     viewport: {
@@ -288,7 +288,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             const newSelectedElementIds = new Set<string>([
-                ...(topLevelElement ? [topLevelElement.uid] : []),
+                ...(topLevelElement && (!isClickedInsideSelectBox || e.shiftKey)
+                    ? [topLevelElement.uid]
+                    : []),
                 ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
             ]);
 
@@ -314,15 +316,17 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             // initial pointer state
             pointerRef.current = {
                 moved: false,
-                selectedElementIds: newSelectedElementIds,
+                movedElementIds: new Set(),
+                selectedElementIds,
                 elementsMap,
                 timeStamp: e.timeStamp,
                 lastPoint: canvasXY,
-                intersectedElementRect,
                 initial: {
                     viewportXY,
                     canvasXY,
                 },
+                intersectedElementRect,
+                intersectedElement: topLevelElement,
             };
 
             setSelectedElementIds(newSelectedElementIds);
@@ -366,7 +370,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const pinRect = pointerRef.current.intersectedElementRect?.find(
                 (v) => ["output", "input", "select"].includes(v.type)
             );
-            console.log("pinRect: ", pinRect);
             let pinId = pointerRef.current.pinId;
             if (pinRect && pinId) {
                 // TODO: update the wire's points
@@ -443,31 +446,49 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 }
             }
 
+            // get new elements value snapped to grid
+            let elementsSnappedToGrid: AppState["elements"] = {
+                ...appState.elements,
+            };
+            let newMovedElementIds: Set<string> =
+                pointerRef.current.movedElementIds;
+            for (let uid in appState.elements) {
+                const originalElement = appState.elements[uid];
+                const element = updatedSelectedElements[uid];
+                if (element && originalElement) {
+                    const newPosition = getGridPoint(
+                        element.rect[0],
+                        element.rect[1]
+                    );
+                    elementsSnappedToGrid[uid] = {
+                        ...element,
+                        rect: [
+                            ...newPosition,
+                            element.rect[2],
+                            element.rect[3],
+                        ],
+                    };
+                    if (
+                        newPosition[0] !== originalElement.rect[0] ||
+                        newPosition[1] !== originalElement.rect[1]
+                    ) {
+                        newMovedElementIds.add(uid);
+                    }
+                }
+            }
+
             pointerRef.current = {
                 ...pointerRef.current,
                 elementsMap: {
                     ...pointerRef.current.elementsMap,
                     ...updatedSelectedElements,
                 },
+                movedElementIds: newMovedElementIds,
                 pinId,
                 moved: true,
                 lastPoint: canvasXY,
             };
-            setElements((e) => {
-                let elementsSnappedToGrid: AppState["elements"] = {};
-                for (let uid in updatedSelectedElements) {
-                    const element = updatedSelectedElements[uid];
-                    elementsSnappedToGrid[uid] = {
-                        ...element,
-                        rect: [
-                            ...getGridPoint(element.rect[0], element.rect[1]),
-                            element.rect[2],
-                            element.rect[3],
-                        ],
-                    };
-                }
-                return { ...e, ...elementsSnappedToGrid };
-            });
+            setElements(elementsSnappedToGrid);
             setSelectedElementIds(
                 (v) =>
                     new Set([...Array.from(v), ...additionalSelectedElements])
@@ -482,10 +503,32 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
             let preserveSelectedElements =
                 e.shiftKey ||
-                pointerRef.current.moved ||
-                pointerRef.current.selectedElementIds.size === 1;
+                pointerRef.current.movedElementIds.size > 1 ||
+                pointerRef.current.selectedElementIds.size < 2;
+
+            console.log("preserveSelectedElements", preserveSelectedElements);
+
+            const topLevelElement = pointerRef.current.intersectedElement;
+
             if (!preserveSelectedElements) {
-                selectedElementIds = new Set<string>();
+                selectedElementIds = new Set<string>(
+                    topLevelElement ? [topLevelElement?.uid] : []
+                );
+            } else {
+                if (
+                    topLevelElement &&
+                    pointerRef.current.movedElementIds.size < 1 &&
+                    pointerRef.current?.selectedElementIds.size > 1 &&
+                    pointerRef.current?.selectedElementIds.has(
+                        topLevelElement.uid
+                    )
+                ) {
+                    selectedElementIds = new Set<string>(
+                        Array.from(selectedElementIds).filter(
+                            (id) => id !== topLevelElement.uid
+                        )
+                    );
+                }
             }
 
             pointerRef.current = null;

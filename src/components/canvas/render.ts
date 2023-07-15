@@ -5,8 +5,13 @@ import { filterElementsByIds, getBoundingRect } from "./utils";
 import { RoughCanvas } from "roughjs/bin/canvas";
 import { renderElement } from "./renderGates";
 import { convertRectToBox } from "@/utils/box";
-import { getDefaultStore } from "jotai";
-import { COLOR_PALETTE } from "@/colors";
+import {
+    COLOR_PALETTE,
+    getHighlightBGColor,
+    getHighlightFGColor,
+    getPatternColor,
+    reduceOpacityOfHexColor,
+} from "@/colors";
 
 export function renderCanvas({
     context,
@@ -46,6 +51,7 @@ export function renderCanvas({
 
             width / zoom,
             height / zoom,
+            zoom,
 
             canvasProperties.bgColor,
             rc
@@ -252,37 +258,50 @@ function renderSelectBox({
     const multipleSelected = selectedElements.length > 1;
     for (let element of selectedElements) {
         // draw selection box in selected elements
-        renderBoundingBox(context, scroll, convertRectToBox(element.rect), {
-            renderHandles: !multipleSelected,
-        });
+        renderBoundingBox(
+            context,
+            scroll,
+            convertRectToBox(element.rect),
+            {
+                renderHandles: !multipleSelected,
+            },
+            canvasProperties.bgColor
+        );
     }
 
     if (multipleSelected) {
         const bounds = getBoundingRect(selectedElements);
         if (bounds) {
-            renderBoundingBox(context, scroll, bounds, {
-                renderHandles: true,
-                padding: 0,
-            });
+            renderBoundingBox(
+                context,
+                scroll,
+                bounds,
+                {
+                    renderHandles: true,
+                    padding: 0,
+                },
+                canvasProperties.bgColor
+            );
         }
     }
 
     // render select rect
     if (selectRect) {
-        renderSelectRect(context, scroll, selectRect);
+        renderSelectRect(context, scroll, selectRect, canvasProperties.bgColor);
     }
 }
 
 function renderSelectRect(
     context: CanvasRenderingContext2D,
     scroll: { x: number; y: number },
-    rect: BoundingBox
+    rect: BoundingBox,
+    bgColor?: string
 ) {
     const lineWidth = 1;
     context.save();
     context.translate(rect.x + scroll.x, rect.y + scroll.y);
-    context.fillStyle = "rgba(115, 193, 252,0.1)";
-    context.strokeStyle = "rgba(115, 193, 252,1)";
+    context.fillStyle = reduceOpacityOfHexColor(getHighlightBGColor(bgColor));
+    context.strokeStyle = getHighlightFGColor(bgColor);
     context.lineWidth = lineWidth;
     context.fillRect(
         0,
@@ -311,16 +330,30 @@ function renderBoundingBox(
         renderHandles: boolean;
         padding: number;
         size: number;
-    }> = {}
+    }> = {},
+    bgColor?: string
 ) {
     const lineWidth = 1;
     context.save();
     context.translate(rect.x + scroll.x, rect.y + scroll.y);
+
     const color = "hsl(207, 83%, 79%)";
-    context.fillStyle = color;
-    context.strokeStyle = color;
+    const strokeColor = getHighlightFGColor(bgColor, color);
+    const fillColor = getHighlightBGColor(bgColor);
+
+    context.fillStyle = reduceOpacityOfHexColor(fillColor);
+    context.strokeStyle = strokeColor;
+
+    context.fillRect(
+        0 - padding,
+        0 - padding,
+        rect.width + padding * 2,
+        rect.height + padding * 2
+    );
     context.lineWidth = lineWidth;
+
     if (renderHandles) {
+        context.fillStyle = strokeColor;
         context.fillRect(
             0 - size / 2 - padding,
             0 - size / 2 - padding,
@@ -346,6 +379,7 @@ function renderBoundingBox(
             size
         );
     }
+
     context.strokeRect(
         0 - padding,
         0 - padding,

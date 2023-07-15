@@ -15,7 +15,7 @@ export const CircuitIcon = (
                 height={15}
                 x={23}
                 y={41}
-                stroke="#000"
+                stroke="currentColor"
                 strokeWidth={6}
                 rx={4}
                 transform="rotate(90 23 41)"
@@ -25,12 +25,12 @@ export const CircuitIcon = (
                 height={15}
                 x={41}
                 y={23}
-                stroke="#000"
+                stroke="currentColor"
                 strokeWidth={6}
                 rx={4}
                 transform="rotate(-90 41 23)"
             />
-            <path stroke="#000" strokeWidth={6} d="M41 23 23 41" />
+            <path stroke="currentColor" strokeWidth={6} d="M41 23 23 41" />
         </svg>
     );
 };

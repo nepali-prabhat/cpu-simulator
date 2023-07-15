@@ -354,7 +354,7 @@ const ElementConfigSection = (
                     {renderNumberConfig("selectBits")}
                     {renderRotation()}
                     {renderScale()}
-                    {renderColor()}
+                    {/* {renderColor()} */}
                 </div>
                 {errorElements && errorElements.length > 0 ? (
                     <div className="grid gap-4 p-2 mt-1 bg-red-100 rounded-md">

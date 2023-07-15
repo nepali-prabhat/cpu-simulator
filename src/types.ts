@@ -97,10 +97,9 @@ export type AppState = {
 };
 export type PointerState = {
     moved: boolean;
+    movedElementIds: Set<string>;
     selectedElementIds: Set<string>;
     elementsMap: AppState["elements"];
-    boundingBox?: BoundingBox;
-    intersectedElementRect?: ElementIntersectedRect[];
     pinId?: string;
     timeStamp: number;
     lastPoint: Point;
@@ -108,6 +107,9 @@ export type PointerState = {
         viewportXY: Point;
         canvasXY: Point;
     };
+    boundingBox?: BoundingBox;
+    intersectedElementRect?: ElementIntersectedRect[];
+    intersectedElement?: Element;
 };
 
 export type PaletteTab = "actions" | "elements" | "circuit";

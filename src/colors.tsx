@@ -46,16 +46,67 @@ export const COLOR_PALETTE = {
     bronze: ["#f8f1ee", "#eaddd7", "#d2bab0", "#a18072", "#846358"],
 } as ColorPalette;
 
-export const APP_BG_COLOR_PALETTE_MAP: {
-    [key: string]: keyof ColorPalette;
+export const APP_BG_FG_COLOR_MAP: {
+    [key: string]: [keyof oc, number];
 } = {
-    "#ffffff": "black",
-    "#f8f9fa": "gray",
-    "#f5faff": "blue",
-    "#fffce8": "yellow",
-    "#fdf8f6": "pink",
+    "#ffffff": ["gray", 3],
+    [oc.gray[0]]: ["gray", 3],
+    [oc.cyan[0]]: ["blue", 2],
+    [oc.yellow[0]]: ["orange", 2],
+    [oc.pink[0]]: ["red", 2],
 };
-export const APP_BG_COLOR_PALETTE = Object.keys(APP_BG_COLOR_PALETTE_MAP);
+export const APP_BG_COLOR_PALETTE = Object.keys(APP_BG_FG_COLOR_MAP);
+
+export function getPatternColor(bgColor?: string) {
+    let strokeColor = COLOR_PALETTE.gray[1];
+    if (bgColor && APP_BG_FG_COLOR_MAP[bgColor]) {
+        const [color, index] = APP_BG_FG_COLOR_MAP[bgColor];
+        if (oc[color]) {
+            strokeColor = oc[color][index];
+        }
+    }
+    return strokeColor;
+}
+function hasDefaultHighlight(bgColor?: string) {
+    if (bgColor && APP_BG_COLOR_PALETTE[0] === bgColor) {
+        return true;
+    } else {
+        return false;
+    }
+}
+export function getHighlightFGColor(
+    bgColor?: string,
+    defaultColor: string = oc.blue[3]
+) {
+    if (hasDefaultHighlight(bgColor)) {
+        return defaultColor;
+    } else {
+        let strokeColor = defaultColor;
+        if (bgColor && APP_BG_FG_COLOR_MAP[bgColor]) {
+            const [color, index] = APP_BG_FG_COLOR_MAP[bgColor];
+            strokeColor = oc[color][index + 1] || strokeColor;
+        }
+        return strokeColor;
+    }
+}
+export function getHighlightBGColor(
+    bgColor?: string,
+    defaultColor: string = oc.blue[9]
+) {
+    if (hasDefaultHighlight(bgColor)) {
+        return defaultColor;
+    } else {
+        let fillColor;
+        if (bgColor && APP_BG_FG_COLOR_MAP[bgColor]) {
+            const [color] = APP_BG_FG_COLOR_MAP[bgColor];
+            fillColor = oc[color][9] || fillColor;
+        }
+        return fillColor || defaultColor;
+    }
+}
+export function reduceOpacityOfHexColor(hexColor: string) {
+    return hexColor + "0f";
+}
 
 const elementsColorIndex = 4;
 export const ELEMENTS_COLOR_PALETTE: ColorTuple = [

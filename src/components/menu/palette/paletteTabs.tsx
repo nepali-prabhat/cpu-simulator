@@ -14,7 +14,7 @@ const PaletteTabItem = (props: { type: PaletteTab }) => {
     const className = twMerge(
         "scale-95",
         activeTab === props.type
-            ? "scale-150 opactiy-50"
+            ? `scale-150 opactiy-50`
             : "group-hover:opacity-100 group-hover:scale-125"
     );
     switch (props.type) {
