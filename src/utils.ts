@@ -1,5 +1,5 @@
 import { GRID_SPACE, MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
-import { NormalizedZoomValue } from "./types";
+import { NormalizedZoomValue, Point } from "./types";
 
 export function mergeRefs<T = any>(
     refs: Array<React.MutableRefObject<T> | React.LegacyRef<T>>
@@ -20,11 +20,11 @@ export function getNormalizedZoom(zoom: number): NormalizedZoomValue {
     return Math.max(MIN_ZOOM, Math.min(zoom, MAX_ZOOM)) as NormalizedZoomValue;
 }
 
-export const getGridPoint = (
+export function getGridPoint(
     x: number,
     y: number,
     gridSize: number | null = GRID_SPACE
-): [number, number] => {
+): [number, number] {
     if (gridSize) {
         return [
             Math.round(x / gridSize) * gridSize,
@@ -32,8 +32,12 @@ export const getGridPoint = (
         ];
     }
     return [x, y];
-};
+}
 
-export const convertTupleToPoint = (tuple: [number, number]) => {
+export function convertTupleToPoint(tuple: [number, number]) {
     return { x: tuple[0], y: tuple[1] };
-};
+}
+
+export function convertPointToTuple(point: Point): [number, number] {
+    return [point.x, point.y];
+}

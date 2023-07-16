@@ -1,7 +1,16 @@
 import rough from "roughjs/bin/rough";
+import minBy from "lodash.minby";
 import { useCallback, useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import { Element, AppState, Point, PointerState, GhostElement } from "@/types";
+import {
+    Element,
+    AppState,
+    Point,
+    PointerState,
+    GhostElement,
+    WireHighlight,
+    WireHighlights,
+} from "@/types";
 import { renderCanvas } from "./render";
 import {
     filterElementsByIds,
@@ -46,7 +55,13 @@ import {
 import { convertRectToBox, getIntersectedRectOfElement } from "@/utils/box";
 import { WithRequired } from "@/utilTypes";
 import { nanoid } from "nanoid";
-import { addWireAtom, updateWireAtom } from "@/state/wires";
+import {
+    addWireAtom,
+    highlightedWireIdsAtom,
+    updateWireAtom,
+} from "@/state/wires";
+import { randomInteger } from "@/utils/random";
+import { getWiresAt } from "@/utils/wires";
 
 const gridSpace = GRID_SPACE;
 
@@ -70,8 +85,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
     const deleteSelectedElements = useSetAtom(deleteSelectedElementsAtom);
     const moveSelectedElements = useSetAtom(moveSelectedElementsAtom);
+
     const addWire = useSetAtom(addWireAtom);
     const updateWire = useSetAtom(updateWireAtom);
+    const setHighlightedWireIds = useSetAtom(highlightedWireIdsAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -258,11 +275,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         );
 
         const elementsMap = appState.elements;
-        const selectedElementIds = appState.selectedElementIds;
+        const initialSelectedElementIds = appState.selectedElementIds;
         const ghostElement = appState.ghostElement;
 
         if (ghostElement && ghostElement.show && ghostElement.rect) {
-            // setShowGhost(false);
             addElement(ghostElement as WithRequired<GhostElement, "rect">);
             setActiveElementType(undefined);
         } else {
@@ -272,7 +288,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             );
 
             const existingSelectedElements = filterElementsByIds(
-                selectedElementIds,
+                initialSelectedElementIds,
                 elementsMap
             );
 
@@ -291,19 +307,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 ...(topLevelElement && (!isClickedInsideSelectBox || e.shiftKey)
                     ? [topLevelElement.uid]
                     : []),
-                ...(preserveSelectBox ? Array.from(selectedElementIds) : []),
+                ...(preserveSelectBox
+                    ? Array.from(initialSelectedElementIds)
+                    : []),
             ]);
-
-            // If there is no top level element, render a select box
-            let selectRect: AppState["selectRect"] = undefined;
-            if (!topLevelElement && !isClickedInsideSelectBox) {
-                selectRect = {
-                    x: canvasXY.x,
-                    y: canvasXY.y,
-                    width: 0,
-                    height: 0,
-                };
-            }
 
             const intersectedElementRect =
                 topLevelElement && newSelectedElementIds.size <= 1
@@ -313,11 +320,71 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     ])
                     : undefined;
 
+            const pinRect = intersectedElementRect?.find((v) =>
+                ["output", "input", "select"].includes(v.type)
+            );
+            const wireHighlights = appState.wireHighlights;
+
+            let wireId;
+            if (pinRect) {
+                wireId = nanoid();
+                const touchingPinIds = [pinRect.uid];
+                const touchingWireIds: string[] = [];
+                const startPoint = {
+                    x: pinRect.rect[0] + pinRect.rect[2] / 2,
+                    y: pinRect.rect[1] + pinRect.rect[3] / 2,
+                };
+                const endPoint = {
+                    x: startPoint.x,
+                    y: startPoint.y,
+                };
+                const points = [startPoint, endPoint];
+                addWire({
+                    uid: wireId,
+                    zIndex: 0,
+                    seed: randomInteger(),
+                    touchingPinIds,
+                    touchingWireIds,
+                    points,
+                });
+            } else if (wireHighlights?.length) {
+                wireId = nanoid();
+                const highlight = wireHighlights.find(
+                    (v) => v.projectedPoint !== undefined
+                );
+                if (highlight && highlight.projectedPoint) {
+                    const touchingWireIds = [highlight.uid];
+                    const touchingPinIds: string[] = [];
+                    const points: Point[] = [
+                        highlight.projectedPoint,
+                        canvasXY,
+                    ];
+                    addWire({
+                        uid: wireId,
+                        zIndex: 0,
+                        seed: randomInteger(),
+                        touchingPinIds,
+                        touchingWireIds,
+                        points,
+                    });
+                }
+            }
+
+            let selectRect: AppState["selectRect"] = undefined;
+            if (!topLevelElement && !isClickedInsideSelectBox && !wireId) {
+                selectRect = {
+                    x: canvasXY.x,
+                    y: canvasXY.y,
+                    width: 0,
+                    height: 0,
+                };
+            }
+
             // initial pointer state
             pointerRef.current = {
                 moved: false,
                 movedElementIds: new Set(),
-                selectedElementIds,
+                initialSelectedElementIds,
                 elementsMap,
                 timeStamp: e.timeStamp,
                 lastPoint: canvasXY,
@@ -327,9 +394,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 },
                 intersectedElementRect,
                 intersectedElement: topLevelElement,
+                wireId,
             };
 
-            setSelectedElementIds(newSelectedElementIds);
+            !wireId && setSelectedElementIds(newSelectedElementIds);
             setSelectRect(selectRect);
         }
     };
@@ -346,6 +414,32 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         );
 
         setGhostPosition([canvasXY.gridX, canvasXY.gridY]);
+
+        let wireId = pointerRef.current?.wireId;
+        if (!pointerRef.current || wireId) {
+            const lockAxis =
+                e.shiftKey &&
+                wireId &&
+                appState.wires[wireId].points.length > 1;
+            const intersectedWires = getWiresAt(
+                lockAxis ? appState.wires[wireId!].points.at(1)! : canvasXY,
+                Object.values(appState.wires)
+            );
+            const newHighlights: WireHighlights = [];
+            if (wireId) {
+                newHighlights.push({ uid: wireId });
+            }
+
+            const nearestHighlighted = minBy(
+                intersectedWires.wireHighlights.filter(
+                    (v) => v.uid !== wireId && v.length
+                ),
+                (v) => v.length
+            );
+
+            nearestHighlighted && newHighlights.push(nearestHighlighted);
+            setHighlightedWireIds(newHighlights);
+        }
 
         if (pointerRef.current) {
             const lastPoint = pointerRef.current.lastPoint;
@@ -366,53 +460,37 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 };
             }
 
-            // check if intersected element's rect is a pin
-            const pinRect = pointerRef.current.intersectedElementRect?.find(
-                (v) => ["output", "input", "select"].includes(v.type)
-            );
-            let pinId = pointerRef.current.pinId;
-            if (pinRect && pinId) {
-                // TODO: update the wire's points
+            if (wireId) {
                 updateWire({
-                    uid: pinId,
+                    uid: wireId,
                     updater: (v) => {
+                        let endPoint: Point;
+                        if (e.shiftKey) {
+                            endPoint =
+                                Math.abs(v.points[0].x - canvasXY.x) >
+                                    Math.abs(v.points[0].y - canvasXY.y)
+                                    ? {
+                                        x: canvasXY.x,
+                                        y: v.points[0].y,
+                                    }
+                                    : {
+                                        x: v.points[0].x,
+                                        y: canvasXY.y,
+                                    };
+                        } else {
+                            endPoint = canvasXY;
+                        }
                         return {
-                            points: [
-                                v.points[0],
-                                {
-                                    x: v.points[1].x + dp.x,
-                                    y: v.points[1].y + dp.y,
-                                },
-                            ],
+                            points: [v.points[0], endPoint],
                         };
                     },
-                });
-            } else if (pinRect && !pinId) {
-                // TODO: make a wire
-                pinId = nanoid();
-                const touchingPinIds = [pinRect.uid];
-                const touchingWireIds: string[] = [];
-                const startPoint = {
-                    x: pinRect.rect[0] + pinRect.rect[2] / 2,
-                    y: pinRect.rect[1] + pinRect.rect[3] / 2,
-                };
-                const endPoint = {
-                    x: startPoint.x + dp.x,
-                    y: startPoint.y + dp.y,
-                };
-                const points = [startPoint, endPoint];
-                addWire({
-                    uid: pinId,
-                    touchingPinIds,
-                    touchingWireIds,
-                    points,
                 });
             }
 
             let updatedSelectedElements: AppState["elements"] = {};
             const additionalSelectedElements: Element["uid"][] = [];
             // get elements that fall inside the select Rect.
-            if (!pinRect) {
+            if (!wireId) {
                 if (selectRect) {
                     // add new selected elements
                     for (let element of Object.values(appState.elements)) {
@@ -484,7 +562,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     ...updatedSelectedElements,
                 },
                 movedElementIds: newMovedElementIds,
-                pinId,
+                wireId,
                 moved: true,
                 lastPoint: canvasXY,
             };
@@ -504,9 +582,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             let preserveSelectedElements =
                 e.shiftKey ||
                 pointerRef.current.movedElementIds.size > 1 ||
-                pointerRef.current.selectedElementIds.size < 2;
-
-            console.log("preserveSelectedElements", preserveSelectedElements);
+                pointerRef.current.initialSelectedElementIds.size < 2;
 
             const topLevelElement = pointerRef.current.intersectedElement;
 
@@ -518,8 +594,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 if (
                     topLevelElement &&
                     pointerRef.current.movedElementIds.size < 1 &&
-                    pointerRef.current?.selectedElementIds.size > 1 &&
-                    pointerRef.current?.selectedElementIds.has(
+                    pointerRef.current?.initialSelectedElementIds.size > 1 &&
+                    pointerRef.current?.initialSelectedElementIds.has(
                         topLevelElement.uid
                     )
                 ) {
@@ -528,6 +604,47 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                             (id) => id !== topLevelElement.uid
                         )
                     );
+                }
+            }
+
+            const wireId = pointerRef.current.wireId;
+            const newWire =
+                wireId &&
+                appState.wires[wireId] &&
+                appState.wires[wireId].points.at(1);
+            console.log("newWire: ", newWire, appState.wireHighlights);
+            if (newWire) {
+                const intersectedWires = getWiresAt(
+                    newWire,
+                    Object.values(appState.wires)
+                );
+                const nearestHighlighted = minBy(
+                    intersectedWires.wireHighlights.filter(
+                        (v) => v.uid !== wireId
+                    ),
+                    (v) => v.length
+                );
+                console.log(
+                    "nearest highlight: ",
+                    nearestHighlighted,
+                    intersectedWires
+                );
+                if (nearestHighlighted && nearestHighlighted.projectedPoint) {
+                    updateWire({
+                        uid: wireId,
+                        updater: (v) => {
+                            let points = v.points;
+                            if (nearestHighlighted.projectedPoint) {
+                                points = [
+                                    v.points[0],
+                                    nearestHighlighted.projectedPoint,
+                                ];
+                            }
+                            return {
+                                points,
+                            };
+                        },
+                    });
                 }
             }
 

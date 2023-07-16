@@ -8,17 +8,25 @@ import {
     ElementPins,
     PinLine,
     Element,
-    PinType,
     ElementIntersectedRect,
 } from "@/types";
 import { makeTransformationMatrix, transformRect } from "@/utils/transform";
 import {
-    applyToPoint,
     applyToPoints,
     compose,
     translate,
 } from "transformation-matrix";
 import { nanoid } from "nanoid";
+
+export function isPointInsideBox(point: Point, box: BoundingBox) {
+    const { x, y, width, height } = box;
+    return (
+        point.x >= x &&
+        point.x <= x + width &&
+        point.y >= y &&
+        point.y <= y + height
+    );
+}
 
 export function getRectFromDiagonals(
     d1: Point,

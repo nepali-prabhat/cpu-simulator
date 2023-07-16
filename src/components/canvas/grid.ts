@@ -22,8 +22,7 @@ export const strokeGrid = (
         if (rc) {
             rc.line(x, offsetY - gridSize, x, offsetY + height + gridSize * 2, {
                 seed: 2,
-                roughness: 1.5,
-                bowing: 0.5,
+                roughness: 0,
                 stroke: strokeColor,
             });
         } else {
@@ -64,7 +63,8 @@ export const dotsGrid = (
     }
     context.save();
     let strokeColor = getPatternColor(bgColor);
-    context.fillStyle = strokeColor;
+    context.fillStyle = bgColor || strokeColor + "00";
+    context.strokeStyle = strokeColor;
     context.beginPath();
     const a = offsetX + width + gridSize * 2;
     const b = offsetY + height + gridSize * 2;
@@ -80,7 +80,10 @@ export const dotsGrid = (
                     stroke: strokeColor,
                 });
             } else {
-                context.fillRect(x - 1.5, y - 1.5, 3, 3);
+                const size = 2;
+                const pad = size / 2;
+                context.fillRect(x - pad, y - pad, size, size);
+                context.strokeRect(x - pad, y - pad, size, size);
             }
         }
     }

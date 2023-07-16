@@ -2,12 +2,15 @@ import { GRID_SPACE, SELECT_PADDING } from "@/constants/constants";
 import {
     AppState,
     BoundingBox,
+    BoundingRect,
     Element,
     NormalizedZoomValue,
     Point,
+    Wire,
 } from "@/types";
 import { getGridPoint } from "@/utils";
 import { convertRectToBox } from "@/utils/box";
+
 
 export function getElementsAt(coordinates: Point, elements: Element[]) {
     const { x: canvasX, y: canvasY } = coordinates;

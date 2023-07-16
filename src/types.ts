@@ -80,27 +80,37 @@ export type ElementIntersectedRect = {
 export type Wire = {
     uid: string;
     points: Point[];
+    zIndex: number;
+    seed: number;
     touchingWireIds?: string[];
     touchingPinIds?: string[];
 };
+export type WireHighlight = {
+    uid: string;
+    projectedPoint?: Point;
+    length?: number;
+};
+export type WireHighlights = WireHighlight[];
 
 export type GhostElement = RenderableElement & {
     show?: boolean;
     rect?: BoundingRect;
 };
+
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
     selectedElementIds: Set<string>;
     selectRect?: BoundingBox;
     ghostElement?: GhostElement;
     wires: { [key: Wire["uid"]]: Wire };
+    wireHighlights: WireHighlights;
 };
 export type PointerState = {
     moved: boolean;
     movedElementIds: Set<string>;
-    selectedElementIds: Set<string>;
+    initialSelectedElementIds: Set<string>;
     elementsMap: AppState["elements"];
-    pinId?: string;
+    wireId?: string;
     timeStamp: number;
     lastPoint: Point;
     initial: {

@@ -22,9 +22,9 @@
         "eslint": "8.42.0",
         "eslint-config-next": "13.4.4",
         "jotai": "^2.1.1",
-        "jotai-devtools": "^0.5.3",
         "jotai-optics": "^0.3.0",
         "lodash.get": "^4.4.2",
+        "lodash.minby": "^4.6.0",
         "lodash.throttle": "^4.1.1",
         "nanoid": "^4.0.2",
         "next": "13.4.4",
@@ -45,7 +45,9 @@
         "@swc-jotai/debug-label": "^0.0.10",
         "@swc-jotai/react-refresh": "^0.0.8",
         "@types/lodash.get": "^4.4.7",
+        "@types/lodash.minby": "^4.6.7",
         "@types/lodash.throttle": "^4.1.7",
+        "jotai-devtools": "^0.5.3",
         "prettier": "^2.8.8"
     }
 }

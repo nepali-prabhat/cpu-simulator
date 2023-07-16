@@ -4,7 +4,7 @@ import { atomWithStorage } from "jotai/utils";
 import { elementsAtom, selectedElementIdsAtom } from "./elements";
 import { elementConfigAtomAtom } from "./ui";
 import { getElementRects } from "@/utils/box";
-import { wiresAtom } from "./wires";
+import { highlightedWireIdsAtom, wiresAtom } from "./wires";
 
 export const selectRectAtom = atom<BoundingBox | undefined>(undefined);
 
@@ -70,5 +70,6 @@ export const appStateAtom = atom<AppState>((get) => {
         selectRect: get(selectRectAtom),
         ghostElement: get(ghostElementAtom),
         wires: get(wiresAtom),
+        wireHighlights: get(highlightedWireIdsAtom),
     };
 });

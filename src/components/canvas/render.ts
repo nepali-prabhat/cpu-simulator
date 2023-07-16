@@ -1,4 +1,10 @@
-import { AppState, BoundingBox, CanvasProperties, Element } from "@/types";
+import {
+    AppState,
+    BoundingBox,
+    CanvasProperties,
+    Element,
+    WireHighlight,
+} from "@/types";
 import { dotsGrid, strokeGrid } from "./grid";
 import { GRID_TYPE, SELECT_PADDING, SELECT_SIZE } from "@/constants/constants";
 import { filterElementsByIds, getBoundingRect } from "./utils";
@@ -9,7 +15,6 @@ import {
     COLOR_PALETTE,
     getHighlightBGColor,
     getHighlightFGColor,
-    getPatternColor,
     reduceOpacityOfHexColor,
 } from "@/colors";
 
@@ -53,8 +58,8 @@ export function renderCanvas({
             height / zoom,
             zoom,
 
-            canvasProperties.bgColor,
-            rc
+            canvasProperties.bgColor
+            // rc
         );
 
     GRID_TYPE === "lines" &&
@@ -68,11 +73,18 @@ export function renderCanvas({
             width / zoom,
             height / zoom,
 
-            canvasProperties.bgColor,
-            rc
+            canvasProperties.bgColor
+            // rc
         );
 
     renderElements({
+        appState,
+        context,
+        canvasProperties,
+        rc,
+    });
+
+    renderWires({
         appState,
         context,
         canvasProperties,
@@ -92,14 +104,7 @@ export function renderCanvas({
         rc,
     });
 
-    renderWires({
-        appState,
-        context,
-        canvasProperties,
-        rc,
-    });
-
-    rc?.circle(0, 0, 5, {
+    rc?.circle(0 + scroll.x, 0 + scroll.y, 5, {
         fill: "black",
         seed: 1,
         stroke: COLOR_PALETTE.blue[2],
@@ -120,9 +125,16 @@ function renderWires({
     rc: RoughCanvas | null;
 }) {
     const wires = appState.wires;
+    const wireHighlights = appState.wireHighlights;
+    const wireHighlightsMap: { [key: string]: WireHighlight } = {};
+    for (let wh of wireHighlights) {
+        wireHighlightsMap[wh.uid] = wh;
+    }
+    const bgColor = canvasProperties.bgColor;
     const { scroll } = canvasProperties;
     for (let wireId in wires) {
         const wire = wires[wireId];
+        const seed = wire.seed || 1;
         if (wire.points.length > 1) {
             context.save();
             context.translate(scroll.x, scroll.y);
@@ -130,23 +142,38 @@ function renderWires({
             const paths = wire.points.map(
                 (p) => [p.x, p.y] as [number, number]
             );
+            const highlight = wireHighlightsMap[wire.uid];
+            let strokeColor = highlight
+                ? getHighlightFGColor(bgColor)
+                : "black";
+
             rc?.linearPath(paths, {
-                seed: 1,
+                seed,
                 roughness: 0.75,
                 fillStyle: "solid",
-                stroke: "black",
+                stroke: strokeColor,
             });
-            context.restore();
             for (let path of paths) {
-                context.save();
-                context.translate(path[0] + scroll.x, path[1] + scroll.y);
-                rc?.circle(0, 0, 2, {
-                    seed: 1,
+                rc?.circle(path[0], path[1], 2, {
+                    seed,
                     roughness: 0.5,
-                    stroke: "black",
+                    stroke: strokeColor,
                 });
-                context.restore();
             }
+            if (highlight && highlight.projectedPoint) {
+                rc?.circle(
+                    highlight.projectedPoint.x,
+                    highlight.projectedPoint.y,
+                    2,
+                    {
+                        seed,
+                        roughness: 0.75,
+                        fillStyle: "solid",
+                        stroke: strokeColor,
+                    }
+                );
+            }
+            context.restore();
         }
     }
 }

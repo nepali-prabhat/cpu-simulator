@@ -1,4 +1,4 @@
-import { Wire } from "@/types";
+import { WireHighlights, Wire } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 
@@ -6,9 +6,10 @@ export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     "wires",
     {}
 );
-wiresAtom.debugLabel="wires atom"
+wiresAtom.debugLabel = "wires atom";
 
-export const selectedWires = atom(new Set<string>());
+export const selectedWiresAtom = atom(new Set<string>());
+export const highlightedWireIdsAtom = atom<WireHighlights>([]);
 
 export const addWireAtom = atom(null, (_, set, value: Wire) => {
     set(wiresAtom, (v) => ({

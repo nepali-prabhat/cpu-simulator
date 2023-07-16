@@ -17,7 +17,7 @@ export function Canvas() {
     });
 
     return (
-        <section className="absolute bottom-1 left-1">
+        <section className="absolute bottom-0 left-0">
             <canvas
                 ref={canvasRef}
                 className={`bg-none`}
