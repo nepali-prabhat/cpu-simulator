@@ -211,6 +211,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 }));
             } else if (e.key === "Escape") {
                 setActiveElementType(undefined);
+                if (pointerRef.current?.wireId) {
+                    deleteWires([pointerRef.current.wireId]);
+                    pointerRef.current.wireId = undefined;
+                }
                 // setIsMenuOpen(false);
             } else if (!(e.ctrlKey || e.metaKey) && e.key === "r") {
                 rotateGhostElement(90);
@@ -238,6 +242,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             addToGeInputsCount,
             deleteSelectedElements,
             deleteSelectedWires,
+            deleteWires,
             moveSelectedElements,
         ]
     );
@@ -280,6 +285,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             viewportXY,
             offset
         );
+        const shiftPressed = e.shiftKey;
 
         const elementsMap = appState.elements;
         const initialSelectedElementIds = new Set<string>();
@@ -315,13 +321,13 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
             const selectBoundingBox = getBoundingRect(existingSelectedElements);
 
-            let preserveSelectBox = e.shiftKey;
+            let preserveSelectBox = shiftPressed;
             let clickedInsideSelectBox = isPointInsideBox(
                 canvasXY,
                 selectBoundingBox
             );
             if (selectBoundingBox) {
-                preserveSelectBox = e.shiftKey || clickedInsideSelectBox;
+                preserveSelectBox = shiftPressed || clickedInsideSelectBox;
             }
 
             let newSelectedElementIds = new Set<string>();
@@ -335,7 +341,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             let newSelectedWireIds = new Set<string>(initialSelectedWireIds);
-            if (!e.shiftKey || clickedInsideSelectBox) {
+            if (!shiftPressed || clickedInsideSelectBox) {
                 newSelectedWireIds.clear();
             }
 
