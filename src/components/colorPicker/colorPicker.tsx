@@ -1,4 +1,3 @@
-import { ColorTuple } from "@/colors";
 import { twMerge } from "tailwind-merge";
 
 const ColorButton = (props: {
@@ -12,8 +11,7 @@ const ColorButton = (props: {
             className={twMerge(
                 "rounded border border-gray-300 h-[24px] w-[24px]",
                 "hover:ring-1",
-                props.isSelected &&
-                `ring-2 ring-blue-200`
+                props.isSelected && `ring-2 ring-blue-200`
             )}
             style={{ background: props.color }}
         />
@@ -22,7 +20,7 @@ const ColorButton = (props: {
 
 export const ColorPicker = (props: {
     name: string;
-    defaultOptions: ColorTuple;
+    defaultOptions: string[];
     value: string | undefined;
     onChange: (v: string) => void;
 }) => {
