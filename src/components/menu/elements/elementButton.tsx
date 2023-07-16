@@ -2,8 +2,7 @@ import { HTMLAttributes, memo } from "react";
 import { ElementType } from "@/types";
 import { twMerge } from "tailwind-merge";
 import { useAtom, useSetAtom } from "jotai";
-import { selectedElementTypeAtom } from "@/state/ui";
-import { selectedElementIdsAtom } from "@/state/elements";
+import { selectedElementTypeAtom, selectedIdsAtom } from "@/state/ui";
 import { randomInteger } from "@/utils/random";
 import { ghostStateAtom } from "@/state/appState";
 
@@ -19,7 +18,7 @@ export const ElementTypeButton = memo(
             selectedElementTypeAtom
         );
         const setGhostState = useSetAtom(ghostStateAtom);
-        const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
+        const setSelectedElementIds = useSetAtom(selectedIdsAtom);
 
         const handleClick = () => {
             setActiveElement(props.type);

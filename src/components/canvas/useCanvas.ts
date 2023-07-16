@@ -8,7 +8,6 @@ import {
     Point,
     PointerState,
     GhostElement,
-    WireHighlight,
     WireHighlights,
 } from "@/types";
 import { renderCanvas } from "./render";
@@ -21,7 +20,11 @@ import {
     isBoxInsideAnotherBox,
     isPointInsideBox,
 } from "./utils";
-import { GRID_SPACE, ZOOM_STEP } from "@/constants/constants";
+import {
+    GRID_SPACE,
+    WIRES_SNAP_DISTANCE,
+    ZOOM_STEP,
+} from "@/constants/constants";
 import {
     sceneAtom,
     scrollAtom,
@@ -35,17 +38,15 @@ import {
     setGhostPosition as _setGhostPosition,
     showGhost,
 } from "@/state/appState";
-import {
-    moveSelectedElementsAtom,
-    selectedElementIdsAtom,
-} from "@/state/elements";
+import { moveSelectedElementsAtom } from "@/state/elements";
 
 import {
     addToActiveInputsCountAtom,
     rotateActiveElementConfigAtom,
     selectedElementTypeAtom,
+    selectedIdsAtom,
 } from "@/state/ui";
-import { getGridPoint, getNormalizedZoom } from "@/utils";
+import { areSamePoints, getGridPoint, getNormalizedZoom } from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import {
     addElementAtom,
@@ -57,11 +58,12 @@ import { WithRequired } from "@/utilTypes";
 import { nanoid } from "nanoid";
 import {
     addWireAtom,
+    deleteWiresAtom,
     highlightedWireIdsAtom,
     updateWireAtom,
 } from "@/state/wires";
 import { randomInteger } from "@/utils/random";
-import { getWiresAt } from "@/utils/wires";
+import { getWiresAt, lengthSquared } from "@/utils/wires";
 
 const gridSpace = GRID_SPACE;
 
@@ -78,7 +80,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const setGhostPosition = useSetAtom(_setGhostPosition);
     const setShowGhost = useSetAtom(showGhost);
     const setIsMenuOpen = useSetAtom(isMenuOpenAtom);
-    const setSelectedElementIds = useSetAtom(selectedElementIdsAtom);
+    const setSelectedElementIds = useSetAtom(selectedIdsAtom);
     const setElements = useSetAtom(elementsAtom);
     const setSelectRect = useSetAtom(selectRectAtom);
     const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
@@ -88,6 +90,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const addWire = useSetAtom(addWireAtom);
     const updateWire = useSetAtom(updateWireAtom);
+    const deleteWires = useSetAtom(deleteWiresAtom);
     const setHighlightedWireIds = useSetAtom(highlightedWireIdsAtom);
 
     const scroll = canvasProperties.scroll;
@@ -275,13 +278,18 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         );
 
         const elementsMap = appState.elements;
-        const initialSelectedElementIds = appState.selectedElementIds;
+        const initialSelectedElementIds = appState.selectedIds;
         const ghostElement = appState.ghostElement;
 
-        if (ghostElement && ghostElement.show && ghostElement.rect) {
+        const processGhostElement =
+            ghostElement && ghostElement.show && ghostElement.rect;
+
+        if (processGhostElement) {
             addElement(ghostElement as WithRequired<GhostElement, "rect">);
             setActiveElementType(undefined);
-        } else {
+        }
+
+        if (!processGhostElement) {
             const { topLevelElement } = getElementsAt(
                 { x: canvasXY.x, y: canvasXY.y },
                 Object.values(elementsMap)
@@ -325,6 +333,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             );
             const wireHighlights = appState.wireHighlights;
 
+            // Process wire
             let wireId;
             if (pinRect) {
                 wireId = nanoid();
@@ -338,7 +347,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     x: startPoint.x,
                     y: startPoint.y,
                 };
-                const points = [startPoint, endPoint];
+                const points: [Point, Point] = [startPoint, endPoint];
                 addWire({
                     uid: wireId,
                     zIndex: 0,
@@ -355,7 +364,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 if (highlight && highlight.projectedPoint) {
                     const touchingWireIds = [highlight.uid];
                     const touchingPinIds: string[] = [];
-                    const points: Point[] = [
+                    const points: [Point, Point] = [
                         highlight.projectedPoint,
                         canvasXY,
                     ];
@@ -420,6 +429,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const lockAxis =
                 e.shiftKey &&
                 wireId &&
+                appState.wires[wireId] &&
                 appState.wires[wireId].points.length > 1;
             const intersectedWires = getWiresAt(
                 lockAxis ? appState.wires[wireId!].points.at(1)! : canvasXY,
@@ -448,7 +458,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 y: canvasXY.y - lastPoint.y,
             };
 
-            const selectedElementIds = appState.selectedElementIds;
+            const selectedElementIds = appState.selectedIds;
 
             // If there is select Rect, change  its width and height
             let selectRect = appState.selectRect;
@@ -507,7 +517,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     // move the elements
                     const elementsMap = pointerRef.current.elementsMap;
                     const selectedElements = getSelectedElements({
-                        selectedElementIds,
+                        selectedIds: selectedElementIds,
                         elements: elementsMap,
                     });
                     for (let element of selectedElements) {
@@ -577,7 +587,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const handlePointerUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
         if (pointerRef.current) {
-            let selectedElementIds = appState.selectedElementIds;
+            let selectedElementIds = appState.selectedIds;
 
             let preserveSelectedElements =
                 e.shiftKey ||
@@ -608,37 +618,36 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             const wireId = pointerRef.current.wireId;
-            const newWire =
-                wireId &&
-                appState.wires[wireId] &&
-                appState.wires[wireId].points.at(1);
-            console.log("newWire: ", newWire, appState.wireHighlights);
-            if (newWire) {
-                const intersectedWires = getWiresAt(
-                    newWire,
+            const newWire = wireId && appState.wires[wireId];
+            let deleteNewWire =
+                newWire &&
+                (!pointerRef.current?.moved ||
+                    areSamePoints(...newWire.points) ||
+                    lengthSquared(...newWire.points) <= WIRES_SNAP_DISTANCE);
+
+            if (!deleteNewWire && newWire) {
+                const { wireHighlights } = getWiresAt(
+                    newWire.points[1],
                     Object.values(appState.wires)
                 );
-                const nearestHighlighted = minBy(
-                    intersectedWires.wireHighlights.filter(
-                        (v) => v.uid !== wireId
-                    ),
-                    (v) => v.length
-                );
-                console.log(
-                    "nearest highlight: ",
-                    nearestHighlighted,
-                    intersectedWires
-                );
-                if (nearestHighlighted && nearestHighlighted.projectedPoint) {
+                const { projectedPoint } =
+                    minBy(
+                        wireHighlights.filter((v) => v.uid !== wireId),
+                        (v) => v.length
+                    ) || {};
+
+                deleteNewWire =
+                    projectedPoint &&
+                    lengthSquared(newWire.points[0], projectedPoint) <=
+                    WIRES_SNAP_DISTANCE;
+
+                if (!deleteNewWire && projectedPoint) {
                     updateWire({
                         uid: wireId,
                         updater: (v) => {
                             let points = v.points;
-                            if (nearestHighlighted.projectedPoint) {
-                                points = [
-                                    v.points[0],
-                                    nearestHighlighted.projectedPoint,
-                                ];
+                            if (projectedPoint) {
+                                points = [v.points[0], projectedPoint];
                             }
                             return {
                                 points,
@@ -650,6 +659,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
             pointerRef.current = null;
 
+            if (deleteNewWire && wireId) {
+                deleteWires([wireId]);
+            }
             setSelectedElementIds(selectedElementIds);
             setSelectRect(undefined);
         }

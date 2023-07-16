@@ -172,7 +172,7 @@ export function isBoxInsideAnotherBox(
 export function getSelectedElements(
     appState: Pick<AppState, "selectedElementIds" | "elements">
 ) {
-    return filterElementsByIds(appState.selectedElementIds, appState.elements);
+    return filterElementsByIds(appState.selectedIds, appState.elements);
 }
 
 export function filterElementsByIds(

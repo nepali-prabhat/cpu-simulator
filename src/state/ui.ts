@@ -20,6 +20,8 @@ export const selectedElementTypeAtom = atomWithStorage<ElementType | undefined>(
     undefined
 );
 
+export const selectedIdsAtom = atom<Set<string>>(new Set<string>());
+
 export const elementConfigAtomAtom = atom((get) => {
     const selectedElementType = get(selectedElementTypeAtom);
     const elementDefaultsAtom = selectedElementType

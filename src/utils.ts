@@ -34,6 +34,10 @@ export function getGridPoint(
     return [x, y];
 }
 
+export function areSamePoints(p1: Point, p2: Point) {
+    return p1.x === p2.x && p1.y === p2.y;
+}
+
 export function convertTupleToPoint(tuple: [number, number]) {
     return { x: tuple[0], y: tuple[1] };
 }

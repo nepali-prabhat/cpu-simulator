@@ -1,3 +1,4 @@
+import { WIRES_SNAP_DISTANCE } from "@/constants/constants";
 import { WireHighlights, Point, Wire } from "@/types";
 
 function getDiagonalsOfRectFromPoints(p1: Point, p2: Point) {
@@ -58,7 +59,7 @@ function getDiagonalsOfRectFromPoints(p1: Point, p2: Point) {
     return diagonals;
 }
 
-function lengthSquared(p1: Point, p2: Point): number {
+export function lengthSquared(p1: Point, p2: Point): number {
     const deltaX = p2.x - p1.x;
     const deltaY = p2.y - p1.y;
     return deltaX * deltaX + deltaY * deltaY;
@@ -104,7 +105,7 @@ export function getWiresAt(coordinates: Point, wires: Wire[]) {
                     ? lengthSquared(coordinates, p1)
                     : lengthSquared(coordinates, projectedPoint);
 
-            const pushWire = projectionLengthSquared <= 49;
+            const pushWire = projectionLengthSquared <= WIRES_SNAP_DISTANCE;
             if (pushWire) {
                 intersectedWires.push(wire);
                 wireHighlights.push({

@@ -11,7 +11,7 @@ export const SELECT_PADDING = 0;
 
 // Development mode options
 export const GRID_SPACE = 20;
-export const GRID_TYPE: "dots" | "lines"|"" = "dots";
+export const GRID_TYPE: "dots" | "lines" | "" = "dots";
 
 // Used in palette
 export const paletteWidth = 200;
@@ -31,9 +31,10 @@ paletteTitleMap.set("actions", "Actions");
 paletteTitleMap.set("elements", "Logic Components");
 paletteTitleMap.set("circuit", "Circuits");
 
-
 // Constants for rendering gates
-export const PIN_LENGTH = 7.2/1.25;
-export const PIN_HEIGHT = 8/1.25;
+export const PIN_LENGTH = 7.2 / 1.25;
+export const PIN_HEIGHT = 8 / 1.25;
 
-export const DEBUG_BOUNDING_BOX = false
+export const WIRES_SNAP_DISTANCE = 7 * 7;
+
+export const DEBUG_BOUNDING_BOX = false;

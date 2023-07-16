@@ -8,7 +8,6 @@ export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
 );
 wiresAtom.debugLabel = "wires atom";
 
-export const selectedWiresAtom = atom(new Set<string>());
 export const highlightedWireIdsAtom = atom<WireHighlights>([]);
 
 export const addWireAtom = atom(null, (_, set, value: Wire) => {
@@ -33,3 +32,15 @@ export const updateWireAtom = atom(
         });
     }
 );
+
+export const deleteWiresAtom = atom(null, (get, set, uids: string[]) => {
+    const newWires: { [key: string]: Wire } = {};
+    const wires = get(wiresAtom);
+    for (let wire of Object.values(wires)) {
+        if (!uids.includes(wire.uid)) {
+            newWires[wire.uid] = wire;
+        }
+    }
+    set(wiresAtom, newWires);
+});
+

@@ -270,10 +270,10 @@ function renderSelectBox({
     context: CanvasRenderingContext2D;
 }) {
     const { scroll } = canvasProperties;
-    const { elements, selectedElementIds, selectRect } = appState;
+    const { elements, selectedIds: selectedElementIds, selectRect } = appState;
 
     const existingSelectedElements: Element[] = [];
-    appState.selectedElementIds.forEach((uid) => {
+    appState.selectedIds.forEach((uid) => {
         const element = appState.elements[uid];
         if (element) {
             existingSelectedElements.push(element);

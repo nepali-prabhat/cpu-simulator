@@ -4,10 +4,8 @@ import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { nanoid } from "nanoid";
 import { getElementRects } from "@/utils/box";
+import { selectedIdsAtom } from "./ui";
 
-export const selectedElementIdsAtom = atom<Set<Element["uid"]>>(
-    new Set<Element["uid"]>()
-);
 export const elementsAtom = atomWithStorage<{ [key: Element["uid"]]: Element }>(
     "elements",
     {}
@@ -31,7 +29,7 @@ export const addElementAtom = atom(
 );
 
 export const deleteSelectedElementsAtom = atom(null, (get, set) => {
-    const selectedElementIds = get(selectedElementIdsAtom);
+    const selectedElementIds = get(selectedIdsAtom);
     set(elementsAtom, (elements) => {
         const newElements: { [key: Element["uid"]]: Element } = {};
         for (let id of Object.keys(elements)) {
@@ -44,7 +42,7 @@ export const deleteSelectedElementsAtom = atom(null, (get, set) => {
 });
 
 export const selectedElementConfigAtomAtom = atom((get) => {
-    const selectedElementIds = get(selectedElementIdsAtom);
+    const selectedElementIds = get(selectedIdsAtom);
     if (selectedElementIds.size === 1) {
         for (let id of Object.values(Array.from(selectedElementIds))) {
             const elements = get(elementsAtom);
@@ -90,7 +88,7 @@ export const selectedElementConfigAtomAtom = atom((get) => {
 export const moveSelectedElementsAtom = atom(
     null,
     (get, set, value: [number, number]) => {
-        const selectedElementIds = get(selectedElementIdsAtom);
+        const selectedElementIds = get(selectedIdsAtom);
         const elements = get(elementsAtom);
         let updatedElements: AppState["elements"] = {};
         if (selectedElementIds.size > 0) {

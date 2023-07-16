@@ -79,7 +79,7 @@ export type ElementIntersectedRect = {
 };
 export type Wire = {
     uid: string;
-    points: Point[];
+    points: [Point, Point];
     zIndex: number;
     seed: number;
     touchingWireIds?: string[];
@@ -99,7 +99,7 @@ export type GhostElement = RenderableElement & {
 
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
-    selectedElementIds: Set<string>;
+    selectedIds: Set<string>;
     selectRect?: BoundingBox;
     ghostElement?: GhostElement;
     wires: { [key: Wire["uid"]]: Wire };
