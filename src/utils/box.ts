@@ -11,15 +11,53 @@ import {
     ElementIntersectedRect,
 } from "@/types";
 import { makeTransformationMatrix, transformRect } from "@/utils/transform";
-import {
-    applyToPoints,
-    compose,
-    translate,
-} from "transformation-matrix";
+import { applyToPoints, compose, translate } from "transformation-matrix";
 import { nanoid } from "nanoid";
 
-export function isPointInsideBox(point: Point, box: BoundingBox) {
-    const { x, y, width, height } = box;
+export function getPointsOfBoundingBox(box: BoundingBox) {
+    const p1 = { x: box.x, y: box.y };
+    const p2 = { x: box.x, y: box.y + box.height };
+    const p3 = { x: box.x + box.width, y: box.y + box.height };
+    const p4 = { x: box.x + box.width, y: box.y };
+
+    let tl: Point = p1;
+    let bl: Point;
+    let br: Point = p1;
+    let tr: Point;
+
+    for (let p of [p2, p3, p4]) {
+        if (p.x <= tl.x && p.y <= tl.y) {
+            tl = p;
+        }
+        if (p.x >= br.x && p.y >= br.y) {
+            br = p;
+        }
+    }
+
+    const height = br.y - tl.y;
+    const width = br.x - tl.x;
+    bl = { x: tl.x, y: tl.y + height };
+    tr = { x: tl.x + width, y: tl.y };
+
+    return {
+        tl,
+        bl,
+        br,
+        tr,
+        height,
+        width,
+    };
+}
+
+export function isPointInsideBox(
+    point: Point,
+    box: BoundingBox,
+) {
+    const points = getPointsOfBoundingBox(box);
+    const x = points.tl.x;
+    const y = points.tl.y;
+    const width = points.width;
+    const height = points.height;
     return (
         point.x >= x &&
         point.x <= x + width &&

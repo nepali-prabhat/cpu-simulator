@@ -1,7 +1,7 @@
 import { WireHighlights, Wire } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { selectedElementIdsAtom, selectedWireIdsAtom } from "./ui";
+import { selectedWireIdsAtom } from "./ui";
 
 export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     "wires",

@@ -8,6 +8,7 @@ import {
     PointerState,
     GhostElement,
     WireHighlights,
+    Wire,
 } from "@/types";
 import { renderCanvas } from "./render";
 import {
@@ -46,7 +47,12 @@ import {
     selectedElementIdsAtom,
     selectedWireIdsAtom,
 } from "@/state/ui";
-import { areSamePoints, getGridPoint, getNormalizedZoom } from "@/utils";
+import {
+    areSamePoints,
+    getGridPoint,
+    getNormalizedZoom,
+    lengthSquared,
+} from "@/utils";
 import { isMenuOpenAtom } from "@/state/ui";
 import {
     addElementAtom,
@@ -64,7 +70,7 @@ import {
     updateWireAtom,
 } from "@/state/wires";
 import { randomInteger } from "@/utils/random";
-import { getWiresAt, lengthSquared } from "@/utils/wires";
+import { getWiresAt, getWiresIntersectingBox } from "@/utils/wires";
 
 const gridSpace = GRID_SPACE;
 
@@ -483,6 +489,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             };
 
             const newSelectedElementIds = new Set(appState.selectedElementIds);
+            const newSelectedWireIds = new Set(appState.selectedWireIds);
 
             // If there is select Rect, change  its width and height
             let selectRect = appState.selectRect;
@@ -536,6 +543,15 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                             newSelectedElementIds.add(element.uid);
                         }
                     }
+
+                    const { intersectingWireIds } = getWiresIntersectingBox(
+                        Object.values(appState.wires),
+                        selectRect
+                    );
+                    console.log("intersectingWireIds: ", intersectingWireIds);
+                    intersectingWireIds.forEach((uid) =>
+                        newSelectedWireIds.add(uid)
+                    );
                 } else {
                     // move the elements
                     const elementsMap = pointerRef.current.elementsMap;
@@ -602,6 +618,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             };
             setElements(elementsSnappedToGrid);
             setSelectedElementIds(newSelectedElementIds);
+            setSelectedWireIds(newSelectedWireIds);
             setSelectRect(selectRect);
         }
     };
@@ -639,11 +656,24 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 newSelectedElementIds.delete(clickedElement.uid);
             }
 
-            const preserveSelectedElement = shiftPressed;
-            if (!preserveSelectedElement) {
+            const preserveSelectedWires = shiftPressed;
+            if (!preserveSelectedWires) {
                 newSelectedWireIds.clear();
             }
 
+            if (appState.selectRect) {
+                const wires: Wire[] = [];
+                for (let uid of Array.from(appState.selectedWireIds)) {
+                    appState.wires[uid] && wires.push(appState.wires[uid]);
+                }
+                const { intersectingWireIds } = getWiresIntersectingBox(
+                    wires,
+                    appState.selectRect
+                );
+                intersectingWireIds.forEach((uid) =>
+                    newSelectedWireIds.add(uid)
+                );
+            }
             for (let { uid } of appState.wireHighlights) {
                 if (initialSelectedWireIds.has(uid)) {
                     newSelectedWireIds.delete(uid);
