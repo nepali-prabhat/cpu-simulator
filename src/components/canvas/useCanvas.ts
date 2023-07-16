@@ -58,6 +58,7 @@ import { WithRequired } from "@/utilTypes";
 import { nanoid } from "nanoid";
 import {
     addWireAtom,
+    deleteSelectedWiresAtom,
     deleteWiresAtom,
     highlightedWireIdsAtom,
     updateWireAtom,
@@ -86,6 +87,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const rotateGhostElement = useSetAtom(rotateActiveElementConfigAtom);
     const addToGeInputsCount = useSetAtom(addToActiveInputsCountAtom);
     const deleteSelectedElements = useSetAtom(deleteSelectedElementsAtom);
+    const deleteSelectedWires = useSetAtom(deleteSelectedWiresAtom);
     const moveSelectedElements = useSetAtom(moveSelectedElementsAtom);
 
     const addWire = useSetAtom(addWireAtom);
@@ -218,6 +220,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 addToGeInputsCount(-1);
             } else if (e.key === "Backspace") {
                 deleteSelectedElements();
+                deleteSelectedWires();
             } else if (e.key === "ArrowUp") {
                 moveSelectedElements([0, -GRID_SPACE]);
             } else if (e.key === "ArrowDown") {
@@ -234,6 +237,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             rotateGhostElement,
             addToGeInputsCount,
             deleteSelectedElements,
+            deleteSelectedWires,
             moveSelectedElements,
         ]
     );
@@ -290,7 +294,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         }
 
         if (!processGhostElement) {
-            const { topLevelElement } = getElementsAt(
+            const { topLevelElement: clickedElement } = getElementsAt(
                 { x: canvasXY.x, y: canvasXY.y },
                 Object.values(elementsMap)
             );
@@ -303,30 +307,30 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const selectBoundingBox = getBoundingRect(existingSelectedElements);
 
             let preserveSelectBox = e.shiftKey;
-            let isClickedInsideSelectBox = isPointInsideBox(
+            let clickedInsideSelectBox = isPointInsideBox(
                 canvasXY,
                 selectBoundingBox
             );
             if (selectBoundingBox) {
-                preserveSelectBox = e.shiftKey || isClickedInsideSelectBox;
+                preserveSelectBox = e.shiftKey || clickedInsideSelectBox;
             }
 
-            const newSelectedElementIds = new Set<string>([
-                ...(topLevelElement && (!isClickedInsideSelectBox || e.shiftKey)
-                    ? [topLevelElement.uid]
-                    : []),
-                ...(preserveSelectBox
-                    ? Array.from(initialSelectedElementIds)
-                    : []),
-            ]);
+            let newSelectedElementIds = new Set<string>();
+            if (preserveSelectBox) {
+                newSelectedElementIds = new Set(initialSelectedElementIds);
+            }
 
-            const intersectedElementRect =
-                topLevelElement && newSelectedElementIds.size <= 1
-                    ? getIntersectedRectOfElement(topLevelElement, [
-                        canvasXY.x,
-                        canvasXY.y,
-                    ])
-                    : undefined;
+            const addClickedElement = !clickedInsideSelectBox || e.shiftKey;
+            if (clickedElement && addClickedElement) {
+                newSelectedElementIds.add(clickedElement.uid);
+            }
+
+            const intersectedElementRect = clickedElement
+                ? getIntersectedRectOfElement(clickedElement, [
+                    canvasXY.x,
+                    canvasXY.y,
+                ])
+                : undefined;
 
             const pinRect = intersectedElementRect?.find((v) =>
                 ["output", "input", "select"].includes(v.type)
@@ -334,8 +338,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const wireHighlights = appState.wireHighlights;
 
             // Process wire
+            const processWire =
+                initialSelectedElementIds.size === 0 && !preserveSelectBox;
             let wireId;
-            if (pinRect) {
+            if (processWire && pinRect) {
                 wireId = nanoid();
                 const touchingPinIds = [pinRect.uid];
                 const touchingWireIds: string[] = [];
@@ -356,7 +362,8 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     touchingWireIds,
                     points,
                 });
-            } else if (wireHighlights?.length) {
+            }
+            if (processWire && !pinRect && wireHighlights?.length) {
                 wireId = nanoid();
                 const highlight = wireHighlights.find(
                     (v) => v.projectedPoint !== undefined
@@ -380,7 +387,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             let selectRect: AppState["selectRect"] = undefined;
-            if (!topLevelElement && !isClickedInsideSelectBox && !wireId) {
+            if (!clickedElement && !clickedInsideSelectBox && !wireId) {
                 selectRect = {
                     x: canvasXY.x,
                     y: canvasXY.y,
@@ -402,7 +409,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     canvasXY,
                 },
                 intersectedElementRect,
-                intersectedElement: topLevelElement,
+                intersectedElement: clickedElement,
                 wireId,
             };
 
@@ -538,8 +545,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             let elementsSnappedToGrid: AppState["elements"] = {
                 ...appState.elements,
             };
-            let newMovedElementIds: Set<string> =
-                pointerRef.current.movedElementIds;
+            let movedElementIds: Set<string> = new Set(
+                pointerRef.current.movedElementIds
+            );
             for (let uid in appState.elements) {
                 const originalElement = appState.elements[uid];
                 const element = updatedSelectedElements[uid];
@@ -560,7 +568,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                         newPosition[0] !== originalElement.rect[0] ||
                         newPosition[1] !== originalElement.rect[1]
                     ) {
-                        newMovedElementIds.add(uid);
+                        movedElementIds.add(uid);
                     }
                 }
             }
@@ -571,7 +579,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     ...pointerRef.current.elementsMap,
                     ...updatedSelectedElements,
                 },
-                movedElementIds: newMovedElementIds,
+                movedElementIds,
                 wireId,
                 moved: true,
                 lastPoint: canvasXY,
@@ -586,39 +594,42 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     };
 
     const handlePointerUp: React.MouseEventHandler<HTMLCanvasElement> = (e) => {
+        const shiftPressed = e.shiftKey;
         if (pointerRef.current) {
-            let selectedElementIds = appState.selectedIds;
+            let newSelectedElementIds = new Set(appState.selectedIds);
 
+            const {
+                movedElementIds,
+                intersectedElement: clickedElement,
+                initialSelectedElementIds,
+            } = pointerRef.current;
+
+            const elementsMoved = movedElementIds.size > 1;
+            const hadPriorSelections = initialSelectedElementIds.size > 1;
             let preserveSelectedElements =
-                e.shiftKey ||
-                pointerRef.current.movedElementIds.size > 1 ||
-                pointerRef.current.initialSelectedElementIds.size < 2;
-
-            const topLevelElement = pointerRef.current.intersectedElement;
+                shiftPressed || elementsMoved || !hadPriorSelections;
 
             if (!preserveSelectedElements) {
-                selectedElementIds = new Set<string>(
-                    topLevelElement ? [topLevelElement?.uid] : []
-                );
-            } else {
-                if (
-                    topLevelElement &&
-                    pointerRef.current.movedElementIds.size < 1 &&
-                    pointerRef.current?.initialSelectedElementIds.size > 1 &&
-                    pointerRef.current?.initialSelectedElementIds.has(
-                        topLevelElement.uid
-                    )
-                ) {
-                    selectedElementIds = new Set<string>(
-                        Array.from(selectedElementIds).filter(
-                            (id) => id !== topLevelElement.uid
-                        )
-                    );
-                }
+                newSelectedElementIds.clear();
+                clickedElement && newSelectedElementIds.add(clickedElement.uid);
+            }
+            if (
+                shiftPressed &&
+                clickedElement &&
+                !elementsMoved &&
+                initialSelectedElementIds.has(clickedElement.uid)
+            ) {
+                newSelectedElementIds.delete(clickedElement.uid);
+            }
+
+            if (shiftPressed && appState.wireHighlights.length > 0) {
+                !shiftPressed && newSelectedElementIds.clear();
+                newSelectedElementIds.add(appState.wireHighlights[0].uid);
             }
 
             const wireId = pointerRef.current.wireId;
             const newWire = wireId && appState.wires[wireId];
+
             let deleteNewWire =
                 newWire &&
                 (!pointerRef.current?.moved ||
@@ -641,6 +652,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     lengthSquared(newWire.points[0], projectedPoint) <=
                     WIRES_SNAP_DISTANCE;
 
+
                 if (!deleteNewWire && projectedPoint) {
                     updateWire({
                         uid: wireId,
@@ -662,7 +674,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             if (deleteNewWire && wireId) {
                 deleteWires([wireId]);
             }
-            setSelectedElementIds(selectedElementIds);
+            setSelectedElementIds(newSelectedElementIds);
             setSelectRect(undefined);
         }
     };

@@ -143,9 +143,10 @@ function renderWires({
                 (p) => [p.x, p.y] as [number, number]
             );
             const highlight = wireHighlightsMap[wire.uid];
-            let strokeColor = highlight
-                ? getHighlightFGColor(bgColor)
-                : "black";
+            let strokeColor =
+                highlight || appState.selectedIds.has(wire.uid)
+                    ? getHighlightFGColor(bgColor)
+                    : "black";
 
             rc?.linearPath(paths, {
                 seed,

@@ -35,6 +35,6 @@ paletteTitleMap.set("circuit", "Circuits");
 export const PIN_LENGTH = 7.2 / 1.25;
 export const PIN_HEIGHT = 8 / 1.25;
 
-export const WIRES_SNAP_DISTANCE = 7 * 7;
+export const WIRES_SNAP_DISTANCE = 10 * 10;
 
 export const DEBUG_BOUNDING_BOX = false;

@@ -1,6 +1,7 @@
 import { WireHighlights, Wire } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
+import { selectedIdsAtom } from "./ui";
 
 export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     "wires",
@@ -44,3 +45,14 @@ export const deleteWiresAtom = atom(null, (get, set, uids: string[]) => {
     set(wiresAtom, newWires);
 });
 
+export const deleteSelectedWiresAtom = atom(null, (get, set) => {
+    const uids = get(selectedIdsAtom);
+    const newWires: { [key: string]: Wire } = {};
+    const wires = get(wiresAtom);
+    for (let wire of Object.values(wires)) {
+        if (!uids.has(wire.uid)) {
+            newWires[wire.uid] = wire;
+        }
+    }
+    set(wiresAtom, newWires);
+});

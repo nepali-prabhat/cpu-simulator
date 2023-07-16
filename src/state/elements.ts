@@ -27,7 +27,6 @@ export const addElementAtom = atom(
         set(elementsAtom, (v) => ({ ...v, [uid]: element }));
     }
 );
-
 export const deleteSelectedElementsAtom = atom(null, (get, set) => {
     const selectedElementIds = get(selectedIdsAtom);
     set(elementsAtom, (elements) => {

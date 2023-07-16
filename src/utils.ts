@@ -45,3 +45,4 @@ export function convertTupleToPoint(tuple: [number, number]) {
 export function convertPointToTuple(point: Point): [number, number] {
     return [point.x, point.y];
 }
+
