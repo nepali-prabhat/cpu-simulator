@@ -282,7 +282,16 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
         );
 
         const elementsMap = appState.elements;
-        const initialSelectedElementIds = appState.selectedIds;
+        const initialSelectedElementIds = new Set<string>();
+        const initialSelectedWireIds = new Set<string>();
+        for (let uid of Array.from(appState.selectedIds)) {
+            if (appState.elements[uid]) {
+                initialSelectedElementIds.add(uid);
+            } else if (appState.wires[uid]) {
+                initialSelectedWireIds.add(uid);
+            }
+        }
+
         const ghostElement = appState.ghostElement;
 
         const processGhostElement =
@@ -323,6 +332,11 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             const addClickedElement = !clickedInsideSelectBox || e.shiftKey;
             if (clickedElement && addClickedElement) {
                 newSelectedElementIds.add(clickedElement.uid);
+            }
+
+            let newSelectedWireIds = new Set<string>(initialSelectedWireIds);
+            if (!e.shiftKey || clickedInsideSelectBox) {
+                newSelectedWireIds.clear();
             }
 
             const intersectedElementRect = clickedElement
@@ -413,7 +427,13 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 wireId,
             };
 
-            !wireId && setSelectedElementIds(newSelectedElementIds);
+            !wireId &&
+                setSelectedElementIds(
+                    new Set([
+                        ...Array.from(newSelectedElementIds),
+                        ...Array.from(newSelectedWireIds),
+                    ])
+                );
             setSelectRect(selectRect);
         }
     };
@@ -610,7 +630,11 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 shiftPressed || elementsMoved || !hadPriorSelections;
 
             if (!preserveSelectedElements) {
-                newSelectedElementIds.clear();
+                newSelectedElementIds = new Set(
+                    Array.from(newSelectedElementIds).filter(
+                        (v) => !appState.elements[v]
+                    )
+                );
                 clickedElement && newSelectedElementIds.add(clickedElement.uid);
             }
             if (
@@ -622,8 +646,14 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 newSelectedElementIds.delete(clickedElement.uid);
             }
 
-            if (shiftPressed && appState.wireHighlights.length > 0) {
-                !shiftPressed && newSelectedElementIds.clear();
+            if (appState.wireHighlights.length > 0) {
+                if (!shiftPressed) {
+                    newSelectedElementIds = new Set(
+                        Array.from(newSelectedElementIds).filter(
+                            (v) => !appState.wires[v]
+                        )
+                    );
+                }
                 newSelectedElementIds.add(appState.wireHighlights[0].uid);
             }
 
@@ -651,7 +681,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     projectedPoint &&
                     lengthSquared(newWire.points[0], projectedPoint) <=
                     WIRES_SNAP_DISTANCE;
-
 
                 if (!deleteNewWire && projectedPoint) {
                     updateWire({
