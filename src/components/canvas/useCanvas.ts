@@ -548,7 +548,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                         Object.values(appState.wires),
                         selectRect
                     );
-                    console.log("intersectingWireIds: ", intersectingWireIds);
                     intersectingWireIds.forEach((uid) =>
                         newSelectedWireIds.add(uid)
                     );
