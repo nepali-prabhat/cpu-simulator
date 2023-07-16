@@ -2,7 +2,12 @@ import { BoundingBox, GhostElement, AppState, ElementType } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { elementsAtom } from "./elements";
-import { elementConfigAtomAtom, selectedIdsAtom } from "./ui";
+import {
+    elementConfigAtomAtom,
+    selectedElementIdsAtom,
+    selectedPinIdsAtom,
+    selectedWireIdsAtom,
+} from "./ui";
 import { getElementRects } from "@/utils/box";
 import { highlightedWireIdsAtom, wiresAtom } from "./wires";
 
@@ -66,10 +71,17 @@ export const showGhost = atom(null, (_, set, value: boolean) => {
 export const appStateAtom = atom<AppState>((get) => {
     return {
         elements: get(elementsAtom),
-        selectedIds: get(selectedIdsAtom),
-        selectRect: get(selectRectAtom),
-        ghostElement: get(ghostElementAtom),
-        wires: get(wiresAtom),
+
+        selectedElementIds: get(selectedElementIdsAtom),
+        selectedWireIds: get(selectedWireIdsAtom),
+        selectedPinIds: get(selectedPinIdsAtom),
+
         wireHighlights: get(highlightedWireIdsAtom),
+
+        selectRect: get(selectRectAtom),
+
+        ghostElement: get(ghostElementAtom),
+
+        wires: get(wiresAtom),
     };
 });

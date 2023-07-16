@@ -20,7 +20,9 @@ export const selectedElementTypeAtom = atomWithStorage<ElementType | undefined>(
     undefined
 );
 
-export const selectedIdsAtom = atom<Set<string>>(new Set<string>());
+export const selectedElementIdsAtom = atom<Set<string>>(new Set<string>());
+export const selectedWireIdsAtom = atom<Set<string>>(new Set<string>());
+export const selectedPinIdsAtom = atom<Set<string>>(new Set<string>());
 
 export const elementConfigAtomAtom = atom((get) => {
     const selectedElementType = get(selectedElementTypeAtom);

@@ -126,6 +126,7 @@ function renderWires({
 }) {
     const wires = appState.wires;
     const wireHighlights = appState.wireHighlights;
+    const selectedWireIds = appState.selectedWireIds;
     const wireHighlightsMap: { [key: string]: WireHighlight } = {};
     for (let wh of wireHighlights) {
         wireHighlightsMap[wh.uid] = wh;
@@ -144,7 +145,7 @@ function renderWires({
             );
             const highlight = wireHighlightsMap[wire.uid];
             let strokeColor =
-                highlight || appState.selectedIds.has(wire.uid)
+                highlight || selectedWireIds.has(wire.uid)
                     ? getHighlightFGColor(bgColor)
                     : "black";
 
@@ -271,10 +272,14 @@ function renderSelectBox({
     context: CanvasRenderingContext2D;
 }) {
     const { scroll } = canvasProperties;
-    const { elements, selectedIds: selectedElementIds, selectRect } = appState;
+    const {
+        elements,
+        selectedElementIds: selectedElementIds,
+        selectRect,
+    } = appState;
 
     const existingSelectedElements: Element[] = [];
-    appState.selectedIds.forEach((uid) => {
+    appState.selectedElementIds.forEach((uid) => {
         const element = appState.elements[uid];
         if (element) {
             existingSelectedElements.push(element);

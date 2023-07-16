@@ -99,7 +99,9 @@ export type GhostElement = RenderableElement & {
 
 export type AppState = {
     elements: { [key: Element["uid"]]: Element };
-    selectedIds: Set<string>;
+    selectedElementIds: Set<string>;
+    selectedWireIds: Set<string>;
+    selectedPinIds: Set<string>;
     selectRect?: BoundingBox;
     ghostElement?: GhostElement;
     wires: { [key: Wire["uid"]]: Wire };
@@ -108,7 +110,6 @@ export type AppState = {
 export type PointerState = {
     moved: boolean;
     movedElementIds: Set<string>;
-    initialSelectedElementIds: Set<string>;
     elementsMap: AppState["elements"];
     wireId?: string;
     timeStamp: number;
@@ -116,6 +117,9 @@ export type PointerState = {
     initial: {
         viewportXY: Point;
         canvasXY: Point;
+        selectedElementIds: Set<string>;
+        selectedWireIds: Set<string>;
+        selectedPinIds: Set<string>;
     };
     boundingBox?: BoundingBox;
     intersectedElementRect?: ElementIntersectedRect[];
