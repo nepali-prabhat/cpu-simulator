@@ -299,7 +299,9 @@ const ElementConfigSection = (
                         </label>
                         <div id={inputConstants.color?.id}>
                             <ColorPicker
-                                defaultOptions={ELEMENTS_COLOR_PALETTE}
+                                defaultOptions={ELEMENTS_COLOR_PALETTE.map(
+                                    (v) => v
+                                )}
                                 name="elementColor"
                                 value={color}
                                 onChange={(color) => {
