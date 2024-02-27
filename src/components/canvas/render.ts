@@ -104,11 +104,13 @@ export function renderCanvas({
         rc,
     });
 
-    rc?.circle(0 + scroll.x, 0 + scroll.y, 5, {
+    /* 
+     rc?.circle(0 + scroll.x, 0 + scroll.y, 5, {
         fill: "black",
         seed: 1,
         stroke: COLOR_PALETTE.blue[2],
     });
+    */
 
     context.restore();
 }

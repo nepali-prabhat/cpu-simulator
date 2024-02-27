@@ -7,7 +7,7 @@ import {
     Point,
 } from "@/types";
 import { getGridPoint } from "@/utils";
-import { convertRectToBox } from "@/utils/box";
+import { convertRectToBox, isPointInsideBox } from "@/utils/box";
 
 export function getElementsAt(coordinates: Point, elements: Element[]) {
     const { x: canvasX, y: canvasY } = coordinates;
@@ -109,31 +109,6 @@ export function getBoundingRect(elements: Element[]) {
         } as BoundingBox;
     }
     return;
-}
-
-export function isPointInsideBox(point: Point, boundingBox?: BoundingBox) {
-    if (boundingBox) {
-        // if box has negative widths, recalculate box x, y coordinates
-        let box: BoundingBox = { ...boundingBox };
-        if (boundingBox.width < 0) {
-            box = { ...box, x: box.x + box.width, width: Math.abs(box.width) };
-        }
-        if (boundingBox.height < 0) {
-            box = {
-                ...box,
-                y: box.y + box.height,
-                height: Math.abs(box.height),
-            };
-        }
-
-        return (
-            point.x >= box.x &&
-            point.x <= box.x + box.width &&
-            point.y >= box.y &&
-            point.y <= box.y + box.height
-        );
-    }
-    return false;
 }
 
 export function isBoxInsideAnotherBox(

@@ -1,4 +1,4 @@
-import { GRID_SPACE, MAX_ZOOM, MIN_ZOOM } from "./constants/constants";
+import { GRID_SPACE, MAX_ZOOM, MIN_ZOOM, SNAP_ELEMENTS } from "./constants/constants";
 import { NormalizedZoomValue, Point } from "./types";
 
 export function mergeRefs<T = any>(
@@ -25,7 +25,7 @@ export function getGridPoint(
     y: number,
     gridSize: number | null = GRID_SPACE
 ): [number, number] {
-    if (gridSize) {
+    if (gridSize && SNAP_ELEMENTS) {
         return [
             Math.round(x / gridSize) * gridSize,
             Math.round(y / gridSize) * gridSize,

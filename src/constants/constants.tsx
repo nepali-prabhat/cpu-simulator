@@ -10,13 +10,13 @@ export const SELECT_SIZE = 2;
 export const SELECT_PADDING = 0;
 
 // Development mode options
-export const GRID_SPACE = 20;
+export const GRID_SPACE = 20; //20
 export const GRID_TYPE: "dots" | "lines" | "" = "dots";
+export const SNAP_ELEMENTS = false;
 
 // Used in palette
 export const paletteWidth = 200;
 export const tabs: PaletteTab[] = ["actions", "elements", "circuit"];
-export const scrollWidth = 8;
 
 // Ids used to scroll circuits list to the bottom once a circuit is added.
 export const circuitsMenuListId = "circuits-menu-list-id";

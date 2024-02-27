@@ -52,10 +52,10 @@ export const APP_BG_FG_COLOR_MAP: {
     // "#ffffff": ["gray", 3],
 
     [oc.gray[0]]: ["gray", 3],
-    [oc.cyan[0]]: ["blue", 2],
-    [oc.green[0]]: ["green", 3],
-    [oc.yellow[0]]: ["orange", 2],
-    [oc.pink[0]]: ["red", 2],
+    [oc.blue[0]]: ["blue", 2],
+    [oc.green[0]]: ["green", 2],
+    [oc.orange[0]]: ["orange", 2],
+    [oc.red[0]]: ["red", 2],
 };
 export const APP_BG_COLOR_PALETTE = Object.keys(APP_BG_FG_COLOR_MAP);
 

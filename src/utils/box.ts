@@ -49,7 +49,7 @@ export function getPointsOfBoundingBox(box: BoundingBox) {
     };
 }
 
-export function isPointInsideBox(
+/* export function isPointInsideBox(
     point: Point,
     box: BoundingBox,
 ) {
@@ -64,6 +64,31 @@ export function isPointInsideBox(
         point.y >= y &&
         point.y <= y + height
     );
+} */
+
+export function isPointInsideBox(point: Point, boundingBox?: BoundingBox) {
+    if (boundingBox) {
+        // if box has negative widths, recalculate box x, y coordinates
+        let box: BoundingBox = { ...boundingBox };
+        if (boundingBox.width < 0) {
+            box = { ...box, x: box.x + box.width, width: Math.abs(box.width) };
+        }
+        if (boundingBox.height < 0) {
+            box = {
+                ...box,
+                y: box.y + box.height,
+                height: Math.abs(box.height),
+            };
+        }
+
+        return (
+            point.x >= box.x &&
+            point.x <= box.x + box.width &&
+            point.y >= box.y &&
+            point.y <= box.y + box.height
+        );
+    }
+    return false;
 }
 
 export function getRectFromDiagonals(

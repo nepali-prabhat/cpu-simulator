@@ -66,10 +66,15 @@ export const dotsGrid = (
     context.fillStyle = bgColor || strokeColor + "00";
     context.strokeStyle = strokeColor;
     context.beginPath();
+    
+    // caluclate the number of dots
     const a = offsetX + width + gridSize * 2;
     const b = offsetY + height + gridSize * 2;
-    const numberOfLoops = (a * b) / gridSize / (gridSize ^ 2);
-    const useRc = numberOfLoops < 2500;
+    const numberOfDots = (a * b) / gridSize / (gridSize ^ 2);
+
+    // use rough canvas based on number of dots to draw.
+    const useRc = numberOfDots < 2500;
+    
     for (let x = offsetX; x < a; x += gridSize) {
         for (let y = offsetY; y < b; y += gridSize) {
             if (useRc && rc && zoom > 0.75) {
