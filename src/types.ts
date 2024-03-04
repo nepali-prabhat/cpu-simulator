@@ -91,6 +91,7 @@ export type WireHighlight = {
     length?: number;
 };
 export type WireHighlights = WireHighlight[];
+export type WireHandle = { wireId: Wire["uid"]; xy: Point; pointIndex: 0 | 1 };
 
 export type GhostElement = RenderableElement & {
     show?: boolean;
@@ -106,12 +107,14 @@ export type AppState = {
     ghostElement?: GhostElement;
     wires: { [key: Wire["uid"]]: Wire };
     wireHighlights: WireHighlights;
+    wireHandles: WireHandle[];
 };
 export type PointerState = {
     moved: boolean;
     movedElementIds: Set<string>;
     elementsMap: AppState["elements"];
-    wireId?: string;
+    newWireId?: string;
+    wireHandlesClicked?: WireHandle[];
     timeStamp: number;
     lastPoint: Point;
     initial: {
@@ -136,9 +139,9 @@ export type MenuState = {
 
 export type SetViewportZoom =
     | ((
-        zoom: number,
-        dimension: Dimension
-    ) => number | { zoom: number; viewport: Point })
+          zoom: number,
+          dimension: Dimension
+      ) => number | { zoom: number; viewport: Point })
     | number;
 
 export type Circuit = {

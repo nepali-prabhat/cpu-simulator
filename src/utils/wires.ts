@@ -52,3 +52,16 @@ export function getWiresAt(coordinates: Point, wires: Wire[]) {
         wireHighlights,
     };
 }
+
+export function clampWiresToAxis(fixedPoint: Point, movingPoint: Point) {
+    return Math.abs(fixedPoint.x - movingPoint.x) >
+        Math.abs(fixedPoint.y - movingPoint.y)
+        ? {
+              x: movingPoint.x,
+              y: fixedPoint.y,
+          }
+        : {
+              x: fixedPoint.x,
+              y: movingPoint.y,
+          };
+}

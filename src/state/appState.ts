@@ -9,17 +9,17 @@ import {
     selectedWireIdsAtom,
 } from "./ui";
 import { getElementRects } from "@/utils/box";
-import { highlightedWireIdsAtom, wiresAtom } from "./wires";
+import { highlightedWireIdsAtom, wireHandlesAtom, wiresAtom } from "./wires";
 
 export const selectRectAtom = atom<BoundingBox | undefined>(undefined);
 
 export const ghostStateAtom = atomWithStorage<
     | {
-        position?: [number, number];
-        seed: number;
-        show: boolean;
-        type: ElementType;
-    }
+          position?: [number, number];
+          seed: number;
+          show: boolean;
+          type: ElementType;
+      }
     | undefined
 >("ghost_atom_state", undefined);
 ghostStateAtom.debugLabel = "ghostStateAtom";
@@ -76,6 +76,7 @@ export const appStateAtom = atom<AppState>((get) => {
         selectedWireIds: get(selectedWireIdsAtom),
         selectedPinIds: get(selectedPinIdsAtom),
 
+        wireHandles: get(wireHandlesAtom),
         wireHighlights: get(highlightedWireIdsAtom),
 
         selectRect: get(selectRectAtom),

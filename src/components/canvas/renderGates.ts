@@ -53,7 +53,7 @@ function drawGate({
     seed += 1;
     const ghostElementColor = isGhostElement ? GHOST_ELEMENT_COLOR : undefined;
     const bgColor = canvasProperties.bgColor || "#fff";
-    const roughness = 0.2;
+    const roughness = .5;
     const hachureGap = 4;
     const info = elementsInfo.get(config.type);
     const elementColor = config.color || "#000";
@@ -112,8 +112,8 @@ function drawGate({
         seed,
         roughness,
         bowing: 20,
-        fill: bgColor,
-        fillStyle: "solid",
+        // fill: bgColor,
+        // fillStyle: "solid",
         strokeWidth: 1 * (config.scale || 1),
         stroke: ghostElementColor,
     };

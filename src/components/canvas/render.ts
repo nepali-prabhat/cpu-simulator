@@ -127,6 +127,7 @@ function renderWires({
     rc: RoughCanvas | null;
 }) {
     const wires = appState.wires;
+    const wireHandles = appState.wireHandles;
     const wireHighlights = appState.wireHighlights;
     const selectedWireIds = appState.selectedWireIds;
     const wireHighlightsMap: { [key: string]: WireHighlight } = {};
@@ -138,18 +139,17 @@ function renderWires({
     for (let wireId in wires) {
         const wire = wires[wireId];
         const seed = wire.seed || 1;
+        const isSelected = selectedWireIds.has(wire.uid);
         if (wire.points.length > 1) {
             context.save();
             context.translate(scroll.x, scroll.y);
-            // TODO: render a line
             const paths = wire.points.map(
                 (p) => [p.x, p.y] as [number, number]
             );
             const highlight = wireHighlightsMap[wire.uid];
-            let strokeColor =
-                highlight || selectedWireIds.has(wire.uid)
-                    ? getHighlightFGColor(bgColor)
-                    : "black";
+            let strokeColor = isSelected
+                ? getHighlightFGColor(bgColor)
+                : "black";
 
             rc?.linearPath(paths, {
                 seed,
@@ -157,13 +157,24 @@ function renderWires({
                 fillStyle: "solid",
                 stroke: strokeColor,
             });
-            for (let path of paths) {
-                rc?.circle(path[0], path[1], 2, {
-                    seed,
-                    roughness: 0.5,
-                    stroke: strokeColor,
-                });
+            if (!isSelected) {
+                for (let path of paths) {
+                    rc?.circle(path[0], path[1], 2, {
+                        seed,
+                        roughness: 0.5,
+                        stroke: strokeColor,
+                    });
+                }
             }
+            if (isSelected) {
+                context.font = "5px Arial";
+                context.fillText(
+                    wire.uid.slice(0, 4),
+                    paths[0][0],
+                    paths[0][1]
+                );
+            }
+
             if (highlight && highlight.projectedPoint) {
                 rc?.circle(
                     highlight.projectedPoint.x,
@@ -179,6 +190,24 @@ function renderWires({
             }
             context.restore();
         }
+    }
+    for (let wireHandle of wireHandles) {
+        const point = wireHandle.xy;
+        const wire = wires[wireHandle.wireId];
+        if(!wire || !point){
+            continue;
+        }
+        context.save();
+        context.translate(scroll.x, scroll.y);
+        let strokeColor = getHighlightFGColor(bgColor);
+        rc?.circle(point.x, point.y, 4, {
+            seed: wire.seed,
+            roughness: 0.5,
+            stroke: strokeColor,
+            fillStyle: "solid",
+            fill: strokeColor
+        });
+        context.restore();
     }
 }
 
@@ -249,7 +278,8 @@ function renderElements({
                 effectiveRect[0] + scroll.x,
                 effectiveRect[1] + scroll.y
             );
-        } */
+        }
+        */
         context.translate(
             element.rect[0] + scroll.x,
             element.rect[1] + scroll.y

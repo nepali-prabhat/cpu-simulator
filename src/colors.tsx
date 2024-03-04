@@ -86,7 +86,7 @@ export function getHighlightFGColor(
         let strokeColor = defaultColor;
         if (bgColor && APP_BG_FG_COLOR_MAP[bgColor]) {
             const [color, index] = APP_BG_FG_COLOR_MAP[bgColor];
-            strokeColor = oc[color][index + 1] || strokeColor;
+            strokeColor = oc[color][index + 3] || strokeColor;
         }
         return strokeColor;
     }

@@ -1,4 +1,4 @@
-import { WireHighlights, Wire } from "@/types";
+import { WireHighlights, Wire, BoundingRect, Point, WireHandle } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { selectedWireIdsAtom } from "./ui";
@@ -55,4 +55,22 @@ export const deleteSelectedWiresAtom = atom(null, (get, set) => {
         }
     }
     set(wiresAtom, newWires);
+});
+
+export const wireHandlesAtom = atom((get) => {
+    const selectedWireIds = get(selectedWireIdsAtom);
+    const wires = get(wiresAtom);
+    let selectHandles: WireHandle[] = [];
+    for (let wireId of selectedWireIds.values()) {
+        if (wires[wireId]) {
+            wires[wireId].points.forEach((point, index) => {
+                selectHandles.push({
+                    wireId,
+                    xy: point,
+                    pointIndex: index as 0 | 1,
+                });
+            });
+        }
+    }
+    return selectHandles;
 });
