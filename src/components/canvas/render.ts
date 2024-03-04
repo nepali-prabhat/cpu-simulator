@@ -157,14 +157,12 @@ function renderWires({
                 fillStyle: "solid",
                 stroke: strokeColor,
             });
-            if (!isSelected) {
-                for (let path of paths) {
-                    rc?.circle(path[0], path[1], 2, {
-                        seed,
-                        roughness: 0.5,
-                        stroke: strokeColor,
-                    });
-                }
+            for (let path of paths) {
+                rc?.circle(path[0], path[1], 2, {
+                    seed,
+                    roughness: 0.5,
+                    stroke: strokeColor,
+                });
             }
             if (isSelected) {
                 context.font = "5px Arial";
@@ -182,7 +180,7 @@ function renderWires({
                     2,
                     {
                         seed,
-                        roughness: 0.75,
+                        roughness: 0.5,
                         fillStyle: "solid",
                         stroke: strokeColor,
                     }
@@ -194,18 +192,15 @@ function renderWires({
     for (let wireHandle of wireHandles) {
         const point = wireHandle.xy;
         const wire = wires[wireHandle.wireId];
-        if(!wire || !point){
+        if (!wire || !point) {
             continue;
         }
         context.save();
         context.translate(scroll.x, scroll.y);
-        let strokeColor = getHighlightFGColor(bgColor);
         rc?.circle(point.x, point.y, 4, {
             seed: wire.seed,
             roughness: 0.5,
-            stroke: strokeColor,
-            fillStyle: "solid",
-            fill: strokeColor
+            stroke: "black",
         });
         context.restore();
     }

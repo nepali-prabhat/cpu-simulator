@@ -10,7 +10,7 @@ export const SELECT_SIZE = 2;
 export const SELECT_PADDING = 0;
 
 // Development mode options
-export const GRID_SPACE = 20; //20
+export const GRID_SPACE = 30; //20
 export const GRID_TYPE: "dots" | "lines" | "" = "dots";
 export const SNAP_ELEMENTS = false;
 
@@ -35,6 +35,6 @@ paletteTitleMap.set("circuit", "Circuits");
 export const PIN_LENGTH = 7.2 / 1.25;
 export const PIN_HEIGHT = 8 / 1.25;
 
-export const WIRES_SNAP_DISTANCE = 10 * 10;
+export const WIRES_SNAP_DISTANCE = Math.pow(8, 2);
 
 export const DEBUG_BOUNDING_BOX = false;

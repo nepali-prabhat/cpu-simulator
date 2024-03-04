@@ -10,7 +10,7 @@ import dynamic from "next/dynamic";
 const DebugAtoms = () => {
     useAtomsDebugValue();
 
-    const disable = false;
+    const disable = true;
     const [show, setShow] = useState(false);
     useEffect(() => {
         setShow(true);
