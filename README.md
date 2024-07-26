@@ -6,7 +6,6 @@ This is an ongoing pet project.
 
 ## Live demo:
 https://cpu-simulator-three.vercel.app/
-https://github.com/user-attachments/assets/ceee8482-fc0d-4ddf-98e2-00dc49ba6f80
 
 Screenshots             |  Screenshots
 :-------------------------:|:-------------------------:
