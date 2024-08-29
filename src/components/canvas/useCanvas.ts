@@ -395,10 +395,10 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 wireHandlesClicked.push(wireHandle);
             }
         }
-        console.log("wire handles clicked: ", wireHandlesClicked);
+
         // Process wire
         const processWire =
-            !preserveSelectBox && wireHandlesClicked.length === 0;
+            !preserveSelectBox && appState.selectedWireIds.size === 0;
         let newWireId;
         if (processWire && pinRect) {
             const touchingPinIds = [pinRect.uid];

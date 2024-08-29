@@ -53,7 +53,7 @@ function drawGate({
     seed += 1;
     const ghostElementColor = isGhostElement ? GHOST_ELEMENT_COLOR : undefined;
     const bgColor = canvasProperties.bgColor || "#fff";
-    const roughness = .5;
+    const roughness = 0.5;
     const hachureGap = 4;
     const info = elementsInfo.get(config.type);
     const elementColor = config.color || "#000";

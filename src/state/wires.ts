@@ -1,7 +1,19 @@
-import { WireHighlights, Wire, BoundingRect, Point, WireHandle } from "@/types";
+import {
+    WireHighlights,
+    Element,
+    Wire,
+    WireHandle,
+    ElementPin,
+} from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
 import { selectedWireIdsAtom } from "./ui";
+import { elementsAtom } from "./elements";
+import {
+    convertRectToBox,
+    getMergedPositionRect,
+    isPointInsideBox,
+} from "@/utils/box";
 
 export const wiresAtom = atomWithStorage<{ [key: Wire["uid"]]: Wire }>(
     "wires",
@@ -22,14 +34,42 @@ export const updateWireAtom = atom(
     null,
     (get, set, value: { uid: string; updater: (v: Wire) => Partial<Wire> }) => {
         const wires = get(wiresAtom);
+        let elements = { ...get(elementsAtom) };
         const currentValue = wires[value.uid];
-        const values = value.updater(currentValue);
+        let values = { ...currentValue, ...value.updater(currentValue) };
+
+        let touchingPinIds = values.touchingPinIds || [];
+        const p1 = values.points[0];
+        const p2 = values.points[1];
+
+        // TODO: make this more efficient
+        touchingPinIds = touchingPinIds.filter((pinId) => {
+            let pin: ElementPin | undefined;
+            let element: Element | undefined;
+            loop1: for (let e of Object.values(elements)) {
+                for (let p of e.io.pins) {
+                    if (p.uid === pinId) {
+                        pin = p;
+                        element = e;
+                        break loop1;
+                    }
+                }
+            }
+            if (!pin || !element) {
+                return false;
+            }
+            const pinBox = convertRectToBox(
+                getMergedPositionRect(element.rect, pin.rect)
+            );
+            const isPinInBox =
+                isPointInsideBox(p1, pinBox) || isPointInsideBox(p2, pinBox);
+            return isPinInBox;
+        });
+
+        values = { ...values, touchingPinIds };
         set(wiresAtom, {
             ...wires,
-            [value.uid]: {
-                ...currentValue,
-                ...values,
-            },
+            [value.uid]: values,
         });
     }
 );

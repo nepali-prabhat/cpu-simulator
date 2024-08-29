@@ -345,3 +345,10 @@ export function getIntersectedRectOfElement(
     }
     return intersected;
 }
+
+export function getMergedPositionRect(
+    parentRect: BoundingRect,
+    childRect: BoundingRect
+): BoundingRect {
+    return [parentRect[0] + childRect[0], parentRect[1] + childRect[1], childRect[2], childRect[3]];
+}
