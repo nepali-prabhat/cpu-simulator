@@ -10,6 +10,7 @@ import {
     WireHighlights,
     Wire,
     WireHandle,
+    PinHighlight,
 } from "@/types";
 import { renderCanvas } from "./render";
 import {
@@ -38,7 +39,10 @@ import {
     setGhostPosition as _setGhostPosition,
     showGhost,
 } from "@/state/appState";
-import { moveSelectedElementsAtom } from "@/state/elements";
+import {
+    highlightedPinIdsAtom,
+    moveSelectedElementsAtom,
+} from "@/state/elements";
 
 import {
     addToActiveInputsCountAtom,
@@ -62,6 +66,7 @@ import {
 import {
     convertRectToBox,
     getIntersectedRectOfElement,
+    getMergedPositionRect,
     isPointInsideBox,
 } from "@/utils/box";
 import { WithRequired } from "@/utilTypes";
@@ -109,6 +114,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
     const updateWire = useSetAtom(updateWireAtom);
     const deleteWires = useSetAtom(deleteWiresAtom);
     const setHighlightedWireIds = useSetAtom(highlightedWireIdsAtom);
+    const setHighlightedPinIds = useSetAtom(highlightedPinIdsAtom);
 
     const scroll = canvasProperties.scroll;
     const zoom = canvasProperties.zoom;
@@ -516,33 +522,57 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 lockAxis ? appState.wires[newWireId!].points.at(1)! : canvasXY,
                 Object.values(appState.wires)
             );
-            const newHighlights: WireHighlights = [];
+            const newWireHighlights: WireHighlights = [];
             if (newWireId) {
-                newHighlights.push({ uid: newWireId });
+                newWireHighlights.push({ uid: newWireId });
             }
 
-            let nearestHighlighted = minBy(
+            let nearestHighlightedWire = minBy(
                 intersectedWires.wireHighlights.filter(
                     (v) => v.uid !== newWireId && v.length
                 ),
                 (v) => v.length
             );
+            let { elements: intersectedElements } = getElementsAt(
+                canvasXY,
+                Object.values(appState.elements)
+            );
+
+            // calculate the pins that cursor is above
+            let newPinHighlights: PinHighlight[] = [];
+            for (let element of intersectedElements) {
+                for (let pin of element.io.pins) {
+                    let pinCanvasCoordinates = getMergedPositionRect(
+                        element.rect,
+                        pin.rect
+                    );
+                    if (
+                        isPointInsideBox(
+                            canvasXY,
+                            convertRectToBox(pinCanvasCoordinates)
+                        )
+                    ) {
+                        newPinHighlights.push({ uid: pin.uid });
+                    }
+                }
+            }
 
             const removeProjectedPoint =
                 shiftPressed && appState.selectedElementIds.size !== 0;
 
-            if (removeProjectedPoint && nearestHighlighted) {
-                nearestHighlighted = {
-                    ...nearestHighlighted,
+            if (removeProjectedPoint && nearestHighlightedWire) {
+                nearestHighlightedWire = {
+                    ...nearestHighlightedWire,
                     projectedPoint: undefined,
                 };
             }
 
-            if (nearestHighlighted) {
-                newHighlights.push(nearestHighlighted);
+            if (nearestHighlightedWire) {
+                newWireHighlights.push(nearestHighlightedWire);
             }
 
-            setHighlightedWireIds(newHighlights);
+            setHighlightedWireIds(newWireHighlights);
+            setHighlightedPinIds(newPinHighlights);
         }
 
         if (pointerRef.current) {
@@ -740,7 +770,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
             }
 
             const preserveSelectedWires =
-                shiftPressed || wireHandlesClicked?.length;
+                shiftPressed; /*|| wireHandlesClicked?.length*/
             if (!preserveSelectedWires) {
                 newSelectedWireIds.clear();
             }
@@ -765,6 +795,11 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     newSelectedWireIds.add(uid);
                 }
             }
+            if (wireHandlesClicked?.length) {
+                wireHandlesClicked.forEach((wh) =>
+                    newSelectedWireIds.add(wh.wireId)
+                );
+            }
 
             const newWireId = pointerRef.current.newWireId;
             const newWire = newWireId && appState.wires[newWireId];
@@ -786,16 +821,9 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                         (v) => v.length
                     ) || {};
 
-                deleteNewWire =
-                    projectedPoint &&
-                    lengthSquared(newWire.points[0], projectedPoint) <=
-                        WIRES_SNAP_DISTANCE;
-
-                if (!deleteNewWire) {
-                    newSelectedWireIds.clear();
-                }
-
-                if (!deleteNewWire && projectedPoint) {
+                if (projectedPoint) {
+                    // if wire is close to something else, it projects a point to it.
+                    // change the end of the wire to be the projected point
                     updateWire({
                         uid: newWireId,
                         updater: (v) => {

@@ -91,6 +91,10 @@ export type WireHighlight = {
     length?: number;
 };
 export type WireHighlights = WireHighlight[];
+export type PinHighlight = {
+    uid: string;
+}
+export type PinHighlights = PinHighlight[];
 export type WireHandle = { wireId: Wire["uid"]; xy: Point; pointIndex: 0 | 1 };
 
 export type GhostElement = RenderableElement & {
@@ -107,6 +111,7 @@ export type AppState = {
     ghostElement?: GhostElement;
     wires: { [key: Wire["uid"]]: Wire };
     wireHighlights: WireHighlights;
+    pinHighlights: PinHighlights;
     wireHandles: WireHandle[];
 };
 export type PointerState = {

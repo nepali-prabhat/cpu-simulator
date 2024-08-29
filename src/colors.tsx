@@ -106,8 +106,8 @@ export function getHighlightBGColor(
         return fillColor || defaultColor;
     }
 }
-export function reduceOpacityOfHexColor(hexColor: string) {
-    return hexColor + "0f";
+export function reduceOpacityOfHexColor(hexColor: string, opacity = "1f") {
+    return hexColor + opacity;
 }
 
 const elementsColorIndex = 4;

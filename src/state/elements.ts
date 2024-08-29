@@ -1,4 +1,4 @@
-import { AppState, Element, ElementConfig, GhostElement } from "@/types";
+import { AppState, Element, ElementConfig, GhostElement, PinHighlights } from "@/types";
 import { WithRequired } from "@/utilTypes";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -11,6 +11,9 @@ export const elementsAtom = atomWithStorage<{ [key: Element["uid"]]: Element }>(
     {}
 );
 elementsAtom.debugLabel = "elements atom";
+
+export const highlightedPinIdsAtom = atom<PinHighlights>([]);
+highlightedPinIdsAtom.debugLabel = "highlighted pins atom";
 
 export const addElementAtom = atom(
     null,

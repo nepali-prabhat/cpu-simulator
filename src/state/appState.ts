@@ -1,7 +1,7 @@
 import { BoundingBox, GhostElement, AppState, ElementType } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
-import { elementsAtom } from "./elements";
+import { elementsAtom, highlightedPinIdsAtom } from "./elements";
 import {
     elementConfigAtomAtom,
     selectedElementIdsAtom,
@@ -78,6 +78,8 @@ export const appStateAtom = atom<AppState>((get) => {
 
         wireHandles: get(wireHandlesAtom),
         wireHighlights: get(highlightedWireIdsAtom),
+
+        pinHighlights: get(highlightedPinIdsAtom),
 
         selectRect: get(selectRectAtom),
 

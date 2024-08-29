@@ -1,9 +1,13 @@
-import { COLOR_PALETTE, GHOST_ELEMENT_COLOR } from "@/colors";
+import {
+    COLOR_PALETTE,
+    GHOST_ELEMENT_COLOR,
+} from "@/colors";
 import { DEBUG_BOUNDING_BOX } from "@/constants/constants";
 import { elementsInfo } from "@/constants/elementsInfo";
 import {
     BoundingRect,
     CanvasProperties,
+    ElementPin,
     GhostElement as RenderableElement,
 } from "@/types";
 import { RoughCanvas } from "roughjs/bin/canvas";
@@ -11,22 +15,27 @@ import { Options } from "roughjs/bin/core";
 
 export function renderElement({
     element,
-    isGhostElement,
+    pinHighlights,
+
     canvasProperties,
     context,
     rc,
+
+    isGhostElement,
 }: {
     element: RenderableElement;
-    isGhostElement?: boolean;
+    pinHighlights: ElementPin["uid"][];
     canvasProperties: CanvasProperties;
     context: CanvasRenderingContext2D;
     rc: RoughCanvas | null;
+    isGhostElement?: boolean;
 }) {
     if (rc) {
         // Transformation matrices
         drawGate({
             element,
             isGhostElement,
+            pinHighlights,
             rc,
             context,
             canvasProperties,
@@ -36,18 +45,21 @@ export function renderElement({
 
 function drawGate({
     element,
-    isGhostElement = false,
+    pinHighlights,
 
     rc,
     context,
     canvasProperties,
+
+    isGhostElement = false,
 }: {
     element: RenderableElement;
-    isGhostElement?: boolean;
+    pinHighlights: ElementPin["uid"][];
 
     rc: RoughCanvas;
     context: CanvasRenderingContext2D;
     canvasProperties: CanvasProperties;
+    isGhostElement?: boolean;
 }) {
     let { seed, tmIcon, iconRect, io, rect, config } = element;
     seed += 1;
@@ -119,16 +131,34 @@ function drawGate({
     };
     // render input and outputs
     for (let pin of io.pins) {
+        const rect = pin.rect;
         rects.push(pin.rect);
+        // BUG: Fails where there is a ghost element, and we don't check for undefined
+        const isHighlighted = pinHighlights?.includes(pin.uid);
         if (pin.negate) {
-            const rect = pin.rect;
             rc.circle(rect[0] + rect[2] / 2, rect[1] + rect[3] / 2, rect[3], {
                 ...pinsConfig,
                 fillStyle: "hachure",
                 hachureGap,
             });
         } else {
-            rc.rectangle(...pin.rect, pinsConfig);
+            rc.rectangle(
+                ...rect,
+                pinsConfig
+            );
+        }
+        if (isHighlighted) {
+                rc?.circle(
+                    rect[0] + rect[2]/2,
+                    rect[1] + rect[3]/2,
+                    2,
+                    {
+                        seed,
+                        roughness: 0.5,
+                        fillStyle: "solid",
+                        stroke: "black",
+                    }
+                );
         }
     }
 
