@@ -93,6 +93,8 @@ export type WireHighlight = {
 export type WireHighlights = WireHighlight[];
 export type PinHighlight = {
     uid: string;
+    elementId: string;
+    projectedPoint?: Point
 }
 export type PinHighlights = PinHighlight[];
 export type WireHandle = { wireId: Wire["uid"]; xy: Point; pointIndex: 0 | 1 };
