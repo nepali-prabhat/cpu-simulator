@@ -1,3 +1,4 @@
+import update from "immutability-helper";
 import { WireHighlights, Element, Wire, WireHandle, ElementPin, Point } from "@/types";
 import { atom } from "jotai";
 import { atomWithStorage } from "jotai/utils";
@@ -17,6 +18,35 @@ export const addWireAtom = atom(null, (_, set, value: Wire) => {
         [value.uid]: value,
     }));
 });
+
+export const updatePointsOnElementsMovedAtom = atom(
+    null,
+    (get, set, elementsMovedState: { [key: string]: { prevMidPoint: Point; newMidPoint: Point } }) => {
+        let wires = get(wiresAtom);
+        for (let wire of Object.values(wires)) {
+            for (let pinId of wire.touchingPinIds || []) {
+                let elementState = elementsMovedState[pinId];
+                if (elementState) {
+                    const prevMidPoint = elementState.prevMidPoint;
+                    const p0 = wire.points[0];
+                    const p1 = wire.points[1];
+                    const checkIfPointsEqual = (p0: Point) => p0.x === prevMidPoint.x && p0.y == prevMidPoint.y;
+                    let pointIndex = checkIfPointsEqual(p0) ? 0 : checkIfPointsEqual(p1) ? 1 : undefined;
+                    let newPoint: [Point, Point] | undefined =
+                        pointIndex == 0
+                            ? [elementState.newMidPoint, p1]
+                            : pointIndex == 1
+                            ? [p0, elementState.newMidPoint]
+                            : undefined;
+                    if (newPoint) {
+                        wires = update(wires, { [wire.uid]: { points: { $set: newPoint } } });
+                    }
+                }
+            }
+        }
+        set(wiresAtom, wires);
+    }
+);
 
 export const updateWireAtom = atom(null, (get, set, value: { uid: string; updater: (v: Wire) => Partial<Wire> }) => {
     const wires = get(wiresAtom);

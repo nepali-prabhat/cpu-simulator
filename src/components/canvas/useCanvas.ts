@@ -42,6 +42,7 @@ import {
     deleteSelectedWiresAtom,
     deleteWiresAtom,
     highlightedWireIdsAtom,
+    updatePointsOnElementsMovedAtom,
     updateWireAtom,
 } from "@/state/wires";
 import { randomInteger } from "@/utils/random";
@@ -75,6 +76,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
 
     const addWire = useSetAtom(addWireAtom);
     const updateWire = useSetAtom(updateWireAtom);
+    const updatePointsOnElementsMoved = useSetAtom(updatePointsOnElementsMovedAtom);
     const deleteWires = useSetAtom(deleteWiresAtom);
     const setHighlightedWireIds = useSetAtom(highlightedWireIdsAtom);
     const setHighlightedPinIds = useSetAtom(highlightedPinIdsAtom);
@@ -583,6 +585,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 ...appState.elements,
             };
             let movedElementIds: Set<string> = new Set(pointerRef.current.movedElementIds);
+            let movedPointIds: { [key: string]: { prevMidPoint: Point; newMidPoint: Point } } = {};
             for (let uid in appState.elements) {
                 const originalElement = appState.elements[uid];
                 const element = updatedSelectedElements[uid];
@@ -594,9 +597,23 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     };
                     if (newPosition[0] !== originalElement.rect[0] || newPosition[1] !== originalElement.rect[1]) {
                         movedElementIds.add(uid);
+
+                        for (let i = 0; i < element.io.pins.length; i++) {
+                            let newPin = element.io.pins[i];
+                            let pinId = newPin.uid;
+                            let oldPinRect = getPinRectOfElement(originalElement, pinId);
+                            let newPinRect = getPinRectOfElement(element, pinId);
+                            if (oldPinRect && newPinRect) {
+                                movedPointIds[pinId] = {
+                                    prevMidPoint: getRectMidPoint(oldPinRect),
+                                    newMidPoint: getRectMidPoint(newPinRect),
+                                };
+                            }
+                        }
                     }
                 }
             }
+            // TODO: update wire points when element is moved
 
             pointerRef.current = {
                 ...pointerRef.current,
@@ -610,6 +627,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 lastPoint: canvasXY,
             };
             setElements(elementsSnappedToGrid);
+            updatePointsOnElementsMoved(movedPointIds);
             setSelectedElementIds(newSelectedElementIds);
             setSelectedWireIds(newSelectedWireIds);
             setSelectRect(selectRect);
