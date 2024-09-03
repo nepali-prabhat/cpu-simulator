@@ -690,9 +690,6 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 let pinProjection = appState.pinHighlights[0];
 
                 const { wireHighlights } = getWiresAt(wirePoint, Object.values(appState.wires));
-                if (wireHandlesClicked?.length) {
-                    console.log("wh: ", wireHighlights);
-                }
                 const { projectedPoint: projectedPointOnWire, uid: projectedWireId } =
                     minBy(
                         wireHighlights.filter((v) => v.uid !== wireIdToUpdate),
