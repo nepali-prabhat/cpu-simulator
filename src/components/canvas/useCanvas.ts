@@ -3,16 +3,7 @@ import rough from "roughjs/bin/rough";
 import minBy from "lodash.minby";
 import { useCallback, useEffect, useRef } from "react";
 import { useAtomValue, useSetAtom } from "jotai";
-import {
-    AppState,
-    Point,
-    PointerState,
-    GhostElement,
-    WireHighlights,
-    Wire,
-    WireHandle,
-    PinHighlight,
-} from "@/types";
+import { AppState, Point, PointerState, GhostElement, WireHighlights, Wire, WireHandle, PinHighlight } from "@/types";
 import { renderCanvas } from "./render";
 import {
     filterElementsByIds,
@@ -460,7 +451,7 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                 newWireHighlights.push({ uid: newWireId });
             }
 
-            let ignoredHighlightsInWires = [newWireId, ...(wireHandlesClicked?.map(v=>v.wireId) || [])];
+            let ignoredHighlightsInWires = [newWireId, ...(wireHandlesClicked?.map((v) => v.wireId) || [])];
             let nearestHighlightedWire = minBy(
                 intersectedWires.wireHighlights.filter((v) => !ignoredHighlightsInWires.includes(v.uid) && v.length),
                 (v) => v.length
@@ -685,13 +676,14 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     areSamePoints(...newWire.points) ||
                     lengthSquared(...newWire.points) <= WIRES_SNAP_DISTANCE);
 
-            let wireUpdateState: [string, Point] | undefined = undefined;
+            let wireUpdateState: [string, Point, number] | undefined = undefined;
             if (newWire && !deleteNewWire) {
-                wireUpdateState = [newWire.uid, newWire.points[1]];
+                wireUpdateState = [newWire.uid, newWire.points[1], 1];
             } else if (!newWire && wireHandlesClicked?.length) {
                 const wireId = wireHandlesClicked[0].wireId;
-                const wirePoint = appState.wires[wireId].points[wireHandlesClicked[0].pointIndex];
-                wireUpdateState = [wireId, wirePoint];
+                const pointIndex = wireHandlesClicked[0].pointIndex;
+                const wirePoint = appState.wires[wireId].points[pointIndex];
+                wireUpdateState = [wireId, wirePoint, pointIndex];
             }
             if (wireUpdateState) {
                 const [wireIdToUpdate, wirePoint] = wireUpdateState;
@@ -713,11 +705,17 @@ export function useCanvas({ offset }: { offset?: Partial<Point> } = {}) {
                     uid: wireIdToUpdate,
                     updater: (v) => {
                         let points = v.points;
-
-                        if (pinProjection && pinProjection.projectedPoint) {
-                            points = [v.points[0], pinProjection.projectedPoint];
-                        } else if (projectedPointOnWire) {
-                            points = [v.points[0], projectedPointOnWire];
+                        let projectedPoint = pinProjection?.projectedPoint || projectedPointOnWire;
+                        let pinIndex = wireUpdateState && wireUpdateState[2];
+                        if (projectedPoint && pinIndex !== undefined) {
+                            switch (pinIndex) {
+                                case 0:
+                                    points = [projectedPoint, v.points[1]];
+                                    break;
+                                case 1:
+                                    points = [v.points[0], projectedPoint];
+                                    break;
+                            }
                         }
 
                         const touchingWireIds = update(v.touchingWireIds, {

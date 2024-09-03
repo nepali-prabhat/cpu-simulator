@@ -133,8 +133,7 @@ function drawGate({
     for (let pin of io.pins) {
         const rect = pin.rect;
         rects.push(pin.rect);
-        // BUG: Fails where there is a ghost element, and we don't check for undefined
-        const isHighlighted = pinHighlights?.includes(pin.uid);
+        const isHighlighted = pinHighlights.includes(pin.uid);
         if (pin.negate) {
             rc.circle(rect[0] + rect[2] / 2, rect[1] + rect[3] / 2, rect[3], {
                 ...pinsConfig,
@@ -159,6 +158,10 @@ function drawGate({
                         stroke: "black",
                     }
                 );
+                context.fillText(pin.uid.slice(0,4), 
+                    rect[0],
+                    rect[1]
+            );
         }
     }
 

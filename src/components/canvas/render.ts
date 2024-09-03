@@ -164,7 +164,7 @@ function renderWires({
                 });
             }
             if (isSelected) {
-                context.font = "5px Arial";
+                // context.font = "5px Arial";
                 context.fillText(
                     wire.uid.slice(0, 4),
                     paths[0][0],
