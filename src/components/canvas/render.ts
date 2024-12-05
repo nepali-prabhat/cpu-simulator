@@ -12,7 +12,6 @@ import { RoughCanvas } from "roughjs/bin/canvas";
 import { renderElement } from "./renderGates";
 import { convertRectToBox } from "@/utils/box";
 import {
-    COLOR_PALETTE,
     getHighlightBGColor,
     getHighlightFGColor,
     reduceOpacityOfHexColor,
@@ -165,7 +164,7 @@ function renderWires({
                 });
             }
             if (isSelected) {
-                context.font = "5px Arial";
+                // context.font = "5px Arial";
                 context.fillText(
                     wire.uid.slice(0, 4),
                     paths[0][0],
@@ -228,6 +227,7 @@ function renderGhostElement({
         renderElement({
             element,
             isGhostElement: true,
+            pinHighlights: appState.pinHighlights.map(v=>v.uid),
             rc,
             context,
             canvasProperties,
@@ -248,10 +248,11 @@ function renderElements({
     rc: RoughCanvas | null;
 }) {
     const { scroll } = canvasProperties;
-    const { elements } = appState;
+    const { elements, pinHighlights } = appState;
 
     for (let element of Object.values(elements)) {
         context.save();
+        // DEBUG: shows position of elements and pins
         /* context.fillText(
             `x: ${element.rect[0].toFixed(2)} y:${element.rect[1].toFixed(2)}`,
             element.rect[0] + scroll.x,
@@ -281,6 +282,8 @@ function renderElements({
         );
         renderElement({
             element,
+            pinHighlights: pinHighlights.map(v=>v.uid),
+
             rc,
             context,
             canvasProperties,

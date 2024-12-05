@@ -45,6 +45,7 @@ export const ElementTypeButton = memo(
                             ? `ring-2 ring-blue-400`
                             : "group-hover:ring-2 group-hover:ring-blue-200"
                     )}
+                    title={props.name}
                 >
                     {props.children}
                 </button>
@@ -56,7 +57,7 @@ export const ElementTypeButton = memo(
                     style={{ width: width }}
                     title={props.name}
                 >
-                    {props.name}
+                    {props.name.toLowerCase()}
                 </span>
             </div>
         );

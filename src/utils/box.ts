@@ -345,3 +345,22 @@ export function getIntersectedRectOfElement(
     }
     return intersected;
 }
+
+export function getMergedPositionRect(
+    parentRect: BoundingRect,
+    childRect: BoundingRect
+): BoundingRect {
+    return [
+        parentRect[0] + childRect[0],
+        parentRect[1] + childRect[1],
+        childRect[2],
+        childRect[3],
+    ];
+}
+
+export function getRectMidPoint(rect: BoundingRect): Point {
+    return {
+        x: rect[0] + rect[2] / 2,
+        y: rect[1] + rect[3] / 2,
+    };
+}
